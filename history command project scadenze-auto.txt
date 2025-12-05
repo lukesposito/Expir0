@@ -1,0 +1,179 @@
+   76  sudo apt install composer
+   77  cd /var/www/html/
+   78  composer create-project laravel/laravel scadenze-auto
+   79  cd scadenze-auto/
+   80  php artisan key:generate
+   81  ls
+   82  code .
+   83  composer require laravel/breeze --dev
+   84  php artisan breeze:install blade
+   85  npm install
+   86  sudo apt install npm
+   87  npm run build
+   88  php artisan make:migration create_vehicles_table
+   89  php artisan make:migration create_deadlines_table
+   90  php artisan migrate
+   91  php artisan make:model Vehicle
+   92  php artisan make:model Deadline
+   93  php artisan make:controller VehicleController --resource
+   94  php artisan make:controller DeadlineController --resource
+   95  php artisan make:mail DeadlineReminder --markdown=emails.deadline-reminder
+   96  php artisan make:command CheckDeadlines
+   97  mkdir -p resources/views/deadlines
+   98  mkdir -p resources/views/vehicles
+   99  php artisan deadlines:check
+  100  php artisan serve
+  101  npm run build
+  102  npm install
+  103  npm run build
+  104  php artisan serve
+  105  php artisan deadlines:check
+  106  php artisan serve
+  107  php artisan tinker
+  108  php artisan make:migration create_deadline_user_notifications_table
+  109  php artisan migrate
+  110  php artisan tinker
+  111  php artisan serve
+  112  php artisan deadlines:check
+  113  php artisan serve
+  114  php artisan deadlines:check
+  115  tail -f storage/logs/laravel.log
+  116  php artisan serve
+  117  php artisan deadlines:check
+  118  php artisan config:clear
+  119  php artisan serve
+  120  php artisan deadlines:check
+  121  php artisan serve
+  122  php artisan deadlines:check
+  123  php artisan tinker
+  124  php artisan deadlines:check
+  125  php artisan tinker
+  126  php artisan deadlines:check
+  127  php artisan serve
+  128  php artisan deadlines:check
+  129  php artisan tinker
+  130  php artisan deadlines:check
+  131  php artisan tinker
+  132  php artisan serve
+  133  php artisan tinker
+  134  php artisan deadlines:check
+  135  php artisan tinker
+  136  php artisan serve
+  137  python test.py
+  138  sudo apt install python3
+  139  python3 test.py
+  140  python --version
+  141  python3 --version
+  142  python3 test.py
+  143  sudo python3 test.py
+  144  cd ..
+  145  cd Corso_Python/
+  146  sudo python3 test.py
+  147  code .
+  148  python3 test.py
+  149  clear
+  150  python3 test.py
+  151  clear
+  152  python3 test.py
+  153  clear
+  154  python3 test.py
+  155  clear
+  156  python3 test.py
+  157  clear
+  158  python3 test.py
+  159  clear
+  160  python3 test.py
+  161  clear
+  162  python3 test.py
+  163  clear
+  164  python3 test.py
+  165  clear
+  166  python3 test.py
+  167  clear
+  168  python3 test.py
+  169  cd
+  170  pwd
+  171  cd ..
+  172  python --version
+  173  sudo apt-get install python3
+  174  cd mnt/
+  175  cd c/
+  176  ls
+  177  cd Users/
+  178  ls
+  179  cd espo2/
+  180  ls
+  181  cd Desktop/
+  182  ls
+  183  cd Corso\ Python/
+  184  nano test.py
+  185  code .
+  186  python3 test.py
+  187  clear
+  188  python3 test.py
+  189  clear
+  190  python3 test.py
+  191  clear
+  192  python3 test.py
+  193  clear
+  194  python3 test.py
+  195  clear
+  196  python3 test.py
+  197  clear
+  198  python3 test.py
+  199  clear
+  200  python3 test.py
+  201  clear
+  202  python3 test.py
+  203  clear
+  204  python3 test.py
+  205  clear
+  206  python3 test.py
+  207  clear
+  208  python3 test.py
+  209  clear
+  210  python3 test.py
+  211  clear
+  212  python3 test.py
+  213  clear
+  214  python3 test.py
+  215  clear
+  216  python3 test.py
+  217  clear
+  218  python3 test.py
+  219  clear
+  220  python3 test.py
+  221  clear
+  222  python3 test.py
+  223  clear
+  224  python3 test.py
+  225  clear
+  226  python3 test.py
+  227  clear
+  228  python3 test.py
+  229  clear
+  230  python3 test.py
+  231  cd
+  232  cd ..
+  233  cd mnt/c/Users/espo2/Desktop/Corso_Python/
+  234  code .
+  235  cd /var/www/html/scadenze-auto/
+  236  code .
+  237  crontab -e
+  238  php artisan make:migration add_patente_support
+  239  php artisan migrate
+  240  php artisan make:model Patente
+  241  php artisan make:controller PatenteController --resource
+  242  php artisan serve
+  243  php artisan make:migration update_deadlines_for_user_patenti
+  244  php artisan migrate
+  245  php artisan serve
+  246  php artisan deadlines:check
+  247  php artisan serve
+  248  mkdir -p resources/views/patenti
+  249  php artisan serve
+  250  php artisan route:clear
+  251  php artisan serve
+  252  php artisan route:clear
+  253  php artisan serve
+  254  histor

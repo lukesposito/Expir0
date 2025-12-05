@@ -1,0 +1,8 @@
+- se aggiungo la data di rilascio della patente, calcolare la data di scadenza in automatico ed inserirlo in scadenze
+- aggiunta tabella revisione e poi aggiungerla nella form di scadenza
+- (FATTOOO) aggiungere modali di creazione, modifica ed elimina al posto di pagine/route per veicoli, patenti e scadenze
+- per le tabelle aggiungere filtri su veicoli e nomi (tabella veicoli: marca e modello). Aggiungere iterazione con scadenze, se più di 1 far vedere con una modale quali scadenze ci sono attraverso l'iterazione di un bottone di fianco a  modifica ed elimina(tootltip) [NB: ALTRIMENTI UNA LISTA GENERALE DELLE SCADENZE ASSOCIATE A QUEL VEICOLO]
+- Aggiungere per veicoli, patenti e scadenze tooltip bottoni per modifica ed elimina  
+- fare uno storico ben organizzato di tutto in un unica pagina con accordion in modo che uno possa consultare ciò che ne ha voglia.
+- Modificare NOMI TABELLE MIGRATION IN HEIDESQL -> PATENTI, ED AGGIUNGERLO NEL MODELLO COME PATENTI. MODIFICARE TUTTE LE OCCORRENZE DI PATENTES IN PATENTI
+CONTROLLARE CHE NON CI SIANO NOMI SPAGNOLI DI TABELLE MA ITALIANI
