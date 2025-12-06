@@ -1,400 +1,338 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Dashboard
-            </h2>
-            <p class="text-sm text-gray-600">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h2 class="font-black text-2xl text-slate-800 tracking-tight leading-tight">
+                    Dashboard Amministrativa
+                </h2>
+                <p class="text-sm text-slate-500 mt-1">Monitoraggio veicoli e scadenze famiglia</p>
+            </div>
+            <div class="bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 text-sm text-slate-600 font-medium flex items-center gap-2">
+                <i class="fa-regular fa-calendar text-indigo-500"></i>
                 {{ now()->locale('it')->isoFormat('dddd, D MMMM YYYY') }}
-            </p>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4">
-
-            <!-- SEMAFORO STATO GENERALE - Aggiungi dopo l'alert urgenze -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <!-- Rosso - Urgenti -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 {{ $scadenzeUrgenti > 0 ? 'border-red-500' : 'border-gray-300' }}">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 mb-1">🔴 Urgenti (0-10gg)</p>
-                            <p class="text-3xl font-black {{ $scadenzeUrgenti > 0 ? 'text-red-600' : 'text-gray-400' }}">
-                                {{ $scadenzeUrgenti }}
-                            </p>
-                        </div>
-                        <div class="w-16 h-16 rounded-full flex items-center justify-center {{ $scadenzeUrgenti > 0 ? 'bg-red-100 animate-pulse' : 'bg-gray-100' }}">
-                            <span class="text-3xl">{{ $scadenzeUrgenti > 0 ? '🔴' : '✓' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Giallo - In arrivo -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 {{ ($scadenzeImminenti - $scadenzeUrgenti) > 0 ? 'border-yellow-500' : 'border-gray-300' }}">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 mb-1">🟡 In Arrivo (11-30gg)</p>
-                            <p class="text-3xl font-black {{ ($scadenzeImminenti - $scadenzeUrgenti) > 0 ? 'text-yellow-600' : 'text-gray-400' }}">
-                                {{ $scadenzeImminenti}}
-                            </p>
-                        </div>
-                        <div class="w-16 h-16 rounded-full flex items-center justify-center {{ ($scadenzeImminenti - $scadenzeUrgenti) > 0 ? 'bg-yellow-100' : 'bg-gray-100' }}">
-                            <span class="text-3xl">{{ ($scadenzeImminenti) > 0 ? '🟡' : '✓' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Verde - Tutto ok -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 {{ $scadenzeImminenti == 0 ? 'border-green-500' : 'border-gray-300' }}">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 mb-1">🟢 Tutto OK (31+gg)</p>
-                            <p class="text-3xl font-black {{ $scadenzeImminenti == 0 ? 'text-green-600' : 'text-gray-400' }}">
-                                {{ $totaleScadenze - $scadenzeImminenti - $scadenzeUrgenti }}
-                            </p>
-                        </div>
-                        <div class="w-16 h-16 rounded-full flex items-center justify-center {{ $scadenzeImminenti == 0 ? 'bg-green-100' : 'bg-gray-100' }}">
-                            <span class="text-3xl">{{ $scadenzeImminenti == 0 ? '🟢' : '⏳' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="py-8 bg-slate-50 min-h-screen w-full"
+         x-data="{ 
+            showUploadModal: false,
+            showViewModal: false,
+            showPreviewModal: false,
+            isClosingUpload: false,
+            isClosingView: false,
+            isPreviewClosing: false,
             
-            <!-- ALERT SCADENZE URGENTI -->
-            @if($scadenzeUrgenti > 0)
-            <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
-                <div class="flex items-center">
-                    <svg class="h-6 w-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    <div>
-                        <h3 class="font-bold text-red-800">Attenzione!</h3>
-                        <p class="text-sm text-red-700">Hai <strong>{{ $scadenzeUrgenti }}</strong> scadenze urgenti da pagare!</p>
-                    </div>
-                </div>
-            </div>
-            @endif
+            // Variabili per l'upload
+            selectedCategory: 'bollo',
+            
+            // Variabili per la visualizzazione anteprima
+            currentDocUrl: '',
+            currentDocType: '',
+            currentDocName: '',
 
-            <!-- CARDS STATISTICHE -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            // Funzioni Upload Modal
+            openUploadModal() { this.showUploadModal = true; },
+            closeUploadModal() {
+                this.isClosingUpload = true;
+                setTimeout(() => {
+                    this.showUploadModal = false;
+                    this.isClosingUpload = false;
+                    this.selectedCategory = 'bollo';
+                }, 500);
+            },
 
-            <!-- Card Budget Mensile -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">💰 Budget Mensile Consigliato</h3>
-                <div class="space-y-4">
-                    <div>
-                        <p class="text-sm text-gray-600">Accantona ogni mese</p>
-                        <p class="text-2xl font-black text-blue-600">€{{ number_format($budgetMensileConsigliato, 2, ',', '.') }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-600">Speso questo mese</p>
-                        <p class="text-2xl font-black text-gray-900">€{{ number_format($spesoQuestoMese, 2, ',', '.') }}</p>
-                    </div>
-                    @if($spesoQuestoMese > $budgetMensileConsigliato)
-                        <p class="text-xs text-red-600 font-medium">⚠️ Hai superato il budget!</p>
-                    @else
-                        <p class="text-xs text-green-600 font-medium">✓ Budget rispettato</p>
-                    @endif
-                </div>
-            </div>
-                
-                <!-- Card Veicoli -->
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-black transform transition hover:scale-105">
-                    <div class="flex items-center justify-between">
+            // Funzioni View Archive Modal
+            openViewModal() { this.showViewModal = true; },
+            closeViewModal() {
+                this.isClosingView = true;
+                setTimeout(() => {
+                    this.showViewModal = false;
+                    this.isClosingView = false;
+                }, 500);
+            },
+
+            // Funzioni Preview Modal
+            openPreview(url, type, name) {
+                this.currentDocUrl = url;
+                this.currentDocType = type;
+                this.currentDocName = name;
+                this.showPreviewModal = true;
+            },
+            closePreview() {
+                this.isPreviewClosing = true;
+                setTimeout(() => {
+                    this.showPreviewModal = false;
+                    this.isPreviewClosing = false;
+                    this.currentDocUrl = '';
+                }, 500);
+            }
+         }">
+         
+        <div class="w-full px-4 sm:px-6 lg:px-8 space-y-8">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
+                    <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-blue-100 text-sm font-medium mb-1">Veicoli</p>
-                            <p class="text-4xl font-black">{{ $totaleVeicoli }}</p>
-                            <p class="text-blue-100 text-xs mt-2">Totale registrati</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Scadenze Urgenti</p>
+                            <h3 class="text-3xl font-black text-slate-800 mt-2">{{ $scadenzeUrgenti }}</h3>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-full p-4">
-                            <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
-                        </div>
+                        <div class="p-3 bg-red-50 rounded-xl text-red-500"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
                     </div>
                 </div>
-
-                <!-- Card Scadenze Imminenti -->
-                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-black transform transition hover:scale-105">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-amber-400"></div>
+                    <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-orange-100 text-sm font-medium mb-1">Scadenze Imminenti</p>
-                            <p class="text-4xl font-black">{{ $scadenzeImminenti }}</p>
-                            <p class="text-orange-100 text-xs mt-2">Prossimi 30 giorni</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">In Arrivo (30gg)</p>
+                            <h3 class="text-3xl font-black text-slate-800 mt-2">{{ $scadenzeImminenti }}</h3>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-full p-4">
-                            <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
+                        <div class="p-3 bg-amber-50 rounded-xl text-amber-500"><i class="fa-solid fa-clock text-xl"></i></div>
                     </div>
                 </div>
-
-                <!-- Card Costi Annuali -->
-                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-black transform transition hover:scale-105">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-blue-500"></div>
+                    <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-green-100 text-sm font-medium mb-1">Costi {{ now()->year }}</p>
-                            <p class="text-4xl font-black">€{{ number_format($costiAnnuali, 0, ',', '.') }}</p>
-                            <p class="text-green-100 text-xs mt-2">Totale anno corrente</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Da Pagare (Anno)</p>
+                            <h3 class="text-3xl font-black text-slate-800 mt-2">€{{ number_format($daPagareQuestAnno, 0, ',', '.') }}</h3>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-full p-4">
-                            <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
+                        <div class="p-3 bg-blue-50 rounded-xl text-blue-500"><i class="fa-solid fa-euro-sign text-xl"></i></div>
                     </div>
                 </div>
-
-                <!-- Card Spesa Media -->
-                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-black transform transition hover:scale-105">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-emerald-500"></div>
+                    <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-purple-100 text-sm font-medium mb-1">Media per Veicolo</p>
-                            <p class="text-4xl font-black">€{{ number_format($spesaMediaVeicolo, 0, ',', '.') }}</p>
-                            <p class="text-purple-100 text-xs mt-2">Spesa annuale media</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Gestione</p>
+                            <h3 class="text-3xl font-black text-slate-800 mt-2">{{ $totaleVeicoli }}</h3>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-full p-4">
-                            <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                        </div>
+                        <div class="p-3 bg-emerald-50 rounded-xl text-emerald-500"><i class="fa-solid fa-car text-xl"></i></div>
                     </div>
                 </div>
             </div>
 
-            <!-- SEZIONE PRINCIPALE: 2 COLONNE -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                
-                <!-- COLONNA SINISTRA: PROSSIME SCADENZE (2/3) -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                            <h3 class="text-xl font-bold text-black flex items-center">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span class="ml-1">Prossime Scadenze (30 giorni)</span>
-                            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4">Andamento Spese</h3>
+                    <div class="h-[400px] w-full"><canvas id="speseMensiliChart"></canvas></div>
+                </div>
+                <div class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-full max-h-[470px] flex flex-col">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100">Prossime Scadenze</h3>
+                    <div class="overflow-y-auto pr-2 space-y-3 flex-1 custom-scrollbar">
+                        @forelse($prossimaScadenze as $scadenza)
+                        <div class="flex items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg mr-3" style="background-color: {{ $scadenza->tipo_color }}20; color: {{ $scadenza->tipo_color }}">{{ $scadenza->tipo_icon }}</div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-900 truncate">{{ $scadenza->vehicle ? $scadenza->vehicle->targa : $scadenza->user->name }}</p>
+                                <p class="text-xs text-slate-500">{{ ucfirst($scadenza->tipo) }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-slate-800">{{ $scadenza->importo_formatted }}</p>
+                                <p class="text-xs font-bold {{ $scadenza->urgente ? 'text-red-500' : 'text-amber-500' }}">-{{ abs($scadenza->giorni_rimanenti) }}gg</p>
+                            </div>
                         </div>
-                        
-                        <div class="p-6">
-                            @if($prossimaScadenze->count() > 0)
-                                <div class="space-y-3">
-                                    @foreach($prossimaScadenze as $scadenza)
-                                    <div class="flex items-center justify-between p-4 rounded-lg border-2 transition hover:shadow-md {{ $scadenza['urgente'] ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-gray-50' }}">
-                                        <div class="flex items-center space-x-4 flex-1">
-                                            <!-- Icona Tipo -->
-                                            <div class="flex-shrink-0">
-                                                <div class="w-12 h-12 rounded-full flex items-center justify-center {{ $scadenza['tipo'] === 'bollo' ? 'bg-yellow-100' : ($scadenza['tipo'] === 'assicurazione' ? 'bg-blue-100' : ($scadenza['tipo'] === 'patente' ? 'bg-purple-100' : 'bg-orange-100')) }}">
-                                                    @if($scadenza['tipo'] === 'bollo')
-                                                        <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                        </svg>
-                                                    @elseif($scadenza['tipo'] === 'assicurazione')
-                                                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                                        </svg>
-                                                    @elseif($scadenza['tipo'] === 'patente')
-                                                        <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
-                                                        </svg>
-                                                    @else
-                                                        <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                        </svg>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Info Scadenza -->
-                                            <div class="flex-1">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="font-bold text-gray-900">
-                                                        @if($scadenza['vehicle_targa'])
-                                                            {{ $scadenza['vehicle_targa'] }}
-                                                            <span class="text-sm text-gray-500">{{ $scadenza['vehicle_marca'] }}</span>
-                                                        @else
-                                                            {{ $scadenza['user_name'] }}
-                                                        @endif
-                                                    </span>
-                                                    <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ $scadenza['tipo'] === 'bollo' ? 'bg-yellow-100 text-yellow-800' : ($scadenza['tipo'] === 'assicurazione' ? 'bg-blue-100 text-blue-800' : ($scadenza['tipo'] === 'patente' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800')) }}">
-                                                        {{ ucfirst($scadenza['tipo']) }}
-                                                    </span>
-                                                </div>
-                                                <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                                                    <span>📅 {{ $scadenza['data_scadenza_formatted'] }}</span>
-                                                    <span class="font-semibold">€{{ $scadenza['importo_formatted'] }}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Badge Giorni -->
-                                            <div class="text-right">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold {{ $scadenza['urgente'] ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                                    {{ $scadenza['giorni_rimanenti'] }} gg
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                                
-                                <div class="mt-4 text-center">
-                                    <a href="{{ route('deadlines.index') }}" class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
-                                        Vedi tutte le scadenze →
-                                    </a>
-                                </div>
-                            @else
-                                <div class="text-center py-12">
-                                    <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <p class="text-gray-500 font-medium">Nessuna scadenza nei prossimi 30 giorni</p>
-                                    <p class="text-sm text-gray-400 mt-1">Tutto sotto controllo! 🎉</p>
-                                </div>
-                            @endif
-                        </div>
+                        @empty
+                        <p class="text-center text-slate-400 py-4">Nessuna scadenza.</p>
+                        @endforelse
                     </div>
                 </div>
+            </div>
 
-                <!-- COLONNA DESTRA: RIEPILOGO (1/3) -->
-                <div class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4">Distribuzione Costi</h3>
+                    <div class="h-[300px]"><canvas id="spesePerTipoChart"></canvas></div>
+                 </div>
+
+                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-cyan-500 rounded-full"></span>
+                            Archivio Digitale
+                        </h3>
+                        <button @click="openViewModal()" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-3 py-1 rounded-lg transition-colors">
+                            Vedi Archivio ({{ \App\Models\Document::count() }})
+                        </button>
+                    </div>
                     
-                    <!-- Card Situazione Pagamenti -->
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                            <h3 class="text-lg font-bold text-black flex items-center">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span class="ml-1">Situazione {{ now()->year }}</span>
-                            </h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
-                                <div>
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm font-medium text-gray-600">Già pagato</span>
-                                        <span class="text-lg font-bold text-green-600">€{{ number_format($pagatoQuestAnno, 2, ',', '.') }}</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ $costiAnnuali > 0 ? ($pagatoQuestAnno / $costiAnnuali * 100) : 0 }}%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm font-medium text-gray-600">Da pagare</span>
-                                        <span class="text-lg font-bold text-orange-600">€{{ number_format($daPagareQuestAnno, 2, ',', '.') }}</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-orange-500 h-2 rounded-full" style="width: {{ $costiAnnuali > 0 ? ($daPagareQuestAnno / $costiAnnuali * 100) : 0 }}%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-4 border-t border-gray-200">
-                                    <div class="flex justify-between items-center">
-                                        <span class="font-semibold text-gray-700">Totale anno</span>
-                                        <span class="text-xl font-black text-gray-900">€{{ number_format($costiAnnuali, 2, ',', '.') }}</span>
-                                    </div>
-                                </div>
+                    <div class="space-y-4 mb-6">
+                        @foreach(['bollo' => ['name' => 'Bolli', 'color' => 'amber'], 'assicurazione' => ['name' => 'Assic.', 'color' => 'blue'], 'revisione' => ['name' => 'Rev.', 'color' => 'orange'], 'patente' => ['name' => 'Patenti', 'color' => 'purple']] as $tipo => $info)
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-xs font-bold text-slate-700 uppercase">{{ $info['name'] }}</span>
+                                <span class="text-xs font-bold text-slate-700">{{ $categorieStats[$tipo]['percentuale'] }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5">
+                                <div class="bg-{{ $info['color'] }}-500 h-1.5 rounded-full" style="width: {{ $categorieStats[$tipo]['percentuale'] }}%"></div>
                             </div>
                         </div>
+                        @endforeach
                     </div>
 
-                    <!-- Card Revisioni in Scadenza -->
-                    @if($revisioniInScadenza->count() > 0)
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div class="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4">
-                            <h3 class="text-lg font-bold text-white flex items-center">
-                                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Revisioni in Scadenza
-                            </h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="space-y-3">
-                                @foreach($revisioniInScadenza as $revisione)
-                                <div class="flex items-center justify-between p-3 rounded-lg {{ $revisione['urgente'] ? 'bg-red-50 border border-red-200' : 'bg-gray-50' }}">
-                                    <div>
-                                        <p class="font-bold text-gray-900">{{ $revisione['vehicle_targa'] }}</p>
-                                        <p class="text-xs text-gray-500">{{ $revisione['vehicle_marca'] }}</p>
-                                        <p class="text-xs text-gray-600 mt-1">{{ $revisione['data_prossima'] }}</p>
-                                    </div>
-                                    <span class="text-sm font-bold {{ $revisione['urgente'] ? 'text-red-600' : 'text-gray-600' }}">
-                                        {{ $revisione['giorni_rimanenti'] }} gg
-                                    </span>
-                                </div>
-                                @endforeach
-                            </div>
+                    <div @click="openUploadModal()" 
+                         class="mt-auto border-2 border-dashed border-slate-300 rounded-xl p-5 text-center hover:bg-indigo-50 hover:border-indigo-400 cursor-pointer transition-all group relative">
+                        <div class="flex flex-col items-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-slate-400 text-3xl mb-2 group-hover:text-indigo-500 transition-colors"></i>
+                            <p class="text-sm text-slate-600 font-bold group-hover:text-indigo-700">Carica Nuovo Documento</p>
+                            <p class="text-xs text-slate-400 mt-1">Clicca per selezionare Veicolo e File</p>
                         </div>
                     </div>
-                    @endif
-
-                    <!-- Quick Links -->
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div class="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
-                            <h3 class="text-lg font-bold text-black">🔗 Quick Links</h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="space-y-2">
-                                <a href="{{ route('deadlines.index') }}" class="block px-4 py-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium transition">
-                                    📅 Gestione Scadenze
-                                </a>
-                                <a href="{{ route('vehicles.index') }}" class="block px-4 py-3 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 font-medium transition">
-                                    🚗 I Miei Veicoli
-                                </a>
-                                <a href="{{ route('revisioni.index') }}" class="block px-4 py-3 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium transition">
-                                    🔧 Revisioni
-                                </a>
-                                <a href="{{ route('patenti.index') }}" class="block px-4 py-3 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium transition">
-                                    🪪 Patenti
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                 </div>
             </div>
 
-            <!-- GRAFICO SPESE PER TIPO -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
-                    <h3 class="text-xl font-bold text-black flex items-center">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        <span class="ml-1">Distribuzione Spese {{ now()->year }}</span>
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <canvas id="speseChart" height="80"></canvas>
-                </div>
-            </div>
-
-            <!-- CALENDARIO SCADENZE MESE -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-                    <h3 class="text-xl font-bold text-black flex items-center">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <span class="ml-1">Calendario {{ now()->locale('it')->isoFormat('MMMM YYYY') }}</span>
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <div id="calendar"></div>
-                </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h3 class="font-bold text-lg text-slate-800 mb-4">Calendario</h3>
+                <div id="calendar"></div>
             </div>
 
         </div>
+
+        <div x-show="showUploadModal" x-cloak class="modal-overlay" :class="{ 'modal-active': showUploadModal && !isClosingUpload, 'modal-out': isClosingUpload }">
+            <div @click="closeUploadModal()" class="modal-backdrop"></div>
+            <div class="modal-container">
+                <div @click.stop class="modal-content-wrapper bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all w-full max-w-lg">
+                    <div class="modal-header bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">Carica Documento</h3>
+                        <button @click="closeUploadModal()" class="text-white hover:text-indigo-100 focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    
+                    <form action="{{ route('documents.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
+                        @csrf
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo di Documento</label>
+                            <select name="categoria" x-model="selectedCategory" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                                <option value="bollo">Bollo Auto</option>
+                                <option value="assicurazione">Polizza Assicurativa</option>
+                                <option value="revisione">Revisione</option>
+                                <option value="patente">Patente</option>
+                                <option value="altro">Altro</option>
+                            </select>
+                        </div>
+
+                        <div x-show="selectedCategory !== 'patente'" x-transition>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Associa al Veicolo</label>
+                            <select name="vehicle_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                                <option value="">-- Seleziona Veicolo --</option>
+                                @foreach(\App\Models\Vehicle::all() as $v)
+                                    <option value="{{ $v->id }}">{{ $v->targa }} - {{ $v->marca }} {{ $v->modello }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">File (PDF o Foto)</label>
+                            <input type="file" name="documento" accept=".pdf,.jpg,.jpeg,.png" required
+                                   class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+
+                        <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
+                            <button type="button" @click="closeUploadModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">Annulla</button>
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold shadow-md transform hover:scale-105 transition-all">Salva Documento</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="showViewModal" x-cloak class="modal-overlay" :class="{ 'modal-active': showViewModal && !isClosingView, 'modal-out': isClosingView }">
+            <div @click="closeViewModal()" class="modal-backdrop"></div>
+            <div class="modal-container w-full max-w-4xl"> <div @click.stop class="modal-content-wrapper bg-white rounded-xl shadow-2xl overflow-hidden h-[80vh] flex flex-col">
+                    <div class="modal-header bg-slate-800 px-6 py-4 flex justify-between items-center flex-shrink-0">
+                        <h3 class="text-lg font-bold text-white">Archivio Documenti</h3>
+                        <button @click="closeViewModal()" class="text-white hover:text-gray-300 focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+                        @php 
+                            // Query diretta per popolare la modale senza modificare il controller
+                            $docs = \App\Models\Document::with('vehicle')->orderBy('created_at', 'desc')->get(); 
+                        @endphp
+                        
+                        @if($docs->count() > 0)
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($docs as $doc)
+                                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative group">
+                                    <div class="flex items-start gap-3 mb-3">
+                                        <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0
+                                            {{ $doc->tipo_file == 'application/pdf' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }}">
+                                            <i class="fa-solid {{ $doc->tipo_file == 'application/pdf' ? 'fa-file-pdf' : 'fa-file-image' }}"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-bold text-gray-800 truncate" title="{{ $doc->nome_originale }}">{{ $doc->nome_originale }}</p>
+                                            <p class="text-xs text-gray-500 uppercase font-semibold">{{ $doc->categoria }}</p>
+                                            <p class="text-xs text-gray-400">{{ $doc->created_at->format('d/m/Y') }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        @if($doc->vehicle)
+                                            <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">{{ $doc->vehicle->targa }}</span>
+                                        @else
+                                            <span class="inline-block px-2 py-1 bg-purple-100 text-purple-600 text-xs font-bold rounded">Personale / Patente</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <button @click="openPreview('{{ Storage::url($doc->path) }}', '{{ $doc->tipo_file }}', '{{ $doc->nome_originale }}')" 
+                                                class="flex-1 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-eye"></i> Vedi
+                                        </button>
+                                        
+                                        <form action="{{ route('documents.destroy', $doc->id) }}" method="POST" class="flex-shrink-0" onsubmit="return confirm('Sei sicuro di voler eliminare questo file?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 rounded-md hover:bg-red-100 transition-colors">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                                <i class="fa-regular fa-folder-open text-6xl mb-4"></i>
+                                <p>Nessun documento in archivio.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="showPreviewModal" x-cloak class="modal-overlay" style="z-index: 1050;" 
+             :class="{ 'modal-active': showPreviewModal && !isPreviewClosing, 'modal-out': isPreviewClosing }">
+            <div @click="closePreview()" class="modal-backdrop bg-black/80"></div> <div class="modal-container w-full max-w-5xl h-[90vh]">
+                <div @click.stop class="modal-content-wrapper bg-white rounded-xl shadow-2xl overflow-hidden h-full flex flex-col">
+                    <div class="bg-gray-900 px-4 py-3 flex justify-between items-center text-white flex-shrink-0">
+                        <h3 class="font-bold truncate" x-text="currentDocName"></h3>
+                        <button @click="closePreview()" class="hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    </div>
+
+                    <div class="flex-1 bg-gray-200 flex items-center justify-center overflow-hidden p-2">
+                        <template x-if="currentDocType === 'application/pdf'">
+                            <iframe :src="currentDocUrl" class="w-full h-full rounded shadow-lg border-0"></iframe>
+                        </template>
+                        
+                        <template x-if="currentDocType !== 'application/pdf'">
+                            <img :src="currentDocUrl" class="max-w-full max-h-full object-contain rounded shadow-lg">
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <!-- FullCalendar -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/it.global.min.js'></script>
@@ -402,14 +340,73 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // ========== GRAFICO SPESE ==========
-            const ctx = document.getElementById('speseChart').getContext('2d');
-            new Chart(ctx, {
+            // Impostazioni globali Chart.js
+            Chart.defaults.font.family = "'Figtree', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            // 1. GRAFICO SPESE MENSILI (Stacked Bar)
+            const ctxMensili = document.getElementById('speseMensiliChart').getContext('2d');
+            new Chart(ctxMensili, {
                 type: 'bar',
+                data: {
+                    labels: {!! json_encode(array_column($speseMensili, 'mese')) !!},
+                    datasets: [
+                        {
+                            label: 'Pagato',
+                            data: {!! json_encode(array_column($speseMensili, 'pagato')) !!},
+                            backgroundColor: '#10b981', // emerald-500
+                            borderRadius: 4,
+                            barPercentage: 0.6,
+                        },
+                        {
+                            label: 'Da Pagare',
+                            data: {!! json_encode(array_column($speseMensili, 'da_pagare')) !!},
+                            backgroundColor: '#ef4444', // red-500
+                            borderRadius: 4,
+                            barPercentage: 0.6,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': €' + context.parsed.y.toLocaleString('it-IT', {minimumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { font: { weight: '600' } }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                callback: function(value) { return '€' + value; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. GRAFICO TORTA (Doughnut)
+            const ctxTipo = document.getElementById('spesePerTipoChart').getContext('2d');
+            new Chart(ctxTipo, {
+                type: 'doughnut',
                 data: {
                     labels: ['Bollo', 'Assicurazione', 'Patente', 'Revisione'],
                     datasets: [{
-                        label: 'Spesa €',
                         data: [
                             {{ $spesePerTipo['bollo'] ?? 0 }},
                             {{ $spesePerTipo['assicurazione'] ?? 0 }},
@@ -417,42 +414,29 @@
                             {{ $spesePerTipo['revisione'] ?? 0 }}
                         ],
                         backgroundColor: [
-                            'rgba(234, 179, 8, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(147, 51, 234, 0.8)',
-                            'rgba(249, 115, 22, 0.8)'
+                            '#fbbf24', // amber
+                            '#3b82f6', // blue
+                            '#a855f7', // purple
+                            '#f97316'  // orange
                         ],
-                        borderColor: [
-                            'rgb(234, 179, 8)',
-                            'rgb(59, 130, 246)',
-                            'rgb(147, 51, 234)',
-                            'rgb(249, 115, 22)'
-                        ],
-                        borderWidth: 2
+                        borderWidth: 0,
+                        hoverOffset: 10
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
                     plugins: {
                         legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value.toLocaleString('it-IT');
-                                }
-                            }
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20 }
                         }
                     }
                 }
             });
 
-            // ========== CALENDARIO ==========
+            // 3. CALENDARIO
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'it',
@@ -460,16 +444,25 @@
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: ''
+                    right: 'dayGridMonth,listYear'
                 },
-                events: @json($scadenzeMese),
+                buttonText: {
+                    today: 'Oggi',
+                    month: 'Mese',
+                    list: 'Lista'
+                },
+                events: @json($calendarEvents),
+                height: 600,
                 eventClick: function(info) {
-                    alert('Scadenza: ' + info.event.title + '\nData: ' + info.event.start.toLocaleDateString('it-IT') + '\nImporto: €' + info.event.extendedProps.importo);
-                },
-                eventContent: function(arg) {
-                    return {
-                        html: '<div class="fc-event-main-frame"><div class="fc-event-title-container"><div class="fc-event-title fc-sticky">' + arg.event.title + '</div></div></div>'
-                    };
+                    const stato = info.event.extendedProps.pagato ? '✅ PAGATO' : '❌ DA PAGARE';
+                    const importo = info.event.extendedProps.importo.toLocaleString('it-IT', {minimumFractionDigits: 2});
+                    
+                    alert(
+                        info.event.title + 
+                        '\nData: ' + info.event.start.toLocaleDateString('it-IT') +
+                        '\nImporto: € ' + importo +
+                        '\nStato: ' + stato
+                    );
                 }
             });
             calendar.render();
@@ -477,20 +470,43 @@
     </script>
 
     <style>
-        /* FullCalendar custom style */
-        .fc-event {
-            cursor: pointer;
-            border-radius: 4px;
-            padding: 2px 4px;
-            font-size: 0.75rem;
-        }
+        /* CSS Specifico per Modali (Copiato dal tuo index.blade.php) e Scrollbar */
+        [x-cloak] { display: none !important; }
         
-        .fc-daygrid-event {
-            white-space: normal;
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;
         }
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0);
+        }
+        .modal-active .modal-backdrop { animation: fadeIn 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
+        .modal-out .modal-backdrop { animation: fadeOut 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         
-        .fc-day-today {
-            background-color: #eff6ff !important;
+        .modal-container { position: relative; width: 100%; max-width: 28rem; z-index: 1001; }
+        
+        .modal-content-wrapper {
+            background: white; border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden; transform: scale(0);
         }
+        .modal-active .modal-content-wrapper { animation: blowUpModal 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
+        .modal-out .modal-content-wrapper { animation: blowUpModalTwo 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
+
+        @keyframes fadeIn { 0% { background: rgba(0,0,0,0); } 100% { background: rgba(0,0,0,0.7); } }
+        @keyframes fadeOut { 0% { background: rgba(0,0,0,0.7); } 100% { background: rgba(0,0,0,0); } }
+        @keyframes blowUpModal { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        @keyframes blowUpModalTwo { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* FullCalendar Custom Overrides */
+        .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 700; color: #1f2937; }
+        .fc-button-primary { background-color: #4f46e5 !important; border-color: #4f46e5 !important; }
+        .fc-day-today { background-color: #eef2ff !important; }
+        .fc-event { border: none; padding: 2px 4px; font-size: 0.85em; cursor: pointer; }
     </style>
 </x-app-layout>

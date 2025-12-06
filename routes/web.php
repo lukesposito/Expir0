@@ -6,6 +6,8 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\DeadlineController;
 use App\Http\Controllers\PatenteController;
 use App\Http\Controllers\RevisioneController;
+use App\Http\Controllers\VehicleDetailController;
+use App\Http\Controllers\DocumentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,6 +37,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('revisioni', RevisioneController::class)->parameters([
         'revisioni' => 'revisione'
     ]);
+
+    // ROUTE DOCUMENTI
+    Route::post('/documents/store', [DocumentController::class, 'store'])->name('documents.store');
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 });
 
 Route::middleware('auth')->group(function () {

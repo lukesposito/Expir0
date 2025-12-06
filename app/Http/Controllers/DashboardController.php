@@ -6,8 +6,8 @@ use App\Models\Vehicle;
 use App\Models\Patente;
 use App\Models\Deadline;
 use App\Models\Revisione;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -20,35 +20,21 @@ class DashboardController extends Controller
         
         // ==================== CONTATORI ====================
         
-        // Totale veicoli
         $totaleVeicoli = Vehicle::count();
-        
-        // Totale patenti
         $totalePatenti = Patente::count();
-        
-        // Totale scadenze
         $totaleScadenze = Deadline::count();
         
-        // Scadenze imminenti (prossimi 30 giorni)
-        $scadenzeImminenti = Deadline::whereBetween('data_scadenza', [$oggi, $tra30giorni])
-            ->where('pagato', false)
-            ->count();
-        
-        // Scadenze urgenti (prossimi 10 giorni + scadenze già passate non pagate)
-        $scadenzeUrgenti = Deadline::where(function($query) use ($oggi) {
-                $query->whereBetween('data_scadenza', [$oggi, Carbon::now()->addDays(10)])
-                    ->orWhere('data_scadenza', '<', $oggi);
-            })
-            ->where('pagato', false)
-            ->count();
+        // Usa gli scope del model per query pulite
+        $scadenzeImminenti = Deadline::imminenti()->count();
+        $scadenzeUrgenti = Deadline::urgenti()->count();
         
         // ==================== STATISTICHE FINANZIARIE ====================
         
-        // Costi totali anno corrente
+        // Costi totali anno corrente (tutte le scadenze dell'anno)
         $costiAnnuali = Deadline::whereYear('data_scadenza', $oggi->year)
             ->sum('importo');
         
-        // Già pagato quest'anno
+        // Già pagato quest'anno (usando data_pagamento se esiste, altrimenti data_scadenza e flag pagato)
         $pagatoQuestAnno = Deadline::whereYear('data_scadenza', $oggi->year)
             ->where('pagato', true)
             ->sum('importo');
@@ -61,55 +47,50 @@ class DashboardController extends Controller
         // Spesa media per veicolo
         $spesaMediaVeicolo = $totaleVeicoli > 0 ? $costiAnnuali / $totaleVeicoli : 0;
         
-        // Budget mensile consigliato
-        $budgetMensileConsigliato = $costiAnnuali / 12;
-        
-        // Speso questo mese
+        // Speso REALMENTE questo mese
         $spesoQuestoMese = Deadline::whereMonth('data_scadenza', $oggi->month)
             ->whereYear('data_scadenza', $oggi->year)
             ->where('pagato', true)
             ->sum('importo');
         
+        // Trova il mese più costoso dell'anno per budget consigliato
+        $mesePiuCostoso = Deadline::whereYear('data_scadenza', $oggi->year)
+            ->selectRaw('MONTH(data_scadenza) as mese, SUM(importo) as totale')
+            ->groupBy('mese')
+            ->orderBy('totale', 'desc')
+            ->first();
+        
+        $budgetMensileConsigliato = $mesePiuCostoso ? $mesePiuCostoso->totale : 0;
+        
         // ==================== SCADENZE PROSSIME (30 GIORNI) ====================
         
         $prossimaScadenze = Deadline::with(['vehicle', 'user'])
-            ->whereBetween('data_scadenza', [$oggi, $tra30giorni])
-            ->where('pagato', false)
+            ->imminenti()
             ->orderBy('data_scadenza', 'asc')
             ->limit(10)
-            ->get()
-            ->map(function($deadline) use ($oggi) {
-                $scadenza = Carbon::parse($deadline->data_scadenza);
-                $giorniRimanenti = $oggi->diffInDays($scadenza, false);
-                
-                return [
-                    'id' => $deadline->id,
-                    'tipo' => $deadline->tipo,
-                    'data_scadenza' => $deadline->data_scadenza->format('Y-m-d'),
-                    'data_scadenza_formatted' => $deadline->data_scadenza->format('d/m/Y'),
-                    'importo' => $deadline->importo ?? 0,
-                    'importo_formatted' => number_format($deadline->importo ?? 0, 2, ',', '.'),
-                    'giorni_rimanenti' => (int) $giorniRimanenti,
-                    'urgente' => $giorniRimanenti <= 10,
-                    'vehicle_targa' => $deadline->vehicle ? $deadline->vehicle->targa : null,
-                    'vehicle_marca' => $deadline->vehicle ? $deadline->vehicle->marca : null,
-                    'user_name' => $deadline->user ? $deadline->user->name : null,
-                ];
-            });
+            ->get();
         
-        // ==================== CALENDARIO SCADENZE MESE CORRENTE ====================
+        // ==================== CALENDARIO COMPLETO (STORICO E FUTURO) ====================
         
-        $inizioMese = Carbon::now()->startOfMonth();
-        $fineMese = Carbon::now()->endOfMonth();
-        
-        $scadenzeMese = Deadline::with(['vehicle', 'user'])
-            ->whereBetween('data_scadenza', [$inizioMese, $fineMese])
+        // Qui prendiamo TUTTE le scadenze senza filtri di data per popolare lo storico
+        $calendarEvents = Deadline::with(['vehicle', 'user'])
             ->orderBy('data_scadenza', 'asc')
             ->get()
-            ->map(function($deadline) use ($oggi) {
-                $scadenza = Carbon::parse($deadline->data_scadenza);
-                $giorniRimanenti = $oggi->diffInDays($scadenza, false);
-                
+            ->map(function($deadline) {
+                // Logica Colori Avanzata
+                $backgroundColor = $deadline->tipo_color; // Default dal model (giallo, blu, ecc)
+                $borderColor = $deadline->tipo_color;
+
+                if ($deadline->pagato) {
+                    // SE PAGATO: Verde (sia passato che futuro)
+                    $backgroundColor = '#10b981'; // Emerald 500
+                    $borderColor = '#059669';     // Emerald 600
+                } elseif ($deadline->data_scadenza->isPast()) {
+                    // SE NON PAGATO E SCADUTO: Rosso (evidenzia il problema nello storico)
+                    $backgroundColor = '#ef4444'; // Red 500
+                    $borderColor = '#b91c1c';     // Red 700
+                }
+
                 return [
                     'id' => $deadline->id,
                     'tipo' => $deadline->tipo,
@@ -117,8 +98,12 @@ class DashboardController extends Controller
                     'start' => $deadline->data_scadenza->format('Y-m-d'),
                     'importo' => $deadline->importo ?? 0,
                     'pagato' => $deadline->pagato,
-                    'color' => $this->getColorByTipo($deadline->tipo, $deadline->pagato),
-                    'urgente' => $giorniRimanenti <= 10,
+                    'backgroundColor' => $backgroundColor,
+                    'borderColor' => $borderColor,
+                    'extendedProps' => [
+                        'pagato' => $deadline->pagato,
+                        'importo' => $deadline->importo ?? 0
+                    ]
                 ];
             });
         
@@ -131,6 +116,28 @@ class DashboardController extends Controller
             ->mapWithKeys(function($item) {
                 return [$item->tipo => $item->totale];
             });
+        
+        // ==================== GRAFICO SPESE MENSILI (Statistiche Anno) ====================
+        
+        $speseMensili = [];
+        for ($mese = 1; $mese <= 12; $mese++) {
+            $pagatoMese = Deadline::whereYear('data_scadenza', $oggi->year)
+                ->whereMonth('data_scadenza', $mese)
+                ->where('pagato', true)
+                ->sum('importo');
+            
+            $daPagareMese = Deadline::whereYear('data_scadenza', $oggi->year)
+                ->whereMonth('data_scadenza', $mese)
+                ->where('pagato', false)
+                ->sum('importo');
+            
+            $speseMensili[] = [
+                'mese' => Carbon::create($oggi->year, $mese, 1)->locale('it')->isoFormat('MMM'),
+                'pagato' => $pagatoMese,
+                'da_pagare' => $daPagareMese,
+                'totale' => $pagatoMese + $daPagareMese
+            ];
+        }
         
         // ==================== REVISIONI IN SCADENZA ====================
         
@@ -151,6 +158,22 @@ class DashboardController extends Controller
                 ];
             });
         
+        // ==================== STATISTICHE CATEGORIE (progress bars) ====================
+        
+        $categorieStats = [];
+        foreach (['bollo', 'assicurazione', 'revisione', 'patente'] as $tipo) {
+            $totale = Deadline::where('tipo', $tipo)->count();
+            $pagate = Deadline::where('tipo', $tipo)->where('pagato', true)->count();
+            $percentuale = $totale > 0 ? ($pagate / $totale) * 100 : 100;
+            
+            $categorieStats[$tipo] = [
+                'totale' => $totale,
+                'pagate' => $pagate,
+                'percentuale' => round($percentuale, 0),
+                'da_pagare' => $totale - $pagate
+            ];
+        }
+        
         return view('dashboard', compact(
             'totaleVeicoli',
             'totalePatenti',
@@ -164,24 +187,11 @@ class DashboardController extends Controller
             'budgetMensileConsigliato',
             'spesoQuestoMese',
             'prossimaScadenze',
-            'scadenzeMese',
+            'calendarEvents', // Variabile aggiornata per il calendario completo
             'spesePerTipo',
-            'revisioniInScadenza'
+            'speseMensili',
+            'revisioniInScadenza',
+            'categorieStats'
         ));
-    }
-    
-    private function getColorByTipo($tipo, $pagato)
-    {
-        if ($pagato) {
-            return '#10b981'; // Verde per pagato
-        }
-        
-        return match($tipo) {
-            'bollo' => '#eab308',        // Giallo
-            'assicurazione' => '#3b82f6', // Blu
-            'patente' => '#9333ea',       // Viola
-            'revisione' => '#f97316',     // Arancione
-            default => '#6b7280',         // Grigio
-        };
     }
 }
