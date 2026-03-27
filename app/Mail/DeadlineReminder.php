@@ -2,25 +2,34 @@
 
 namespace App\Mail;
 
-use App\Models\Deadline;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Database\Eloquent\Collection;
+use App\Models\User;
 
 class DeadlineReminder extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Deadline $deadline)
+    public $deadlines;
+    public $user;
+
+    /**
+     * Passiamo la lista delle scadenze e l'utente
+     */
+    public function __construct(Collection $deadlines, User $user)
     {
+        $this->deadlines = $deadlines;
+        $this->user = $user;
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Scadenza ' . ucfirst($this->deadline->tipo) . ' imminente',
+            subject: '⚠️ Avviso Scadenze Imminenti - ' . config('app.name'),
         );
     }
 

@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class RevisioneController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $revisioni = Revisione::with('vehicle')
             ->orderBy('data_prossima_revisione', 'desc')
@@ -39,6 +39,11 @@ class RevisioneController extends Controller
                 ];
             });
         
+        // RISPOSTA ASINCRONA JSON PER ALPINE.JS (AGGIORNAMENTO SILENZIOSO)
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['revisioni' => $revisioni]);
+        }
+        
         $vehicles = Vehicle::all();  // Tutti i veicoli della famiglia
         
         return view('revisioni.index', compact('revisioni', 'vehicles'));
@@ -57,6 +62,13 @@ class RevisioneController extends Controller
         ]);
 
         Revisione::create($validated);
+
+        // SE LA RICHIESTA ARRIVA DA JAVASCRIPT/FETCH
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Revisione aggiunta con successo!']);
+        }
+
+        // FALLBACK TRADIZIONALE
         return redirect()->route('revisioni.index')->with('success', 'Revisione aggiunta con successo');
     }
 
@@ -73,12 +85,27 @@ class RevisioneController extends Controller
         ]);
 
         $revisione->update($validated);
+
+        // SE LA RICHIESTA ARRIVA DA JAVASCRIPT/FETCH
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Revisione aggiornata con successo!']);
+        }
+
+        // FALLBACK TRADIZIONALE
         return redirect()->route('revisioni.index')->with('success', 'Revisione aggiornata con successo');
     }
 
-    public function destroy(Revisione $revisione)
+    // Ho aggiunto Request $request per poter intercettare la chiamata JSON
+    public function destroy(Request $request, Revisione $revisione)
     {
         $revisione->delete();
+
+        // SE LA RICHIESTA ARRIVA DA JAVASCRIPT/FETCH
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Revisione eliminata definitivamente!']);
+        }
+
+        // FALLBACK TRADIZIONALE
         return redirect()->route('revisioni.index')->with('success', 'Revisione eliminata con successo');
     }
 }

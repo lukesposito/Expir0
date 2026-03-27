@@ -8,6 +8,13 @@ use App\Models\Deadline;
 use App\Models\Revisione;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Document;
+use App\Models\Bollo;
+use App\Models\Assicurazione;
+use App\Models\CartaIdentita;
+use App\Models\TesserinoSanitario;
 
 class DashboardController extends Controller
 {
@@ -30,30 +37,16 @@ class DashboardController extends Controller
         
         // ==================== STATISTICHE FINANZIARIE ====================
         
-        // Costi totali anno corrente (tutte le scadenze dell'anno)
-        $costiAnnuali = Deadline::whereYear('data_scadenza', $oggi->year)
-            ->sum('importo');
-        
-        // Già pagato quest'anno (usando data_pagamento se esiste, altrimenti data_scadenza e flag pagato)
-        $pagatoQuestAnno = Deadline::whereYear('data_scadenza', $oggi->year)
-            ->where('pagato', true)
-            ->sum('importo');
-        
-        // Da pagare entro fine anno
-        $daPagareQuestAnno = Deadline::whereBetween('data_scadenza', [$oggi, $fineAnno])
-            ->where('pagato', false)
-            ->sum('importo');
-        
-        // Spesa media per veicolo
+        $costiAnnuali = Deadline::whereYear('data_scadenza', $oggi->year)->sum('importo');
+        $pagatoQuestAnno = Deadline::whereYear('data_scadenza', $oggi->year)->where('pagato', true)->sum('importo');
+        $daPagareQuestAnno = Deadline::whereBetween('data_scadenza', [$oggi, $fineAnno])->where('pagato', false)->sum('importo');
         $spesaMediaVeicolo = $totaleVeicoli > 0 ? $costiAnnuali / $totaleVeicoli : 0;
         
-        // Speso REALMENTE questo mese
         $spesoQuestoMese = Deadline::whereMonth('data_scadenza', $oggi->month)
             ->whereYear('data_scadenza', $oggi->year)
             ->where('pagato', true)
             ->sum('importo');
         
-        // Trova il mese più costoso dell'anno per budget consigliato
         $mesePiuCostoso = Deadline::whereYear('data_scadenza', $oggi->year)
             ->selectRaw('MONTH(data_scadenza) as mese, SUM(importo) as totale')
             ->groupBy('mese')
@@ -70,25 +63,21 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
         
-        // ==================== CALENDARIO COMPLETO (STORICO E FUTURO) ====================
+        // ==================== CALENDARIO COMPLETO ====================
         
-        // Qui prendiamo TUTTE le scadenze senza filtri di data per popolare lo storico
         $calendarEvents = Deadline::with(['vehicle', 'user'])
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function($deadline) {
-                // Logica Colori Avanzata
-                $backgroundColor = $deadline->tipo_color; // Default dal model (giallo, blu, ecc)
+                $backgroundColor = $deadline->tipo_color; 
                 $borderColor = $deadline->tipo_color;
 
                 if ($deadline->pagato) {
-                    // SE PAGATO: Verde (sia passato che futuro)
-                    $backgroundColor = '#10b981'; // Emerald 500
-                    $borderColor = '#059669';     // Emerald 600
+                    $backgroundColor = '#10b981'; 
+                    $borderColor = '#059669';    
                 } elseif ($deadline->data_scadenza->isPast()) {
-                    // SE NON PAGATO E SCADUTO: Rosso (evidenzia il problema nello storico)
-                    $backgroundColor = '#ef4444'; // Red 500
-                    $borderColor = '#b91c1c';     // Red 700
+                    $backgroundColor = '#ef4444'; 
+                    $borderColor = '#b91c1c';    
                 }
 
                 return [
@@ -107,7 +96,7 @@ class DashboardController extends Controller
                 ];
             });
         
-        // ==================== GRAFICI: SPESE PER TIPO ====================
+        // ==================== GRAFICI: SPESE ====================
         
         $spesePerTipo = Deadline::whereYear('data_scadenza', $oggi->year)
             ->selectRaw('tipo, SUM(importo) as totale')
@@ -117,20 +106,10 @@ class DashboardController extends Controller
                 return [$item->tipo => $item->totale];
             });
         
-        // ==================== GRAFICO SPESE MENSILI (Statistiche Anno) ====================
-        
         $speseMensili = [];
         for ($mese = 1; $mese <= 12; $mese++) {
-            $pagatoMese = Deadline::whereYear('data_scadenza', $oggi->year)
-                ->whereMonth('data_scadenza', $mese)
-                ->where('pagato', true)
-                ->sum('importo');
-            
-            $daPagareMese = Deadline::whereYear('data_scadenza', $oggi->year)
-                ->whereMonth('data_scadenza', $mese)
-                ->where('pagato', false)
-                ->sum('importo');
-            
+            $pagatoMese = Deadline::whereYear('data_scadenza', $oggi->year)->whereMonth('data_scadenza', $mese)->where('pagato', true)->sum('importo');
+            $daPagareMese = Deadline::whereYear('data_scadenza', $oggi->year)->whereMonth('data_scadenza', $mese)->where('pagato', false)->sum('importo');
             $speseMensili[] = [
                 'mese' => Carbon::create($oggi->year, $mese, 1)->locale('it')->isoFormat('MMM'),
                 'pagato' => $pagatoMese,
@@ -148,7 +127,6 @@ class DashboardController extends Controller
             ->map(function($revisione) use ($oggi) {
                 $prossima = Carbon::parse($revisione->data_prossima_revisione);
                 $giorniRimanenti = $oggi->diffInDays($prossima, false);
-                
                 return [
                     'vehicle_targa' => $revisione->vehicle->targa,
                     'vehicle_marca' => $revisione->vehicle->marca,
@@ -158,40 +136,86 @@ class DashboardController extends Controller
                 ];
             });
         
-        // ==================== STATISTICHE CATEGORIE (progress bars) ====================
+        // ==================== STATISTICHE ARCHIVIO DIGITALE ====================
         
-        $categorieStats = [];
-        foreach (['bollo', 'assicurazione', 'revisione', 'patente'] as $tipo) {
-            $totale = Deadline::where('tipo', $tipo)->count();
-            $pagate = Deadline::where('tipo', $tipo)->where('pagato', true)->count();
-            $percentuale = $totale > 0 ? ($pagate / $totale) * 100 : 100;
-            
-            $categorieStats[$tipo] = [
-                'totale' => $totale,
-                'pagate' => $pagate,
-                'percentuale' => round($percentuale, 0),
-                'da_pagare' => $totale - $pagate
-            ];
-        }
+        $categorieStats = $this->calcolaStatisticheArchivio();
+        $deadlines = Deadline::with(['vehicle', 'user'])->get();
         
         return view('dashboard', compact(
-            'totaleVeicoli',
-            'totalePatenti',
-            'totaleScadenze',
-            'scadenzeImminenti',
-            'scadenzeUrgenti',
-            'costiAnnuali',
-            'pagatoQuestAnno',
-            'daPagareQuestAnno',
-            'spesaMediaVeicolo',
-            'budgetMensileConsigliato',
-            'spesoQuestoMese',
-            'prossimaScadenze',
-            'calendarEvents', // Variabile aggiornata per il calendario completo
-            'spesePerTipo',
-            'speseMensili',
-            'revisioniInScadenza',
-            'categorieStats'
+            'totaleVeicoli', 'totalePatenti', 'totaleScadenze', 'scadenzeImminenti',
+            'scadenzeUrgenti', 'costiAnnuali', 'pagatoQuestAnno', 'daPagareQuestAnno',
+            'spesaMediaVeicolo', 'budgetMensileConsigliato', 'spesoQuestoMese',
+            'prossimaScadenze', 'calendarEvents', 'spesePerTipo', 'speseMensili',
+            'revisioniInScadenza', 'categorieStats', 'deadlines'
         ));
+    }
+
+    public function stats()
+    {
+        // Restituisce le statistiche dei DOCUMENTI aggiornate tramite chiamata JSON di Alpine.js
+        return response()->json($this->calcolaStatisticheArchivio());
+    }
+
+    /**
+     * Funzione unica e centralizzata per calcolare le percentuali dei DOCUMENTI CARICATI
+     */
+    private function calcolaStatisticheArchivio()
+    {
+        $categorieStats = [];
+        
+        // Contiamo le "cose fisiche" possedute, non le scadenze!
+        $totaleVeicoli = Vehicle::count();
+
+        // Definiamo qual è il "100%" per ogni categoria
+        $totaliAttesi = [
+            'bollo' => $totaleVeicoli,               // Mi aspetto 1 bollo per ogni auto
+            'assicurazione' => $totaleVeicoli,       // Mi aspetto 1 assicurazione per ogni auto
+            'revisione' => $totaleVeicoli,           // Mi aspetto 1 referto per ogni auto
+            'patente' => Patente::count(),           // Mi aspetto 1 file per ogni patente registrata
+            'carta_identita' => CartaIdentita::count(),       // Mi aspetto 1 file per ogni carta identità
+            'tesserino_sanitario' => TesserinoSanitario::count() // Mi aspetto 1 file per ogni tesserino
+        ];
+
+        foreach ($totaliAttesi as $catForm => $totaleAtteso) {
+            // Quanti PDF/Immagini ha fisicamente caricato l'utente per questa categoria
+            $documentiCaricati = Document::where('categoria', $catForm)->count();
+            
+            $percentuale = 0;
+            if ($totaleAtteso > 0) {
+                // Calcola la percentuale matematica esatta (senza mai sforare il 100%)
+                $percentuale = min(100, round(($documentiCaricati / $totaleAtteso) * 100));
+            } elseif ($documentiCaricati > 0) {
+                // Se non hai ancora registrato l'auto/documento ma hai caricato il file in anticipo
+                $percentuale = 100;
+            }
+            
+            $categorieStats[$catForm] = [
+                'totale_atteso' => $totaleAtteso,
+                'documenti_caricati' => $documentiCaricati,
+                'percentuale' => $percentuale
+            ];
+        }
+
+        return $categorieStats;
+    }
+
+    public function documents()
+    {
+        $docs = Document::with('vehicle')->orderBy('created_at', 'desc')->get();
+        
+        return response()->json([
+            'documents' => $docs->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'nome_originale' => $doc->nome_originale,
+                    'created_at' => $doc->created_at->format('d/m/Y'),
+                    'categoria' => $doc->categoria,
+                    'tipo_file' => $doc->tipo_file,
+                    'path' => Storage::url($doc->path),
+                    'vehicle_targa' => $doc->vehicle ? $doc->vehicle->targa : null,
+                    'is_personal' => !$doc->vehicle
+                ];
+            })
+        ]);
     }
 }

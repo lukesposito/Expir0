@@ -12,6 +12,10 @@ class Deadline extends Model
         'vehicle_id',
         'user_id',
         'revisione_id',
+        'bollo_id',
+        'assicurazione_id',
+        'carta_identita_id',
+        'tesserino_sanitario_id',
         'tipo',
         'data_scadenza',
         'importo',
@@ -34,7 +38,8 @@ class Deadline extends Model
         'urgente', 
         'stato_colore',
         'importo_formatted',
-        'data_scadenza_formatted'
+        'data_scadenza_formatted',
+        'scade_quest_anno',
     ];
 
     public function vehicle(): BelongsTo
@@ -122,10 +127,12 @@ class Deadline extends Model
     public function getTipoColorAttribute()
     {
         return match($this->tipo) {
-            'bollo' => '#eab308',
-            'assicurazione' => '#3b82f6',
-            'patente' => '#9333ea',
-            'revisione' => '#f97316',
+            'bollo' => '#eab308',        
+            'assicurazione' => '#ee7300', 
+            'patente' => '#ec4899',       
+            'revisione' => '#22c55e', 
+            'carta_identita' => '#6f3404',      
+            'tesserino_sanitario' => '#00e7fc',     
             default => '#6b7280'
         };
     }
@@ -154,5 +161,11 @@ class Deadline extends Model
     public function scopeNonPagate($query)
     {
         return $query->where('pagato', false);
+    }
+
+    public function getScadeQuestAnnoAttribute()
+    {
+        // Ritorna true se la scadenza è nell'anno in corso (es. 2026)
+        return $this->data_scadenza->year === Carbon::now()->year;
     }
 }

@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Deadline;
 use App\Models\Vehicle;
 use App\Models\Patente;
+use App\Models\Revisione;
 use App\Models\User;
+use App\Models\Bollo;
+use App\Models\Assicurazione;
+use App\Models\CartaIdentita;
+use App\Models\TesserinoSanitario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class DeadlineController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $deadlines = Deadline::with(['vehicle', 'user', 'revisione'])
             ->orderBy('data_scadenza')
@@ -53,6 +58,11 @@ class DeadlineController extends Controller
                 ];
             });
         
+        // RISPOSTA ASINCRONA JSON PER ALPINE.JS (SPA)
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['deadlines' => $deadlines]);
+        }
+
         $vehicles = Vehicle::all();
         $users = User::all();
         
@@ -61,6 +71,20 @@ class DeadlineController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->tipo === 'patente') {
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'numero_patente' => 'required|string|max:20',
+                'data_rilascio' => 'required|date',
+                'importo' => 'nullable|numeric|min:0',
+            ]);
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Patente registrata e scadenza calcolata!']);
+            }
+            return redirect()->route('deadlines.index')->with('success', 'Patente registrata e scadenza calcolata in automatico!');
+        }
+
         $validated = $request->validate([
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'user_id' => 'nullable|exists:users,id',
@@ -71,27 +95,22 @@ class DeadlineController extends Controller
             'pagato' => 'boolean',
         ]);
 
-        // Validazione logica
         if ($validated['tipo'] === 'patente') {
-            if (empty($validated['user_id'])) {
-                return back()->withErrors(['user_id' => 'Seleziona la persona per la scadenza patente']);
-            }
+            if (empty($validated['user_id'])) return back()->withErrors(['user_id' => 'Seleziona la persona per la scadenza patente']);
             $validated['vehicle_id'] = null;
         } elseif ($validated['tipo'] === 'revisione') {
-            // Per revisioni create manualmente (non da tabella revisioni)
-            if (empty($validated['vehicle_id'])) {
-                return back()->withErrors(['vehicle_id' => 'Seleziona un veicolo']);
-            }
+            if (empty($validated['vehicle_id'])) return back()->withErrors(['vehicle_id' => 'Seleziona un veicolo']);
             $validated['user_id'] = null;
         } else {
-            // Per bollo/assicurazione
-            if (empty($validated['vehicle_id'])) {
-                return back()->withErrors(['vehicle_id' => 'Seleziona un veicolo']);
-            }
+            if (empty($validated['vehicle_id'])) return back()->withErrors(['vehicle_id' => 'Seleziona un veicolo']);
             $validated['user_id'] = null;
         }
 
         Deadline::create($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Scadenza aggiunta con successo!']);
+        }
         return redirect()->route('deadlines.index')->with('success', 'Scadenza aggiunta con successo');
     }
 
@@ -114,36 +133,61 @@ class DeadlineController extends Controller
             'pagato' => 'nullable|boolean',
         ]);
 
-        // Validazione logica
-        if ($validated['tipo'] === 'patente') {
-            if (empty($validated['user_id'])) {
-                return back()->withErrors(['user_id' => 'Seleziona la persona per la scadenza patente']);
+        if ($request->tipo === 'patente') {
+            $patente = Patente::where('user_id', $deadline->getOriginal('user_id'))->first();
+            if ($patente) {
+                $patente->update([
+                    'user_id' => $request->user_id,
+                    'importo' => $request->importo,
+                ]);
             }
-            $validated['vehicle_id'] = null;
-        } else {
-            if (empty($validated['vehicle_id'])) {
-                return back()->withErrors(['vehicle_id' => 'Seleziona un veicolo']);
-            }
-            $validated['user_id'] = null;
         }
 
         $deadline->update($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Scadenza aggiornata con successo!']);
+        }
         return redirect()->route('deadlines.index')->with('success', 'Scadenza aggiornata con successo');
     }
 
-    public function destroy(Deadline $deadline)
+    // Aggiunto Request per la SPA
+    public function destroy(Request $request, Deadline $deadline)
     {
+        // Elimina record collegati in base al tipo
+        if ($deadline->tipo === 'patente' && $deadline->user_id) {
+            Patente::where('user_id', $deadline->user_id)->delete();
+        } elseif ($deadline->tipo === 'revisione' && $deadline->revisione_id) {
+            Revisione::find($deadline->revisione_id)?->delete();
+        } elseif ($deadline->tipo === 'bollo' && $deadline->bollo_id) {
+            Bollo::find($deadline->bollo_id)?->delete();
+        } elseif ($deadline->tipo === 'assicurazione' && $deadline->assicurazione_id) {
+            Assicurazione::find($deadline->assicurazione_id)?->delete();
+        } elseif ($deadline->tipo === 'carta_identita' && $deadline->carta_identita_id) {
+            CartaIdentita::find($deadline->carta_identita_id)?->delete();
+        } elseif ($deadline->tipo === 'tesserino_sanitario' && $deadline->tesserino_sanitario_id) {
+            TesserinoSanitario::find($deadline->tesserino_sanitario_id)?->delete();
+        }
+
         $deadline->delete();
-        return redirect()->route('deadlines.index')->with('success', 'Scadenza eliminata con successo');
+        
+        // RISPOSTA ASINCRONA JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Scadenza e dati collegati eliminati!']);
+        }
+        return redirect()->route('deadlines.index')->with('success', 'Scadenza e dati collegati eliminati dal sistema!');
     }
 
     public function togglePagato(Deadline $deadline)
     {
-        // Toggle diretto con confronto esplicito
         $deadline->pagato = ($deadline->pagato == 1) ? 0 : 1;
         $deadline->save();
         
-        // return redirect()->back()->with('success', $deadline->pagato ? 'Scadenza marcata come pagata' : 'Scadenza marcata come non pagata');
-        return response()->noContent();
+        // Rispondiamo in JSON per il Javascript
+        return response()->json([
+            'success' => true, 
+            'pagato' => $deadline->pagato,
+            'message' => 'Stato pagamento aggiornato!'
+        ]);
     }
 }

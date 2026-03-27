@@ -16,6 +16,7 @@ class Document extends Model
     protected $fillable = [
         'user_id',
         'vehicle_id',
+        'associated_user_id',  // Per patente, carta_identita, tesserino_sanitario
         'path',             // Il percorso del file (es: documents/file.pdf)
         'nome_originale',   // Il nome vero del file (es: Assicurazione_Panda.pdf)
         'tipo_file',        // Il tipo MIME (es: application/pdf, image/jpeg)

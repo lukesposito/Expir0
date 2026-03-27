@@ -1,4 +1,80 @@
-   76  sudo apt install composer
+ 1  sudo apt update
+    2  sudo apt install openssh-server
+    3  sudo nano /etc/ssh/sshd_config
+    4  sudo service ssh start
+    5  sudo systemctl enable ssh
+    6  cd ..
+    7  cd
+    8  cd ..
+    9  cd var
+   10  ls
+   11  cd ..
+   12  cd var/
+   13  www
+   14  ls
+   15  sudo apt install apache2
+   16  cd www/
+   17  cd html/
+   18  sudo apt install mysql-server
+   19  sudo mysql
+   20  cd ...
+   21  cd ..
+   22  cd var/www/html/
+   23  sudo mysql
+   24  sudo mysql_secure_installation
+   25  sudo mysql
+   26  mysql
+   27  sudo mysql
+   28  mysql
+   29  mysql -p
+   30  sudo mysql -p
+   31  sudo mysql
+   32  sudo apt install php libapache2-mod-php php-mysql
+   33  php -v
+   34  sudo nano /etc/apache2/mods-enabled/dir.conf
+   35  sudo systemctl restart apache2
+   36  sudo systemctl status apache2
+   37  cd /etc/apache2/sites-available
+   38  ls
+   39  nano 000-default.conf
+   40  - hostname
+   41  -h hostname
+   42  hostname -h
+   43  hostname -I
+   44  cd /var/www/html/
+   45  sudo chmod 777
+   46  sudo chmod -R 777
+   47  sudo chmod -R 777 /var/www/html
+   48  cd defspaallarmi/
+   49  php artisan serve
+   50  php artisan migrate
+   51  sudo apt-get install php-xml php-dom
+   52  php artisan migrate
+   53  cd /var/www/html/defspaallarmi/
+   54  php artisan migrate
+   55  php artisan serve
+   56  apt-get install subversion
+   57  sudo apt-get install subversion
+   58  sudo apt-get install libapache2-svn
+   59  cd /var/www/html/defspaallarmi/
+   60  .code
+   61  sudo apt-get install wget ca-certificates
+   62  code .
+   63  hostname
+   64  ssh mightyluxe@95.239.56.4
+   65  ipconfig
+   66  ifconfig
+   67  ping 151.42.119.39
+   68  ssh 192.168.2.110
+   69  exit
+   70  cd /var/www/html/
+   71  ls
+   72  composer create-project laravel/laravel scadenze-auto
+   73  sudo apt install composer
+   74  lsb_release -a
+   75  wsl -d Ubuntu-24.04 -u root   
+
+76  sudo apt install composer
    77  cd /var/www/html/
    78  composer create-project laravel/laravel scadenze-auto
    79  cd scadenze-auto/
@@ -176,4 +252,122 @@
   251  php artisan serve
   252  php artisan route:clear
   253  php artisan serve
-  254  histor
+ 255  cd /var/www/html/scadenze-auto/
+  256  code .
+  257  cd /var/www/html/scadenze-auto/
+  258  code .
+  259  php artisan serve
+  260  cd /var/www/html/scadenze-auto/
+  261  code .
+  262  cd /var/www/html/scadenze-auto/
+  263  php artisan serve
+  264  ls
+  265  nano Modifiche\ progetto\ da\ fare.txt
+  266  php artisan serve
+  267  cd /var/www/html/scadenze-auto/
+  268  php artisan deadlines:check
+  269  cd /var/www/html/scadenze-auto/
+  270  php artisan serve
+  271  php artisan deadlines:check
+  272  php artisan serve
+  273  php artisan config:clear
+  274  php artisan cache:clear
+  275  php artisan serve
+  276  php artisan deadlines:check
+  277  telnet smtp.gmail.com 587
+  278  sudo apt install telnet-ssl
+  279  telnet smtp.gmail.com 587
+  280  php artisan deadlines:check
+  281  php artisan config:clear
+  282  php artisan cache:clear
+  283  php artisan deadlines:check
+  284  php artisan serve
+  285  php artisan deadlines:check
+  286  php artisan serve
+  287  php artisan make:migration add_pagato_to_deadlines_table
+  288  php artisan migrate
+  289  php artisan serve
+  290  cd /var/www/html/scadenze-auto/
+  291  php artisan serve
+  292  php artisan make:migration create_revisioni_table
+  293  php artisan migrate
+  294  php artisan make:model Revisione
+  295  php artisan make:controller RevisioneController --resource
+  296  php artisan serve
+  297  mkdir resources/views/revisioni
+  298  php artisan serve
+  299  php artisan make:migration add_revisione_id_to_deadlines_table
+  300  php artisan migrate
+  301  php artisan serve
+  302  php artisan config:clear
+  303  php artisan cache:clear
+  304  php artisan serve
+  305  cd /var/www/html/scadenze-auto/
+  306  php artisan serve
+  307  php artisan make:migration add_revisione_to_deadlines_tipo_enum
+  308  php artisan migrate
+  309  php artisan serve
+  310  php artisan route:list --name=revisioni
+  311  php artisan serve
+  312  php artisan route:list --name=revisioni
+  313  php artisan serve
+  314  cd /var/www/html/scadenze-auto/
+  315  php artisan serve
+  316  php artisan make:controller DashboardController
+  317  php artisan serve
+  318  php artisan make:controller VehicleDetailController
+  319  php artisan serve
+  320  cd /var/www/html/scadenze-auto/
+  321  php artisan serve
+  322  sudo ls /var/lib/docker/volumes/mongo_data/_data
+  323  ls /var/lib/docker/volumes/mongo_data/_data
+  324  ls /var/lib/docker/
+  325  ls /var/lib/docker
+  326  ls /var/lib
+  327  sudo ls /var/lib/docker/volumes/mongo_data/_data
+  328  ls /var/lib
+  329  ls /mnt/c
+  330  sudo ls /mnt/c
+  331  sudo ls /mnt/wsl
+  332  sudo ls /mnt/wsl/docker-desktop
+  333  sudo ls /mnt/wsl/docker-desktop-bind-mounts
+  334  sudo ls /mnt/wsl/docker-desktop-bind-mounts/ubuntu
+  335  sudo ls /mnt/wsl/docker-desktop-bind-mounts/Ubuntu
+  336  ls /mnt/d
+  337  ls /mnt/c/Programmi
+  338  ls /mnt/c/Programmi/Docker/
+  339  ls /mnt/c/Programmi/Docker/Docker/
+  340  ls /mnt/c/Programmi/Docker/Docker/resources/
+  341  ls /mnt/c/Programmi/Docker/Docker/resources/wsl
+  342  cd ..
+  343  which storage.bson
+  344  history
+  345  cd /var/www/html/scadenze-auto/
+  346  php artisan serve
+  347  php artisan make:migration add_data_pagamento_to_deadlines
+  348  php artisan migrate
+  349  php artisan serve
+  350  php artisan make:model Document -m
+  351  php artisan migrate
+  352  php artisan make:controller DocumentController
+  353  php artisan serve
+  354  php artisan make:migration add_category_to_documents
+  355  php artisan migrate
+  356  php artisan serve
+  357  cd /var/www/html/scadenze-auto/
+  358  php artisan serve
+  359  cd Desktop/
+  360  cd EsercitazioniSpring/
+  361  cd product/
+  362  ./mvnw clean install
+  363  java --version
+  364  cd /var/www/html/scadenze-auto/
+  365  php artisan serve
+  366  cd /var/www/html/scadenze-auto/
+  367  php artisan serve
+  368  curl localhost:8080
+  369  cd /var/www/html/
+  370  ls
+  371  sudo ss -tulpn | grep :80
+  372  ps aux
+  373  history

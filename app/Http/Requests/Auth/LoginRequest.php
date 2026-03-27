@@ -49,6 +49,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()->is_deleted) {
+            Auth::logout(); // Lo scolleghiamo immediatamente
+            
+            throw ValidationException::withMessages([
+                'email' => 'Accesso negato. Il tuo account è stato disabilitato dall\'amministratore.',
+            ]);
+        }
+        
+
         RateLimiter::clear($this->throttleKey());
     }
 

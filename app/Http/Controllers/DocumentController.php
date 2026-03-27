@@ -13,32 +13,47 @@ class DocumentController extends Controller
     // Caricamento con associazione
     public function store(Request $request)
     {
-        $request->validate([
-            'documento' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // Max 10MB
-            'vehicle_id' => 'nullable|exists:vehicles,id', // Null se è patente
-            'categoria' => 'required|string|in:bollo,assicurazione,revisione,patente,altro',
-        ]);
-
-        if ($request->hasFile('documento')) {
-            $file = $request->file('documento');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            
-            // Salva nel disco public
-            $path = $file->storeAs('documents', $filename, 'public');
-
-            Document::create([
-                'user_id' => Auth::id(),
-                'vehicle_id' => $request->vehicle_id, // Può essere null per Patente
-                'categoria' => $request->categoria,
-                'path' => $path,
-                'nome_originale' => $file->getClientOriginalName(),
-                'tipo_file' => $file->getClientMimeType(),
+        try {
+            $validated = $request->validate([
+                'documento' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // Max 10MB
+                'vehicle_id' => 'nullable|exists:vehicles,id',
+                'user_id' => 'nullable|exists:users,id',
+                'categoria' => 'required|string|in:bollo,assicurazione,revisione,patente,carta_identita,tesserino_sanitario,altro',
             ]);
 
-            return redirect()->back()->with('success', 'Documento archiviato correttamente.');
-        }
+            if ($request->hasFile('documento')) {
+                $file = $request->file('documento');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                
+                // Salva nel disco public
+                $path = $file->storeAs('documents', $filename, 'public');
 
-        return redirect()->back()->with('error', 'Errore nel caricamento.');
+                Document::create([
+                    'user_id' => Auth::id(),
+                    'vehicle_id' => $request->vehicle_id, // Per bollo, assicurazione, revisione
+                    'associated_user_id' => $request->user_id, // Per patente, carta_identita, tesserino_sanitario
+                    'categoria' => $request->categoria,
+                    'path' => $path,
+                    'nome_originale' => $file->getClientOriginalName(),
+                    'tipo_file' => $file->getClientMimeType(),
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Documento archiviato correttamente.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore nel caricamento del file.'
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 422);
+        }
     }
 
     // Eliminazione
@@ -46,7 +61,10 @@ class DocumentController extends Controller
     {
         // Controllo che il documento appartenga all'utente (sicurezza)
         if ($document->user_id !== Auth::id()) {
-            abort(403);
+            return response()->json([
+                'success' => false,
+                'message' => 'Non autorizzato a eliminare questo documento.'
+            ], 403);
         }
 
         // 1. Elimina file fisico
@@ -57,6 +75,10 @@ class DocumentController extends Controller
         // 2. Elimina record DB
         $document->delete();
 
-        return redirect()->back()->with('success', 'Documento eliminato definitivamente.');
+        // 3. Rispondo con JSON invece del redirect!
+        return response()->json([
+            'success' => true,
+            'message' => 'Documento eliminato definitivamente.'
+        ]);
     }
 }

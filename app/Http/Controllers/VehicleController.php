@@ -7,9 +7,15 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Vehicle::withCount('deadlines')->get();
+        $vehicles = Vehicle::withCount('deadlines')->orderBy('marca')->get();
+        
+        // QUESTO E' QUELLO CHE PERMETTE L'AGGIORNAMENTO SILENZIOSO DA ALPINE
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['vehicles' => $vehicles]);
+        }
+        
         return view('vehicles.index', compact('vehicles'));
     }
 
@@ -26,7 +32,17 @@ class VehicleController extends Controller
             'modello' => 'nullable|string|max:50',
         ]);
 
+        // Forza la targa ad essere maiuscola nel DB
+        $validated['targa'] = strtoupper($validated['targa']);
+
         Vehicle::create($validated);
+
+        // RISPOSTA ASINCRONA JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Veicolo aggiunto con successo!']);
+        }
+
+        // RISPOSTA TRADIZIONALE
         return redirect()->route('vehicles.index')->with('success', 'Veicolo aggiunto');
     }
 
@@ -43,13 +59,31 @@ class VehicleController extends Controller
             'modello' => 'nullable|string|max:50',
         ]);
 
+        // Forza la targa ad essere maiuscola
+        $validated['targa'] = strtoupper($validated['targa']);
+
         $vehicle->update($validated);
+
+        // RISPOSTA ASINCRONA JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Veicolo aggiornato con successo!']);
+        }
+
+        // RISPOSTA TRADIZIONALE
         return redirect()->route('vehicles.index')->with('success', 'Veicolo aggiornato');
     }
 
-    public function destroy(Vehicle $vehicle)
+    // Nota: ho aggiunto 'Request $request' nei parametri per poter verificare se è una chiamata AJAX
+    public function destroy(Request $request, Vehicle $vehicle)
     {
         $vehicle->delete();
+
+        // RISPOSTA ASINCRONA JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Veicolo eliminato definitivamente!']);
+        }
+
+        // RISPOSTA TRADIZIONALE
         return redirect()->route('vehicles.index')->with('success', 'Veicolo eliminato');
     }
 }
