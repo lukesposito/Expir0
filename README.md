@@ -1,59 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Universal Deadline Manager
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php)
+![Laravel](https://img.shields.io/badge/Laravel-10.x%2F11.x-FF2D20?style=flat-square&logo=laravel)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker)
+![MariaDB](https://img.shields.io/badge/MariaDB-10.11-003545?style=flat-square&logo=mariadb)
+![Security](https://img.shields.io/badge/WebAuthn-Passkey-success?style=flat-square)
 
-## About Laravel
+Un'applicazione web enterprise sviluppata in Laravel per la centralizzazione, il monitoraggio e la notifica automatizzata di **qualsiasi tipologia di scadenza**. 
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Nato dall'esigenza di gestire date critiche senza vincoli di categoria, il sistema si adatta al tracciamento di asset fisici (veicoli, immobili), documentazione (patenti, passaporti), contrattualistica, polizze assicurative, abbonamenti software e adempimenti fiscali. Progettato con un'architettura containerizzata pronta per la produzione, pone un forte accento sulla sicurezza dei dati e sull'affidabilità delle notifiche asincrone.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ⚙️ Funzionalità Principali (MVP)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+* **Gestione Agnostica delle Scadenze:** Motore flessibile che permette l'inserimento e la categorizzazione di eventi a termine di qualsiasi natura.
+* **Sistema di Alert Proattivo:** Worker in background dedicato che valuta quotidianamente le scadenze imminenti e invia notifiche email automatizzate agli utenti interessati.
+* **Autenticazione Biometrica (Passwordless):** Implementazione dello standard **WebAuthn / Passkey**. Consente l'accesso tramite riconoscimento facciale (FaceID/Windows Hello) o impronta digitale, azzerando i rischi legati al furto di credenziali.
+* **Dashboard Analitica:** Interfaccia utente pulita per una rapida visualizzazione dello stato delle scadenze (in regola, in scadenza, scadute).
 
-## Learning Laravel
+## 🏗️ Architettura e Infrastruttura
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Il progetto non è solo un'applicazione, ma un'infrastruttura completa definita via codice (`Infrastructure as Code`) tramite **Docker** e **Docker Compose**. 
+L'ambiente di produzione è composto dai seguenti container isolati:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* `app`: Motore PHP-FPM contenente il core Laravel. Eseguito con privilegi ridotti (utente non-root) per la massima sicurezza.
+* `web`: Server web **Nginx** (basato su Alpine Linux). Agisce da reverse proxy, forza il reindirizzamento da HTTP a HTTPS e gestisce i certificati SSL.
+* `db`: Database **MariaDB 10.11**. Deliberatamente non esposto alla rete pubblica, in ascolto esclusivo sull'interfaccia di loopback (`127.0.0.1`).
+* `scheduler`: Un worker containerizzato che esegue in modo continuo `php artisan schedule:work`, garantendo l'esecuzione dei task programmati senza alcuna dipendenza dal demone cron del sistema operativo host.
 
-## Laravel Sponsors
+## 🔒 Sicurezza
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+La sicurezza è un pilastro fondamentale di questo progetto, implementata su più livelli:
 
-### Premium Partners
+1. **Traffico Criptato:** Supporto nativo per certificati Let's Encrypt tramite Certbot, garantendo la crittografia TLS (HTTPS) end-to-end.
+2. **Isolamento del Database:** Il DB MariaDB rifiuta connessioni esterne. L'accesso per la manutenzione o l'ispezione dei dati (es. tramite HeidiSQL/DBeaver) è possibile esclusivamente stabilendo un **Tunnel SSH** cifrato verso il server host.
+3. **Sessioni e Accessi Sicuri:** Utilizzo di driver di sessione sicuri e adozione dello standard FIDO2 per l'accesso tramite Passkey, bloccando alla radice gli attacchi di phishing e brute-force.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🚀 Requisiti e Installazione
 
-## Contributing
+### Prerequisiti
+* Docker e Docker Compose installati sul sistema host.
+* (Solo per Produzione) Un dominio registrato e puntato all'IP del server per la generazione dei certificati SSL.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Setup Ambiente (Sviluppo / Produzione)
 
-## Code of Conduct
+### 1. Clonare il repository:
+   ```bash
+   git clone [https://github.com/tuo-username/nome-repo.git](https://github.com/tuo-username/nome-repo.git)
+   cd nome-repo
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2. Copiare il file di configurazione ambientale e impostare le variabili (inclusi i parametri SMTP per le mail):
+   ```bash
+   cp .env.example .env
+   ```
 
-## Security Vulnerabilities
+### 3.  Avvio in Ambiente Isolato tramite Docker
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Il progetto è definito via codice (`Infrastructure as Code`) tramite **Docker Compose**, garantendo parità assoluta tra lo sviluppo e il server in produzione (VPS OVH). I container isolati includono Nginx, PHP-FPM, MariaDB e un container Scheduler dedicato.
 
-## License
+**Installazione Docker**
+Se Docker non è presente sul sistema:
+```bash
+# (Esempio per Ubuntu/WSL)
+sudo apt install docker.io docker-compose -y
+sudo usermod -aG docker $USER
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Build e Avvio dell'Infrastruttura**
+Posizionati nella cartella contenente il file `docker-compose.yaml` (o `docker/`) e avvia i container:
+```bash
+docker-compose up -d --build
+```
+
+**Comandi all'interno del Container**
+Per eseguire operazioni su Laravel (migrazioni, test, tinker), "entra" nel container dell'applicazione:
+```bash
+docker exec -it scadenze_app php artisan migrate
+docker exec -it scadenze_app php artisan storage:link
+docker exec -it scadenze_app php artisan tinker
+```
+
+### 4. Installare le dipendenze PHP ed eseguire le migrazioni del database (FACOLTATIVO):
+   ```bash
+   docker exec -it scadenze_app composer install --no-dev --optimize-autoloader
+   docker exec -it scadenze_app php artisan key:generate
+   docker exec -it scadenze_app php artisan migrate --seed
+   docker exec -it scadenze_app php artisan storage:link
+   ```
+
+## 📧 Gestione Notifiche Email (Testing)
+
+Le notifiche sono gestite automaticamente dal container `scheduler` che esegue in background `php artisan schedule:work`. 
+
+Per testare l'invio delle mail (sia in locale che in produzione) e verificare la coda delle scadenze, puoi lanciare il comando forzato:
+```bash
+# Se usi il server locale PHP:
+php artisan app:send-deadline-reminders
+
+# Se stai usando Docker:
+docker exec -it scadenze_app php artisan app:send-deadline-reminders
+```
+
+## N.B.: Se in locale sul WSL usare questo comando per gestire autenticazione con PAsskey/Authenticator app:
+```bash
+# Avvia il server rendendolo accessibile in locale
+php artisan serve --host=localhost
+```
