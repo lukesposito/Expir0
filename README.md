@@ -1,4 +1,4 @@
-# Universal Deadline Manager
+# EXPIR0 (su expir0.it)
 
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php)
 ![Laravel](https://img.shields.io/badge/Laravel-10.x%2F11.x-FF2D20?style=flat-square&logo=laravel)
