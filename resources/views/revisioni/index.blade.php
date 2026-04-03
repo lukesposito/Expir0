@@ -5,6 +5,71 @@
         </h2>
     </x-slot>
 
+    <details class="bg-green-50 p-5 rounded-xl mb-8 border-2 border-green-200 shadow-sm mt-4">
+        <summary class="font-black text-green-800 cursor-pointer text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            Guida passo-passo: Come gestisco le Revisioni? (Clicca per leggere)
+        </summary>
+        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+            
+            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-green-100">
+                🔧 <strong>Questa è l'agenda per la salute della tua auto!</strong> Qui teniamo traccia delle revisioni ministeriali, un controllo obbligatorio per legge. Al contrario delle patenti (che sono legate alla persona), la revisione si fa <strong>sempre su un veicolo specifico</strong>.
+            </p>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova Revisione</h4>
+                <p>Sei appena tornato dall'officina o hai appena comprato un'auto nuova?</p>
+                <ol class="list-decimal ml-5 mt-2 space-y-1">
+                    <li>Clicca sul pulsante verde brillante <strong>"Aggiungi Revisione"</strong> che vedi qui sopra.</li>
+                    <li>Scegli l'<strong>Auto</strong> (o la moto) dalla tendina. Assicurati di averla prima creata nella pagina "Veicoli"!</li>
+                    <li>Scegli la data dell'<strong>Ultima Revisione</strong> (se è un'auto nuova, metti la data di immatricolazione).</li>
+                    <li>Scegli la data della <strong>Prossima Revisione</strong> (di solito è dopo 4 anni la prima volta, e poi ogni 2 anni).</li>
+                    <li>Imposta l'<strong>Esito</strong> (spiegato nel dettaglio nel punto 3 qui sotto).</li>
+                    <li>Scrivi l'<strong>Importo</strong> che hai pagato, così farà media nelle tue spese generali, e clicca su Salva!</li>
+                </ol>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 2. La barra di ricerca</h4>
+                <p>Usa la barra di ricerca in alto per trovare subito quello che ti serve. Puoi scrivere la <strong>targa</strong>, la <strong>marca</strong> dell'auto, o anche il nome dell'<strong>Officina (Centro Revisione)</strong> se vuoi ricordarti dove sei andato l'ultima volta.</p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🚦 3. A cosa serve la voce "Esito"?</h4>
+                <p>Quando vai in officina, la revisione può andare bene oppure no. Abbiamo creato tre colori per aiutarti a capire subito la situazione:</p>
+                <ul class="space-y-3 ml-2 mt-2 border-l-4 border-green-300 pl-3">
+                    <li class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 uppercase">Positivo</span>
+                        <div>Tutto perfetto! L'auto è sicura e in regola. Non pensarci più fino alla prossima scadenza.</div>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 uppercase">Negativo</span>
+                        <div>L'auto non ha passato il test. Probabilmente devi far fare un lavoro dal meccanico (es. cambiare le gomme o i freni) e poi riportarla al centro revisioni.</div>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-800 uppercase">Da fare</span>
+                        <div>La scadenza si sta avvicinando e devi ancora portare la macchina in officina. Usalo come promemoria!</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✏️ 4. Modificare o Eliminare</h4>
+                <ul class="space-y-2 ml-2 mt-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-1"><i class="fa-solid fa-pen-to-square"></i></span>
+                        <div><strong>Modifica (Blu):</strong> Usalo quando riporti la macchina a fare la nuova revisione e devi aggiornare le date e il nuovo importo pagato.</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-red-500 mt-1"><i class="fa-solid fa-trash-can"></i></span>
+                        <div><strong>Elimina (Rosso):</strong> Da usare solo in caso di errore. <span class="bg-red-50 text-red-700 px-1 rounded font-semibold">Attenzione!</span> Se clicchi elimina, toglierai per sempre questa scadenza dal tuo calendario.</div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </details>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="revisioniManager()"
@@ -87,9 +152,9 @@
                             <template x-for="(r, index) in filteredRevisioni" :key="r.id || index">
                                 <tr class="hover:bg-gray-50 transition" :class="{ 'bg-red-50': r.giorni_rimanenti <= 30 }">
                                     <td class="px-6 py-4">
-                                        <div class="text-sm font-semibold text-gray-900 font-mono uppercase" x-text="r.vehicle_targa"></div>
+                                        <div class="text-sm font-semibold text-gray-900 font-mono uppercase" x-text="r.vehicle_marca + ' ' + r.vehicle_modello"></div>
                                         <div class="text-sm text-gray-500 capitalize">
-                                            <span x-text="r.vehicle_marca"></span> <span x-text="r.vehicle_modello"></span>
+                                            <span x-text="r.vehicle_targa"></span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700" x-text="r.data_ultima_revisione_formatted || '—'"></td>
@@ -149,9 +214,9 @@
                             
                             <div class="relative flex items-center justify-between">
                                 <div class="flex-1">
-                                    <h3 class="text-2xl font-black text-white tracking-tight mb-1.5 uppercase font-mono" x-text="r.vehicle_targa"></h3>
+                                    <h3 class="text-2xl font-black text-white tracking-tight mb-1.5 uppercase font-mono" x-text="r.vehicle_marca + ' ' + r.vehicle_modello"></h3>
                                     <p class="text-base text-white opacity-90 capitalize">
-                                        <span x-text="r.vehicle_marca"></span> <span x-text="r.vehicle_modello"></span>
+                                        <span x-text="r.vehicle_targa"></span>
                                     </p>
                                 </div>
                                 <div class="ml-4">

@@ -4,6 +4,50 @@
             Gestione Tesserini Sanitari
         </h2>
     </x-slot>
+
+    <details class="bg-cyan-50 p-5 rounded-xl mb-8 border-2 border-cyan-200 shadow-sm mt-4">
+        <summary class="font-black text-cyan-800 cursor-pointer text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            Guida passo-passo: Come gestisco i Tesserini Sanitari? (Clicca per leggere)
+        </summary>
+        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+            
+            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-cyan-100">
+                ⚕️ <strong>La tessera sanitaria (o Codice Fiscale).</strong> Serve per visite mediche, farmacia e per viaggiare in Europa. Tenerne traccia qui ti assicura di accorgerti per tempo se lo Stato si dimentica di spedirti quella nuova a casa!
+            </p>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire un nuovo Tesserino</h4>
+                <p>Mettiti sul tavolo le tesserine di tutta la famiglia e segui questi passi:</p>
+                <ol class="list-decimal ml-5 mt-2 space-y-1">
+                    <li>Clicca sul pulsante azzurro <strong>"Aggiungi Tesserino"</strong> qui in alto.</li>
+                    <li>Scegli dal menu a tendina il <strong>Membro della Famiglia</strong> (lo devi aver prima creato nella pagina "Utenti").</li>
+                    <li>Digita il <strong>Codice Fiscale</strong> (le 16 lettere e numeri scritti grandi sulla tessera). Non preoccuparti delle maiuscole, il sistema le aggiusterà da solo.</li>
+                    <li>Inserisci la <strong>Data di Scadenza</strong>. (Scade sempre 6 anni dopo l'emissione, o 1 anno per i neonati).</li>
+                    <li>Clicca su Salva. Fatto!</li>
+                </ol>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">📬 2. Come funziona il rinnovo?</h4>
+                <p>Normalmente l'Agenzia delle Entrate ti spedisce la nuova tessera a casa circa 2 mesi prima che scada quella vecchia.</p>
+                <p class="mt-1 bg-white p-2 rounded text-slate-800 text-sm border border-slate-200">
+                    <strong>Quando ti arriva la busta a casa:</strong> Cerca il tesserino in questa lista, clicca sul tasto blu <strong>Modifica</strong> e aggiorna semplicemente la data di scadenza per altri 6 anni. 
+                </p>
+                <p class="mt-2 bg-red-50 p-2 rounded text-red-800 text-sm font-semibold border border-red-200">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <strong>Se vedi la scadenza rossa ma non ti è arrivato niente a casa:</strong> L'app ti sta salvando la vita! Significa che c'è stato un problema alle poste o all'Agenzia. Devi andare alla tua ASL a richiederne un duplicato provvisorio di carta.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 3. Ricerca rapida in Farmacia</h4>
+                <p>Sei in farmacia e hai dimenticato la tessera fisica a casa? Nessun problema!</p>
+                <p class="mt-1">Apri questa pagina col telefono, usa la barra di ricerca in alto scrivendo il tuo nome. Vedrai apparire subito la card azzurra con il tuo <strong>Codice Fiscale</strong> ben visibile da dettare al farmacista.</p>
+            </div>
+
+        </div>
+    </details>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="tesseriniSanitariManager()"

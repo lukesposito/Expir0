@@ -37,6 +37,10 @@
                     <x-nav-link :href="route('tesserini-sanitari.index')" :active="request()->routeIs('tesserini-sanitari.*')">
                         {{ __('Tess. Sanitari') }}
                     </x-nav-link>
+                    
+                    <x-nav-link :href="route('subscriptions.index')" :active="request()->routeIs('subscriptions.*')">
+                        {{ __('Spese / Abbon.') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -125,6 +129,11 @@
             <x-responsive-nav-link :href="route('tesserini-sanitari.index')" :active="request()->routeIs('tesserini-sanitari.*')" class="rounded-lg">
                 Tesserini Sanitari
             </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('subscriptions.index')" :active="request()->routeIs('subscriptions.*')" class="rounded-lg">
+                Spese e Abbonamenti
+            </x-responsive-nav-link>
+            
         </div>
 
         <div class="pt-4 pb-4 border-t border-slate-100 bg-slate-50/50">

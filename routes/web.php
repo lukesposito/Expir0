@@ -12,6 +12,7 @@ use App\Http\Controllers\VehicleDetailController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CartaIdentitaController;
 use App\Http\Controllers\TesserinoSanitarioController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TwoFactorController;
@@ -67,6 +68,7 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::resource('tesserini-sanitari', TesserinoSanitarioController::class)->parameters([
         'tesserini-sanitari' => 'tesserino_sanitario'
     ]);
+    Route::resource('subscriptions', SubscriptionController::class);
 
     // ROUTE DOCUMENTI
     Route::post('/documents/store', [DocumentController::class, 'store'])->name('documents.store');

@@ -15,6 +15,7 @@ use App\Models\Bollo;
 use App\Models\Assicurazione;
 use App\Models\CartaIdentita;
 use App\Models\TesserinoSanitario;
+use App\Models\Subscription;
 
 class DashboardController extends Controller
 {
@@ -57,7 +58,7 @@ class DashboardController extends Controller
         
         // ==================== SCADENZE PROSSIME (30 GIORNI) ====================
         
-        $prossimaScadenze = Deadline::with(['vehicle', 'user'])
+        $prossimaScadenze = Deadline::with(['vehicle', 'user', 'subscription'])
             ->imminenti()
             ->orderBy('data_scadenza', 'asc')
             ->limit(10)
@@ -65,7 +66,8 @@ class DashboardController extends Controller
         
         // ==================== CALENDARIO COMPLETO ====================
         
-        $calendarEvents = Deadline::with(['vehicle', 'user'])
+        // Aggiungiamo 'subscription' ai with() per caricare le spese
+        $calendarEvents = Deadline::with(['vehicle', 'user', 'subscription'])
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function($deadline) {
@@ -80,10 +82,23 @@ class DashboardController extends Controller
                     $borderColor = '#b91c1c';    
                 }
 
+                // Costruiamo il titolo in modo sicuro per evitare l'errore "on null"
+                $soggetto = 'Famiglia'; // Fallback se non c'è né veicolo né utente
+                
+                if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription) {
+                    $soggetto = $deadline->subscription->nome;
+                } elseif ($deadline->vehicle) {
+                    $soggetto = $deadline->vehicle->targa;
+                } elseif ($deadline->user) {
+                    $soggetto = $deadline->user->name;
+                }
+
+                $tipoFormattato = ucfirst(str_replace('_', ' ', $deadline->tipo));
+
                 return [
                     'id' => $deadline->id,
                     'tipo' => $deadline->tipo,
-                    'title' => ($deadline->vehicle ? $deadline->vehicle->targa : $deadline->user->name) . ' - ' . ucfirst($deadline->tipo),
+                    'title' => $soggetto . ' - ' . $tipoFormattato,
                     'start' => $deadline->data_scadenza->format('Y-m-d'),
                     'importo' => $deadline->importo ?? 0,
                     'pagato' => $deadline->pagato,
@@ -213,6 +228,8 @@ class DashboardController extends Controller
                     'tipo_file' => $doc->tipo_file,
                     'path' => Storage::url($doc->path),
                     'vehicle_targa' => $doc->vehicle ? $doc->vehicle->targa : null,
+                    'vehicle_marca' => $doc->vehicle ? $doc->vehicle->marca : null,
+                    'vehicle_modello' => $doc->vehicle ? $doc->vehicle->modello : null,
                     'is_personal' => !$doc->vehicle
                 ];
             })

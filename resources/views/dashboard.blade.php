@@ -14,6 +14,74 @@
         </div>
     </x-slot>
 
+    <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm">
+        <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            Guida passo-passo: Come funziona questa schermata? (Clicca per leggere)
+        </summary>
+        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+            
+            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
+                👋 <strong>Niente panico!</strong> Questa pagina si chiama "Dashboard" (che significa Cruscotto). È solo una pagina di <strong>lettura e riassunto</strong>. Da qui non puoi cancellare nulla per sbaglio e non puoi fare danni. Scorri in basso per capire cosa stai guardando:
+            </p>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">1. I quattro riquadri in alto (Il Riassunto Veloce)</h4>
+                <p class="mb-2">Ti danno la situazione generale a colpo d'occhio:</p>
+                <ul class="space-y-2 ml-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-red-500 mt-1"><i class="fa-solid fa-square"></i></span>
+                        <div><strong>Scadenze Urgenti (Rosso):</strong> Sono le cose già scadute o che scadono a giorni. Se qui c'è un numero diverso da zero, devi intervenire il prima possibile!</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-amber-400 mt-1"><i class="fa-solid fa-square"></i></span>
+                        <div><strong>In Arrivo (Giallo):</strong> Sono le scadenze del prossimo mese. Hai ancora tempo, ma il sistema ti avvisa per non farti cogliere impreparato.</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-1"><i class="fa-solid fa-square"></i></span>
+                        <div><strong>Da Pagare (Blu):</strong> È la somma totale dei soldi che dovrai spendere da oggi fino alla fine dell'anno per tutte le scadenze inserite.</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-500 mt-1"><i class="fa-solid fa-square"></i></span>
+                        <div><strong>Gestione (Verde):</strong> È semplicemente il numero totale di automobili, moto o persone che stiamo tenendo d'occhio per te.</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">2. Il Grafico "Andamento Spese"</h4>
+                    <p>Ti mostra mese per mese come sono distribuite le tue uscite. Le colonne verdi sono i soldi che hai già pagato, quelle rosse sono i soldi che dovrai ancora sborsare. Ti aiuta a capire quali saranno i mesi più "pesanti" per il portafoglio.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">3. La Lista "Prossime Scadenze"</h4>
+                    <p>È l'elenco esatto e ordinato delle cose da fare. Le prime in alto sono le più urgenti. Per ogni voce vedi: per quale auto o persona è la scadenza, cos'è (es. Bollo), quanto costa e <strong>quanti giorni mancano</strong> (con il segno meno, es. -15gg).</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">4. Il Grafico a Torta "Distribuzione Costi"</h4>
+                    <p>Ti fa vedere a colpo d'occhio dove spendi di più. Ad esempio, se la fetta blu delle Assicurazioni è molto grande, significa che la maggior parte delle tue spese va in quello.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">5. La sezione "Archivio Digitale"</h4>
+                    <p>Questo è il tuo cassetto virtuale. Al posto di tenere le scartoffie nei faldoni, le mettiamo qui.</p>
+                    <ul class="list-disc ml-5 mt-1">
+                        <li><strong>Pulsante "Vedi Archivio":</strong> Cliccalo per aprire una finestra dove puoi vedere o scaricare le ricevute e i documenti che hai salvato.</li>
+                        <li><strong>Il riquadro tratteggiato con la nuvoletta:</strong> Clicca lì dentro se vuoi aggiungere la foto o il PDF di un nuovo documento appena pagato o rinnovato.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">6. Il Calendario (in fondo alla pagina)</h4>
+                <p>Funziona esattamente come il calendario appeso in cucina! I giorni evidenziati hanno una scadenza. <strong>Se clicchi su una di quelle voci colorate nel calendario</strong>, si aprirà un bigliettino con tutti i dettagli esatti, le note e l'importo. I pulsanti sopra al calendario servono solo se vuoi copiare queste date nel calendario del tuo telefono.</p>
+            </div>
+
+        </div>
+    </details>
+
     <div class="py-8 bg-slate-50 min-h-screen w-full"
          @open-calendar-event.window="openEventModal($event.detail)"
          x-data="dashboardManager()">
@@ -75,7 +143,17 @@
                         <div class="flex items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg mr-3" style="background-color: {{ $scadenza->tipo_color }}20; color: {{ $scadenza->tipo_color }}">{{ $scadenza->tipo_icon }}</div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-slate-900 truncate">{{ $scadenza->vehicle ? $scadenza->vehicle->targa : $scadenza->user->name }}</p>
+                                <p class="text-sm font-bold text-slate-900 truncate">
+                                    @if($scadenza->tipo === 'spesa_abbonamento' && $scadenza->subscription)
+                                        {{ $scadenza->subscription->nome }}
+                                    @elseif($scadenza->vehicle)
+                                        {{ $scadenza->vehicle->marca }} {{ $scadenza->vehicle->modello }}
+                                    @elseif($scadenza->user)
+                                        {{ $scadenza->user->name }}
+                                    @else
+                                        Spesa di Famiglia
+                                    @endif
+                                </p>
                                 <p class="text-xs text-slate-500">{{ ucfirst($scadenza->tipo) }}</p>
                             </div>
                             <div class="text-right">
@@ -197,7 +275,7 @@
                             <select name="vehicle_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                                 <option value="">-- Seleziona Veicolo --</option>
                                 @foreach(\App\Models\Vehicle::all() as $v)
-                                    <option value="{{ $v->id }}">{{ $v->targa }} - {{ $v->marca }} {{ $v->modello }}</option>
+                                    <option value="{{ $v->id }}">{{ $v->marca }} {{ $v->modello }} - {{ $v->targa }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -234,9 +312,22 @@
                 <div @click.stop class="modal-content-wrapper bg-white rounded-2xl shadow-2xl overflow-hidden h-[85vh] flex flex-col">
                     
                     <div class="modal-header bg-slate-800 px-6 py-5 flex justify-between items-center flex-shrink-0">
-                        <div>
-                            <h3 class="text-xl font-bold text-white tracking-tight">Archivio Documenti</h3>
-                            <p class="text-slate-400 text-sm mt-1">Gestisci tutti i file e i referti caricati a sistema</p>
+                        <div class="flex items-center gap-3">
+                            <template x-if="currentFolder">
+                                <button @click="closeFolder()" class="text-slate-300 hover:text-white transition-colors bg-slate-700/50 hover:bg-slate-600 w-8 h-8 rounded-lg flex items-center justify-center">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                            </template>
+                            <div>
+                                <h3 class="text-xl font-bold text-white tracking-tight">
+                                    <template x-if="!currentFolder"><span>Archivio Documenti</span></template>
+                                    <template x-if="currentFolder"><span x-text="currentFolderInfo.name"></span></template>
+                                </h3>
+                                <p class="text-slate-400 text-sm mt-1">
+                                    <template x-if="!currentFolder"><span>Scegli una cartella per visualizzare i file</span></template>
+                                    <template x-if="currentFolder"><span x-text="currentFolderDocs.length + ' documenti archiviati'"></span></template>
+                                </p>
+                            </div>
                         </div>
                         <button @click="closeViewModal()" class="text-slate-400 hover:text-white transition-colors bg-slate-700/50 hover:bg-slate-700 w-8 h-8 rounded-lg flex items-center justify-center">
                             <i class="fa-solid fa-xmark text-lg"></i>
@@ -245,60 +336,79 @@
 
                     <div class="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
                         
-                        <template x-if="documents.length > 0">
-                            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                <template x-for="doc in documents" :key="doc.id">
-                                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-4 group">
-                                        
-                                        <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-colors"
-                                             :class="doc.tipo_file == 'application/pdf' ? 'bg-red-50 text-red-500 group-hover:bg-red-100' : 'bg-blue-50 text-blue-500 group-hover:bg-blue-100'">
-                                            <i class="fa-solid" :class="doc.tipo_file == 'application/pdf' ? 'fa-file-pdf' : 'fa-file-image'"></i>
+                        <template x-if="!currentFolder">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                <template x-for="folder in folders" :key="folder.id">
+                                    <div @click="openFolder(folder.id)" 
+                                         class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm transition-all cursor-pointer group flex flex-col items-center text-center"
+                                         :class="folder.hover">
+                                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-3 transition-transform group-hover:scale-110"
+                                             :class="folder.bg + ' ' + folder.color">
+                                            <i class="fa-solid" :class="folder.icon"></i>
                                         </div>
-                                        
-                                        <div class="flex-1 min-w-0 w-full">
-                                            <h4 class="text-base font-bold text-slate-800 truncate" :title="doc.nome_originale" x-text="doc.nome_originale"></h4>
-                                            <div class="flex flex-wrap items-center gap-2 mt-1.5">
-                                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                                                    <i class="fa-regular fa-calendar mr-1"></i> <span x-text="doc.created_at"></span>
-                                                </span>
-                                                <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600" x-text="doc.categoria"></span>
-                                                <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                                
-                                                <template x-if="doc.vehicle_targa">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-200 text-[10px] font-bold bg-slate-50 text-slate-600 shadow-sm" x-text="doc.vehicle_targa"></span>
-                                                </template>
-                                                <template x-if="doc.is_personal">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded border border-purple-100 text-[10px] font-bold bg-purple-50 text-purple-600 shadow-sm">Personale</span>
-                                                </template>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                                            <button @click="openPreview(doc.path, doc.tipo_file, doc.nome_originale)" 
-                                                    class="flex-1 sm:flex-none px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition-colors flex items-center justify-center gap-1.5">
-                                                <i class="fa-solid fa-eye"></i> Vedi
-                                            </button>
-                                            <button @click="openDeleteDoc(doc.id, doc.nome_originale)" 
-                                                    class="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors" title="Elimina">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </div>
+                                        <h4 class="font-bold text-slate-800 text-sm mb-1" x-text="folder.name"></h4>
+                                        <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-md" x-text="getDocsInFolder(folder.id).length + ' file'"></span>
                                     </div>
                                 </template>
                             </div>
                         </template>
 
-                        <template x-if="documents.length === 0">
-                            <div class="flex flex-col items-center justify-center h-full text-slate-500 py-12">
-                                <div class="w-24 h-24 bg-slate-200/50 rounded-full flex items-center justify-center mb-5">
-                                    <i class="fa-regular fa-folder-open text-5xl text-slate-400"></i>
-                                </div>
-                                <h4 class="font-bold text-xl text-slate-700">Archivio Vuoto</h4>
-                                <p class="text-sm mt-2 text-slate-500">I documenti che caricherai appariranno qui.</p>
+                        <template x-if="currentFolder">
+                            <div>
+                                <template x-if="currentFolderDocs.length > 0">
+                                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                        <template x-for="doc in currentFolderDocs" :key="doc.id">
+                                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-4 group">
+                                                
+                                                <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-colors"
+                                                     :class="doc.tipo_file == 'application/pdf' ? 'bg-red-50 text-red-500 group-hover:bg-red-100' : 'bg-blue-50 text-blue-500 group-hover:bg-blue-100'">
+                                                    <i class="fa-solid" :class="doc.tipo_file == 'application/pdf' ? 'fa-file-pdf' : 'fa-file-image'"></i>
+                                                </div>
+                                                
+                                                <div class="flex-1 min-w-0 w-full">
+                                                    <h4 class="text-base font-bold text-slate-800 truncate" :title="doc.nome_originale" x-text="doc.nome_originale"></h4>
+                                                    <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                                            <i class="fa-regular fa-calendar mr-1"></i> <span x-text="doc.created_at"></span>
+                                                        </span>
+                                                        <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                                        
+                                                        <template x-if="doc.vehicle_targa">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-200 text-[10px] font-bold bg-slate-50 text-slate-600 shadow-sm capitalize" x-text="doc.vehicle_marca + ' ' + doc.vehicle_modello"></span>
+                                                        </template>
+                                                        <template x-if="doc.is_personal">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded border border-purple-100 text-[10px] font-bold bg-purple-50 text-purple-600 shadow-sm">Personale</span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                                                    <button @click="openPreview(doc.path, doc.tipo_file, doc.nome_originale)" 
+                                                            class="flex-1 sm:flex-none px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition-colors flex items-center justify-center gap-1.5">
+                                                        <i class="fa-solid fa-eye"></i> Vedi
+                                                    </button>
+                                                    <button @click="openDeleteDoc(doc.id, doc.nome_originale)" 
+                                                            class="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors" title="Elimina">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template x-if="currentFolderDocs.length === 0">
+                                    <div class="flex flex-col items-center justify-center h-full text-slate-500 py-12">
+                                        <div class="w-24 h-24 bg-slate-200/50 rounded-full flex items-center justify-center mb-5">
+                                            <i class="fa-regular fa-folder-open text-5xl text-slate-400"></i>
+                                        </div>
+                                        <h4 class="font-bold text-xl text-slate-700">Cartella Vuota</h4>
+                                        <p class="text-sm mt-2 text-slate-500">Non ci sono documenti in questa categoria.</p>
+                                    </div>
+                                </template>
                             </div>
                         </template>
-                        
+
                     </div>
                 </div>
             </div>
@@ -467,6 +577,33 @@
                 currentDocType: '',
                 currentDocName: '',
 
+                currentFolder: null, // null = mostra le cartelle principali
+                folders: [
+                    { id: 'bollo', name: 'Bolli', icon: 'fa-file-invoice-dollar', color: 'text-yellow-500', bg: 'bg-yellow-50', hover: 'hover:border-yellow-300' },
+                    { id: 'assicurazione', name: 'Assicurazioni', icon: 'fa-shield-halved', color: 'text-orange-500', bg: 'bg-orange-50', hover: 'hover:border-orange-300' },
+                    { id: 'revisione', name: 'Revisioni', icon: 'fa-screwdriver-wrench', color: 'text-green-500', bg: 'bg-green-50', hover: 'hover:border-green-300' },
+                    { id: 'patente', name: 'Patenti', icon: 'fa-id-card', color: 'text-pink-500', bg: 'bg-pink-50', hover: 'hover:border-pink-300' },
+                    { id: 'carta_identita', name: 'Carte d\'Identità', icon: 'fa-passport', color: 'text-stone-500', bg: 'bg-stone-50', hover: 'hover:border-stone-300' },
+                    { id: 'tesserino_sanitario', name: 'Tess. Sanitari', icon: 'fa-notes-medical', color: 'text-teal-500', bg: 'bg-teal-50', hover: 'hover:border-teal-300' },
+                    { id: 'altro', name: 'Altro', icon: 'fa-folder-open', color: 'text-indigo-500', bg: 'bg-indigo-50', hover: 'hover:border-indigo-300' }
+                ],
+
+                openFolder(folderId) { this.currentFolder = folderId; },
+                closeFolder() { this.currentFolder = null; },
+                
+                getDocsInFolder(folderId) {
+                    return this.documents.filter(d => d.categoria === folderId);
+                },
+                
+                get currentFolderDocs() {
+                    if (!this.currentFolder) return [];
+                    return this.documents.filter(d => d.categoria === this.currentFolder);
+                },
+                
+                get currentFolderInfo() {
+                    return this.folders.find(f => f.id === this.currentFolder) || {};
+                },
+
                 showDeleteDocModal: false,
                 isClosingDeleteDoc: false,
                 docToDeleteId: null,
@@ -515,6 +652,7 @@
                     setTimeout(() => {
                         this.showViewModal = false;
                         this.isClosingView = false;
+                        this.currentFolder = null;
                     }, 500);
                 },
 
@@ -737,7 +875,7 @@
                 events: [
                     @foreach($deadlines as $d)
                     {
-                        title: {!! json_encode(ucfirst($d->tipo) . ' ' . ($d->vehicle ? $d->vehicle->targa : ($d->user ? $d->user->name : ''))) !!},
+                        title: {!! json_encode(ucfirst($d->tipo) . ' ' . ($d->vehicle ? $d->vehicle->marca . ' ' . $d->vehicle->modello : ($d->user ? $d->user->name : ''))) !!},
                         start: '{{ $d->data_scadenza->format('Y-m-d') }}',
                         color: '{{ $d->tipo_color }}',
                         allDay: true,

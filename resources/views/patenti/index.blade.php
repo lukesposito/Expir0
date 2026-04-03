@@ -5,6 +5,55 @@
         </h2>
     </x-slot>
 
+    <details class="bg-pink-50 p-5 rounded-xl mb-8 border-2 border-pink-200 shadow-sm mt-4">
+        <summary class="font-black text-pink-800 cursor-pointer text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            Guida passo-passo: Come gestisco le Patenti? (Clicca per leggere)
+        </summary>
+        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+            
+            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-pink-100">
+                🚗 <strong>Benvenuto nell'archivio Patenti di famiglia!</strong> Qui teniamo traccia delle patenti di guida di tutti. Al contrario del bollo che è legato alla targa dell'auto, la patente è legata alla <strong>persona fisica</strong>.
+            </p>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova patente</h4>
+                <p>Hai appena preso la patente o non l'hai mai inserita prima?</p>
+                <ol class="list-decimal ml-5 mt-2 space-y-1">
+                    <li>Clicca sul pulsante rosa brillante <strong>"Aggiungi Patente"</strong> che vedi qui sopra.</li>
+                    <li>Si aprirà una finestrella. Dal primo menu a tendina, scegli la <strong>Persona</strong> a cui appartiene la patente (es. te stesso, tuo figlio, tua moglie).</li>
+                    <li>Scrivi il <strong>Numero della Patente</strong> (lo trovi al punto 5 sulla tessera rosa).</li>
+                    <li>Scrivi il <strong>Tipo</strong> (di solito è "B" per l'auto o "A" per le moto, lo trovi al punto 9).</li>
+                    <li>Clicca su Salva!</li>
+                </ol>
+                <p class="mt-3 bg-white p-2 rounded text-slate-800 text-sm font-semibold border border-slate-200">
+                    <i class="fa-solid fa-magic text-pink-500"></i> <strong>Magia automatica:</strong> Hai notato che non ti ho chiesto la data di scadenza? Esatto! Il sistema leggerà l'età della persona e la data di rilascio, e calcolerà in automatico se la patente scade ogni 10, 5, o 3 anni, creandoti il promemoria da solo!
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 2. La barra di ricerca</h4>
+                <p>Se in famiglia siete tanti, puoi usare la barra di ricerca in alto. Scrivi il nome di una persona o le prime lettere della sua patente per trovarla all'istante, senza dover leggere tutta la lista.</p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✏️ 3. Modificare o Eliminare</h4>
+                <p>Accanto a ogni patente salvata ci sono due pulsanti:</p>
+                <ul class="space-y-2 ml-2 mt-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-1"><i class="fa-solid fa-pen-to-square"></i></span>
+                        <div><strong>Modifica (Blu):</strong> Usalo se hai sbagliato a digitare il numero della patente o se vuoi correggere un errore.</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-red-500 mt-1"><i class="fa-solid fa-trash-can"></i></span>
+                        <div><strong>Elimina (Rosso):</strong> Attenzione! Usalo solo se una persona non ha più bisogno della patente o se l'hai creata per sbaglio. Cancellandola da qui, cancellerai in automatico anche i suoi promemoria di scadenza futuri.</div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </details>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" x-data="patentiManager()" x-init="init()">
 

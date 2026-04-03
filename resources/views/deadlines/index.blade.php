@@ -5,6 +5,57 @@
         </h2>
     </x-slot>
 
+    <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm mt-4">
+        <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            Guida passo-passo: Come si usa questa lista? (Clicca per leggere)
+        </summary>
+        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+            
+            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
+                📅 <strong>Questa è la tua Agenda Elettronica.</strong> Qui dentro c'è l'elenco completo di <strong>TUTTE</strong> le tue scadenze, ordinate in automatico da quella più vicina a quella più lontana. 
+            </p>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 1. La barra di ricerca (in alto)</h4>
+                <p>È la casella bianca dove c'è scritto "Cerca per tipo, targa...". Ti serve se vuoi trovare subito qualcosa senza scorrere tutta la lista. Prova a scriverci dentro "Bollo" oppure la targa della tua auto (es. "AB123CD") o il nome di tuo figlio: la lista sotto si aggiornerà all'istante facendoti vedere solo quello che hai cercato!</p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">📋 2. Come leggere la lista</h4>
+                <p class="mb-2">A seconda che tu stia usando il telefono o il computer, l'elenco si adatta per essere sempre leggibile:</p>
+                <ul class="space-y-3 ml-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-500 mt-1"><i class="fa-solid fa-desktop"></i></span>
+                        <div><strong>Se sei al computer:</strong> Vedrai una tabella classica. Ogni riga è una scadenza. Leggendo da sinistra verso destra troverai: il veicolo o la persona, che cos'è, quando scade, quanto costa, e quanti giorni mancano.</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-500 mt-1"><i class="fa-solid fa-mobile-screen"></i></span>
+                        <div><strong>Se sei col telefono:</strong> Vedrai dei "riquadri" colorati uno sopra l'altro. Il colore cambia in base al tipo di documento (es. giallo per i bolli, verde per le revisioni).</div>
+                    </li>
+                </ul>
+                <p class="mt-3 bg-red-50 p-2 rounded text-red-800 text-sm font-semibold border border-red-200">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Attenzione al colore dei giorni! Se i giorni mancanti sono scritti in ROSSO, significa che manca meno di un mese (o che è già scaduto!).
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Il tasto magico: L'interruttore "Stato"</h4>
+                <p>Hai appena pagato il bollo in posta o rinnovato la carta d'identità in comune? Bravissimo!</p>
+                <p class="mt-1">Cerca quella voce nella lista e <strong>clicca sull'interruttore a scorrimento</strong> (quello con la pallina che va da destra a sinistra). Diventerà verde con la scritta "PAGATO" o "RINNOVATA". In questo modo, l'importo verrà tolto dai soldi "da pagare" nella tua Dashboard principale e tu avrai la mente libera!</p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante rosso "Elimina"</h4>
+                <p>Serve <strong>SOLO</strong> se hai fatto un errore. Ad esempio, se hai inserito una scadenza doppia o sbagliata per sbaglio.</p>
+                <p class="mt-1 bg-amber-50 p-2 rounded text-amber-800 text-sm border border-amber-200">
+                    <strong>Importante:</strong> Se elimini una scadenza da qui, cancellerai per sempre anche il documento a cui è collegata! Se hai venduto un'auto, non usare questo tasto: vai invece nella pagina "Veicoli" ed elimina l'auto intera da lì.
+                </p>
+            </div>
+
+        </div>
+    </details>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="deadlinesManager()"
@@ -15,7 +66,7 @@
                     <div class="relative">
                         <input type="text" 
                                x-model="searchQuery"
-                               placeholder="Cerca per tipo, targa, marca o persona..." 
+                               placeholder="Cerca tipo, targa, persona, spesa..." 
                                class="w-full pl-4 pr-10 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:border-black-500 focus:ring-4 focus:ring-black-100 transition text-base shadow-sm">
                         <div x-show="searchQuery" 
                              @click="searchQuery = ''"
@@ -35,7 +86,7 @@
                         <div class="relative">
                             <input type="text" 
                                    x-model="searchQuery"
-                                   placeholder="Cerca per tipo, targa, marca o persona..." 
+                                   placeholder="Cerca per tipo, targa, marca, persona o nome spesa..." 
                                    class="w-full pl-4 pr-10 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-black-500 focus:bg-white focus:ring-4 focus:ring-black-100 transition">
                             <div x-show="searchQuery" 
                                  @click="searchQuery = ''"
@@ -82,32 +133,32 @@
                                                 <div class="text-sm text-gray-500">Patente</div>
                                             </div>
                                         </template>
-                                        <template x-if="d.tipo !== 'patente' && d.vehicle_targa">
+                                        <template x-if="['bollo', 'assicurazione', 'revisione'].includes(d.tipo) && d.vehicle_targa">
                                             <div>
-                                                <div class="text-sm font-semibold text-gray-900 font-mono uppercase" x-text="d.vehicle_targa"></div>
-                                                <div class="text-sm text-gray-500 capitalize">
-                                                    <span x-text="d.vehicle_marca"></span> <span x-text="d.vehicle_modello"></span>
-                                                </div>
+                                                <div class="text-sm font-semibold text-gray-900 font-mono uppercase" x-text="d.vehicle_marca + ' ' + d.vehicle_modello"></div>
+                                                <div class="text-sm text-gray-500 capitalize"><span x-text="d.vehicle_targa"></span></div>
                                             </div>
                                         </template>
-                                        <template x-if="!d.vehicle_targa && !d.user_name">
+                                        <template x-if="['carta_identita', 'tesserino_sanitario'].includes(d.tipo) && d.user_name">
+                                            <div>
+                                                <div class="text-sm font-semibold text-gray-900" x-text="d.user_name"></div>
+                                                <div class="text-sm text-gray-500 capitalize" x-text="d.tipo.replace('_', ' ')"></div>
+                                            </div>
+                                        </template>
+                                        <template x-if="d.tipo === 'spesa_abbonamento'">
+                                            <div>
+                                                <div class="text-sm font-bold text-violet-700" x-text="d.subscription_nome || 'Spesa'"></div>
+                                                <div class="text-sm text-gray-500" x-text="(d.user_name !== 'N/D' ? d.user_name : (d.vehicle_targa || 'Famiglia'))"></div>
+                                            </div>
+                                        </template>
+                                        
+                                        <template x-if="!d.vehicle_targa && !d.user_name && d.tipo !== 'spesa_abbonamento'">
                                             <div class="text-sm text-gray-500">N/D</div>
                                         </template>
-                                        <template x-if="d.tipo === 'carta_identita' && d.user_name">
-                                            <div>
-                                                <div class="text-sm font-semibold text-gray-900" x-text="d.user_name"></div>
-                                                <div class="text-sm text-gray-500">Carta d'Identità</div>
-                                            </div>
-                                        </template>
-                                        <template x-if="d.tipo === 'tesserino_sanitario' && d.user_name">
-                                            <div>
-                                                <div class="text-sm font-semibold text-gray-900" x-text="d.user_name"></div>
-                                                <div class="text-sm text-gray-500">Tesserino Sanitario</div>
-                                            </div>
-                                        </template>
                                     </td>
+                                    
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
                                             :class="{
                                                 'bg-yellow-100 text-yellow-800': d.tipo === 'bollo',
                                                 'bg-orange-100 text-orange-800': d.tipo === 'assicurazione',
@@ -115,12 +166,16 @@
                                                 'bg-green-100 text-green-800': d.tipo === 'revisione',
                                                 'bg-stone-100 text-stone-800': d.tipo === 'carta_identita',
                                                 'bg-teal-100 text-teal-800': d.tipo === 'tesserino_sanitario',
+                                                'bg-violet-100 text-violet-800': d.tipo === 'spesa_abbonamento'
                                             }">
-                                            <span x-text="d.tipo.charAt(0).toUpperCase() + d.tipo.slice(1)"></span>
+                                            <span x-text="d.tipo === 'spesa_abbonamento' ? 'Spesa/Abbonamento' : d.tipo.replace('_', ' ').charAt(0).toUpperCase() + d.tipo.replace('_', ' ').slice(1)"></span>
                                         </span>
                                     </td>
+                                    
                                     <td class="px-6 py-4 text-sm text-gray-700 font-semibold" x-text="d.data_scadenza_formatted"></td>
-                                    <td class="px-6 py-4 text-sm font-semibold text-gray-900" x-text="(d.tipo === 'carta_identita' || d.tipo === 'tesserino_sanitario') ? 'N/D' : ('€' + d.importo_formatted)"></td>
+                                    
+                                    <td class="px-6 py-4 text-sm font-semibold text-gray-900" x-text="['carta_identita', 'tesserino_sanitario'].includes(d.tipo) ? 'N/D' : ('€' + d.importo_formatted)"></td>
+                                    
                                     <td class="px-6 py-4">
                                         <span class="text-sm font-bold" 
                                               :class="(d.tipo === 'patente' && d.scade_quest_anno) || d.giorni_rimanenti <= 30 ? 'text-red-600' : 'text-green-600'">
@@ -128,6 +183,7 @@
                                             <span x-text="d.giorni_rimanenti"></span> gg
                                         </span>
                                     </td>
+                                    
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-center gap-3">
                                             <label class="switch switch-lg">
@@ -137,10 +193,11 @@
                                             
                                             <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold shadow-sm"
                                                 :class="d.pagato ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 text-white'">
-                                                <span x-text="(d.tipo === 'carta_identita' || d.tipo === 'tesserino_sanitario') ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA') : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO')"></span>
+                                                <span x-text="['carta_identita', 'tesserino_sanitario'].includes(d.tipo) ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA') : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO')"></span>
                                             </span>
                                         </div>
                                     </td>
+                                    
                                     <td class="px-6 py-5 text-center">
                                         <button @click="openDeleteModal(d)" class="btn-table-action btn-table-delete">
                                             <svg class="h-4 w-4 mr-1.5" style="stroke: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,8 +231,10 @@
                                 d.tipo === 'assicurazione' ? '#ee7300, #fa6400' : 
                                 d.tipo === 'revisione' ? '#22c55e, #16a34a' :
                                 d.tipo === 'carta_identita' ? '#a8a29e, #78716c' :
-                                d.tipo === 'tesserino_sanitario' ? '#14b8a6, #0f766e' :      
-                                '#ec4899, #db2777'                                  
+                                d.tipo === 'tesserino_sanitario' ? '#14b8a6, #0f766e' :
+                                d.tipo === 'patente' ? '#ec4899, #db2777' :
+                                d.tipo === 'spesa_abbonamento' ? '#8b5cf6, #6d28d9' : 
+                                '#cbd5e1, #94a3b8'
                              })`">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                             <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
@@ -188,12 +247,10 @@
                                             <p class="text-base text-white opacity-90" x-text="d.user_name"></p>
                                         </div>
                                     </template>
-                                    <template x-if="(d.tipo === 'bollo' || d.tipo === 'assicurazione' || d.tipo === 'revisione') && d.vehicle_targa">
+                                    <template x-if="['bollo', 'assicurazione', 'revisione'].includes(d.tipo) && d.vehicle_targa">
                                         <div>
-                                            <h3 class="text-2xl font-black text-white tracking-tight mb-1 uppercase font-mono" x-text="d.vehicle_targa"></h3>
-                                            <p class="text-base text-white opacity-90 capitalize">
-                                                <span x-text="d.vehicle_marca"></span> <span x-text="d.vehicle_modello"></span>
-                                            </p>
+                                            <h3 class="text-2xl font-black text-white tracking-tight mb-1 uppercase font-mono" x-text="d.vehicle_marca + ' ' + d.vehicle_modello"></h3>
+                                            <p class="text-base text-white opacity-90 capitalize"><span x-text="d.vehicle_targa"></span></p>
                                         </div>
                                     </template>
                                     <template x-if="d.tipo === 'carta_identita' && d.user_name">
@@ -208,10 +265,16 @@
                                             <p class="text-base text-white opacity-90" x-text="d.user_name"></p>
                                         </div>
                                     </template>
+                                    <template x-if="d.tipo === 'spesa_abbonamento'">
+                                        <div>
+                                            <h3 class="text-2xl font-black text-white tracking-tight mb-1" x-text="d.subscription_nome || 'Spesa'"></h3>
+                                            <p class="text-base text-white opacity-90" x-text="(d.user_name !== 'N/D' ? d.user_name : (d.vehicle_targa || 'Famiglia'))"></p>
+                                        </div>
+                                    </template>
                                 </div>
                                 <div class="ml-3">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20 text-white capitalize">
-                                        <span x-text="d.tipo.replace('_', ' ')"></span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white bg-opacity-20 text-white uppercase text-center text-[10px]">
+                                        <span x-text="d.tipo === 'spesa_abbonamento' ? 'Spesa / Abbonamento' : d.tipo.replace('_', ' ')"></span>
                                     </span>
                                 </div>
                             </div>
@@ -244,10 +307,10 @@
                                     </svg>
                                     <div class="flex-1">
                                         <p class="text-xs font-medium text-gray-500">Importo</p>
-                                        <template x-if="d.tipo === 'carta_identita' || d.tipo === 'tesserino_sanitario'">
+                                        <template x-if="['carta_identita', 'tesserino_sanitario'].includes(d.tipo)">
                                             <p class="text-xl font-bold text-gray-900">N/D</p>
                                         </template>
-                                        <template x-if="d.tipo !== 'carta_identita' && d.tipo !== 'tesserino_sanitario'">
+                                        <template x-if="!['carta_identita', 'tesserino_sanitario'].includes(d.tipo)">
                                             <p class="text-xl font-bold text-gray-900">€<span x-text="d.importo_formatted"></span></p>
                                         </template>
                                     </div>
@@ -259,7 +322,7 @@
                                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Stato</p>
                                             <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold shadow-md"
                                                 :class="d.pagato ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 text-white'">
-                                                <span x-text="(d.tipo === 'carta_identita' || d.tipo === 'tesserino_sanitario') ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA') : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO')"></span>
+                                                <span x-text="['carta_identita', 'tesserino_sanitario'].includes(d.tipo) ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA') : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO')"></span>
                                             </span>
                                         </div>
                                         <div>
@@ -317,7 +380,7 @@
                             <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Elimina Scadenza</h3>
                             <p class="text-sm text-gray-600 text-center mb-4">
                                 Sei sicuro di voler eliminare questa scadenza di tipo 
-                                <strong class="text-gray-900 capitalize" x-text="deleteDeadline.tipo ? deleteDeadline.tipo.replace('_', ' ') : ''"></strong>?
+                                <strong class="text-gray-900 capitalize" x-text="deleteDeadline.tipo ? (deleteDeadline.tipo === 'spesa_abbonamento' ? 'Spesa/Abbonamento' : deleteDeadline.tipo.replace('_', ' ')) : ''"></strong>?
                                 <br>
                                 <span class="text-xs text-red-500 block mt-2">Attenzione: questo eliminerà anche il record originale collegato.</span>
                             </p>
@@ -390,7 +453,16 @@
                         const marca = d.vehicle_marca ? d.vehicle_marca.toLowerCase() : '';
                         const modello = d.vehicle_modello ? d.vehicle_modello.toLowerCase() : '';
                         const persona = d.user_name ? d.user_name.toLowerCase() : '';
-                        return tipo.includes(query) || targa.includes(query) || marca.includes(query) || modello.includes(query) || persona.includes(query);
+                        const subNome = d.subscription_nome ? d.subscription_nome.toLowerCase() : '';
+                        const subCat = d.subscription_categoria ? d.subscription_categoria.toLowerCase() : '';
+                        
+                        return tipo.includes(query) || 
+                               targa.includes(query) || 
+                               marca.includes(query) || 
+                               modello.includes(query) || 
+                               persona.includes(query) ||
+                               subNome.includes(query) ||
+                               subCat.includes(query);
                     });
                 },
 
@@ -403,7 +475,6 @@
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
                 },
 
-                // AGGIORNAMENTO DATI IN BACKGROUND
                 async refreshData() {
                     try {
                         const res = await fetch('{{ route("deadlines.index") }}', {
@@ -418,7 +489,6 @@
                     }
                 },
 
-                // DELETE ASINCRONO
                 async submitDelete(url) {
                     this.isSubmitting = true;
                     try {
@@ -436,7 +506,7 @@
 
                         if (response.ok) {
                             this.closeDeleteModal();
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Scadenza eliminata con successo!', 'success');
                         } else {
                             this.closeDeleteModal();
@@ -450,11 +520,8 @@
                     }
                 },
 
-                // TOGGLE PAGATO ASINCRONO
                 async togglePagato(deadline) {
-                    // Update ottimistico della UI per far scattare subito il bottone
                     deadline.pagato = !deadline.pagato;
-                    
                     try {
                         const response = await fetch(`/deadlines/${deadline.id}/toggle-pagato`, {
                             method: 'PATCH',
@@ -467,10 +534,8 @@
                         });
 
                         if (response.ok) {
-                            // Aggiorna silenziosamente tutti i dati per assicurarsi che siano allineati
                             this.refreshData();
                         } else {
-                            // Se fallisce, ripristino il bottone
                             deadline.pagato = !deadline.pagato;
                             this.showSuccess('Errore durante l\'aggiornamento', 'error');
                         }
@@ -493,7 +558,6 @@
         .desktop-only-search { display: none; }
         @media (min-width: 1024px) { .mobile-only-search { display: none !important; } .desktop-only-search { display: block !important; } }
 
-        /* Bottoni tabella desktop */
         .btn-table-action { display: inline-flex !important; align-items: center; justify-content: center; font-weight: 600; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
         .btn-table-delete { background-color: #ef4444 !important; color: white !important; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
         .btn-table-delete:hover { background-color: #dc2626 !important; box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3); transform: translateY(-1px); }
@@ -501,7 +565,6 @@
         .btn-table-delete:hover svg { transform: scale(1.1); }
         .btn-table-action:active { transform: translateY(0); }
 
-        /* Bottoni card mobile */
         .btn-card-compact { padding: 0.625rem 1.25rem !important; font-size: 0.875rem; min-width: auto; flex: 0 0 auto; }
         .btn-card-action { font-weight: 600; border-radius: 0.75rem; border: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
         .btn-card-action:active { transform: translateY(0); }
@@ -510,7 +573,6 @@
         .btn-card-delete svg { transition: transform 0.2s ease; stroke: white !important; }
         .btn-card-delete:hover svg { transform: scale(1.1); }
 
-        /* Toggle Switch moderno stile iOS */
         input[type="checkbox"].sr-only:checked + div { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; }
         input[type="checkbox"].sr-only + div { background: #d1d5db; transition: all 0.3s ease; }
         input[type="checkbox"].sr-only + div::after { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -526,7 +588,6 @@
         .switch-lg input:checked + .slider:before { transform: translateX(30px); }
         .slider:hover { opacity: 0.9; }
 
-        /* Animazioni Modali */
         @keyframes blowUpModal { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes blowUpModalTwo { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
 

@@ -11,6 +11,7 @@ use App\Models\Bollo;
 use App\Models\Assicurazione;
 use App\Models\CartaIdentita;
 use App\Models\TesserinoSanitario;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -167,6 +168,8 @@ class DeadlineController extends Controller
             CartaIdentita::find($deadline->carta_identita_id)?->delete();
         } elseif ($deadline->tipo === 'tesserino_sanitario' && $deadline->tesserino_sanitario_id) {
             TesserinoSanitario::find($deadline->tesserino_sanitario_id)?->delete();
+        } elseif ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription_id) {
+            Subscription::find($deadline->subscription_id)?->delete();
         }
 
         $deadline->delete();

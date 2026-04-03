@@ -5,6 +5,54 @@
         </h2>
     </x-slot>
 
+    <details class="bg-orange-50 p-5 rounded-xl mb-8 border-2 border-orange-200 shadow-sm mt-4">
+        <summary class="font-black text-orange-800 cursor-pointer text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            Guida passo-passo: Come gestisco le Assicurazioni? (Clicca per leggere)
+        </summary>
+        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+            
+            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-orange-100">
+                🛡️ <strong>Senza questa, non si circola!</strong> Qui teniamo sotto controllo le polizze RC Auto e Moto. Come il bollo e la revisione, anche l'assicurazione è legata alla <strong>singola vettura</strong>.
+            </p>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova Polizza</h4>
+                <p>Hai appena assicurato un veicolo nuovo o cambiato compagnia?</p>
+                <ol class="list-decimal ml-5 mt-2 space-y-1">
+                    <li>Clicca sul pulsante arancione <strong>"Aggiungi Assicurazione"</strong> qui sopra.</li>
+                    <li>Seleziona il <strong>Veicolo</strong> dal menu a tendina.</li>
+                    <li>Scrivi il nome della <strong>Compagnia</strong> (es. Unipol, Generali, Prima.it) e il <strong>Numero di Polizza</strong> (lo trovi sul contratto, è utilissimo in caso di incidente!).</li>
+                    <li>Scegli la <strong>Data di Inizio</strong> e, soprattutto, la <strong>Data di Scadenza</strong>.</li>
+                    <li>Inserisci l'<strong>Importo</strong> che hai pagato e clicca su Salva.</li>
+                </ol>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔄 2. Cosa fare quando rinnovi l'assicurazione?</h4>
+                <p>È passato un anno e hai pagato il rinnovo della polizza? <strong>Non cliccare su "Aggiungi"!</strong></p>
+                <p class="mt-1 bg-white p-2 rounded text-slate-800 text-sm border border-slate-200">
+                    Cerca l'assicurazione dell'auto nella lista e clicca sul tasto blu <strong>Modifica</strong>. Aggiorna semplicemente la data di scadenza all'anno successivo e inserisci il nuovo importo pagato. Cosi facendo avrai sempre la situazione in ordine.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">💡 3. Piccoli consigli pratici</h4>
+                <ul class="space-y-2 ml-2 mt-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-500 mt-1"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <div><strong>Ricerca rapida:</strong> Se fai un incidente o vieni fermato e non ricordi la compagnia, apri l'app e usa la barra di ricerca in alto digitando la tua targa. Avrai subito nome compagnia e numero di polizza sottomano!</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-500 mt-1"><i class="fa-solid fa-note-sticky"></i></span>
+                        <div><strong>Le note:</strong> Usa il campo note per scriverti cose importanti (es. "Copre anche i cristalli" oppure "Assistenza stradale inclusa").</div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </details>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="assicurazioniManager()"

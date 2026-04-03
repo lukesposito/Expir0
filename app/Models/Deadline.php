@@ -56,6 +56,31 @@ class Deadline extends Model
     {
         return $this->belongsTo(Revisione::class);
     }
+
+    public function bollo()
+    {
+        return $this->belongsTo(Bollo::class);
+    }
+
+    public function assicurazione()
+    {
+        return $this->belongsTo(Assicurazione::class);
+    }
+
+    public function cartaIdentita()
+    {
+        return $this->belongsTo(CartaIdentita::class);
+    }
+
+    public function tesserinoSanitario()
+    {
+        return $this->belongsTo(TesserinoSanitario::class);
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
     
     // Helper per ottenere il soggetto della scadenza
     public function getSubjectAttribute()
@@ -167,5 +192,21 @@ class Deadline extends Model
     {
         // Ritorna true se la scadenza è nell'anno in corso (es. 2026)
         return $this->data_scadenza->year === Carbon::now()->year;
+    }
+
+    protected static function booted()
+    {
+        // Quando una scadenza viene modificata...
+        static::updating(function ($deadline) {
+            // Se la data di scadenza è stata cambiata (es. l'ha rinnovata)
+            if ($deadline->isDirty('data_scadenza')) {
+                // Resettiamo tutti gli avvisi per il futuro!
+                $deadline->notified_year = false;
+                $deadline->notified_30 = false;
+                $deadline->notified_15 = false;
+                $deadline->notified_7 = false;
+                $deadline->pagato = false; // Opzionale: rimettiamolo da pagare
+            }
+        });
     }
 }
