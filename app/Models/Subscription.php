@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Subscription extends Model
 {
@@ -29,6 +30,11 @@ class Subscription extends Model
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function deadlines()
+    {
+        return $this->hasMany(Deadline::class);
     }
 
     // Sincronizzazione automatica con le scadenze
@@ -65,6 +71,15 @@ class Subscription extends Model
             }
         });
 
+        // 3. QUANDO CANCELLI UNA SPESA -> ELIMINA LA SCADENZA
+        static::deleting(function ($subscription) {
+            DB::table('deadlines')
+                ->where('subscription_id', $subscription->id)
+                ->delete();
+        });
+
+
+        //DA VERIFICARE!!!!!!!
         // 3. QUANDO CANCELLI UNA SPESA -> ELIMINA LA SCADENZA
         // Nota: se hai messo onDelete('cascade') nella migration, questo passaggio
         // avviene già nel database, ma mettiamolo per sicurezza se usi SoftDeletes in futuro

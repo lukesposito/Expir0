@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Deadline extends Model
 {
@@ -16,6 +17,7 @@ class Deadline extends Model
         'assicurazione_id',
         'carta_identita_id',
         'tesserino_sanitario_id',
+        'subscription_id',
         'tipo',
         'data_scadenza',
         'importo',
