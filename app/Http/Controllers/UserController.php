@@ -34,6 +34,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'data_nascita' => 'nullable|date',
             'password' => ['required', Password::defaults()],
             'role' => 'required|in:admin,user',
         ]);
@@ -41,6 +42,7 @@ class UserController extends Controller
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'data_nascita' => $validated['data_nascita'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'is_deleted' => false,
@@ -55,12 +57,14 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'data_nascita' => 'nullable|date',
             'role' => 'required|in:admin,user',
             'password' => ['nullable', Password::defaults()],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
+        $user->data_nascita = $validated['data_nascita'];
         $user->role = $validated['role'];
         
         // Aggiorna la password solo se l'admin ne ha digitata una nuova

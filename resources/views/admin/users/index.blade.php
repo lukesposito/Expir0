@@ -101,6 +101,12 @@
                                     <label class="form-label">Indirizzo Email *</label>
                                     <input type="email" x-model="formData.email" required class="form-input">
                                 </div>
+                                
+                                <div>
+                                    <label class="form-label">Data di Nascita *</label>
+                                    <input type="date" x-model="formData.data_nascita" required class="form-input">
+                                </div>
+
                                 <div>
                                     <label class="form-label">Ruolo *</label>
                                     <select x-model="formData.role" required class="form-input">
@@ -191,7 +197,7 @@
                 isEditing: false, isSubmitting: false,
                 successMessage: '', successType: 'success',
                 
-                formData: { id: null, name: '', email: '', role: 'user', password: '' },
+                formData: { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '' },
                 userToToggle: null,
 
                 get filteredUsers() {
@@ -200,8 +206,8 @@
                     return this.users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
                 },
 
-                openCreateModal() { this.isEditing = false; this.formData = { id: null, name: '', email: '', role: 'user', password: '' }; this.showUserModal = true; },
-                openEditModal(user) { this.isEditing = true; this.formData = { id: user.id, name: user.name, email: user.email, role: user.role, password: '' }; this.showUserModal = true; },
+                openCreateModal() { this.isEditing = false; this.formData = { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '' }; this.showUserModal = true; },
+                openEditModal(user) { this.isEditing = true; this.formData = { id: user.id, name: user.name, email: user.email, role: user.role, password: '', data_nascita: user.data_nascita || '' }; this.showUserModal = true; },
                 closeUserModal() { this.isClosingModal = true; setTimeout(() => { this.showUserModal = false; this.isClosingModal = false; }, 300); },
                 
                 closeConfirmModal() { this.isClosingConfirm = true; setTimeout(() => { this.showConfirmModal = false; this.isClosingConfirm = false; this.userToToggle = null; }, 300); },
@@ -231,6 +237,7 @@
                     data.append('name', this.formData.name);
                     data.append('email', this.formData.email);
                     data.append('role', this.formData.role);
+                    if (this.formData.data_nascita) data.append('data_nascita', this.formData.data_nascita);
                     if (this.formData.password) data.append('password', this.formData.password);
 
                     try {

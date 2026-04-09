@@ -24,7 +24,7 @@ class Patente extends Model
         'importo' => 'decimal:2',
     ];
 
-        // Blocco per gli eventi automatici
+    // Blocco per gli eventi automatici
     protected static function booted()
     {
         static::saved(function ($patente) {
@@ -41,28 +41,40 @@ class Patente extends Model
     {
         $dataRilascio = Carbon::parse($this->data_rilascio);
 
+        // 1. GESTIONE CATEGORIE MULTIPLE (es. "A, B, C")
+        // Rimuoviamo gli spazi vuoti, mettiamo in maiuscolo e spezziamo la stringa in un Array
+        $categorie = explode(',', strtoupper(str_replace(' ', '', $this->tipo ?? '')));
+
+        // Controlliamo se nell'array esiste la C (ho aggiunto anche CE nel caso la scrivessero)
+        $haPatentePesante = in_array('C', $categorie) || in_array('CE', $categorie);
+
         // Controlliamo se l'utente collegato alla patente ha una data di nascita salvata
         if ($this->user && $this->user->data_nascita) {
             $dataNascita = Carbon::parse($this->user->data_nascita);
             
-            // 1. Calcoliamo quanti anni aveva la persona quando ha preso/rinnovato la patente
+            // Calcoliamo quanti anni aveva la persona quando ha preso/rinnovato la patente
             $etaAlRilascio = $dataNascita->diffInYears($dataRilascio);
 
-            // 2. Determiniamo gli anni di validità in base alla sua età in quel momento
-            if ($etaAlRilascio < 50) {
-                $anniValidita = 10; // Come te: 10 anni
-            } elseif ($etaAlRilascio < 70) {
-                $anniValidita = 5;  // Come tuo papà: 5 anni
-            } elseif ($etaAlRilascio < 80) {
-                $anniValidita = 3;
+            // Determiniamo gli anni di validità
+            if ($haPatentePesante) {
+                $anniValidita = 3; // REGOLA FISSA: Se ha la C o CE -> 3 anni
             } else {
-                $anniValidita = 2;
+                // REGOLA STANDARD: Basata sull'età per patenti A e B
+                if ($etaAlRilascio < 50) {
+                    $anniValidita = 10;
+                } elseif ($etaAlRilascio < 70) {
+                    $anniValidita = 5;
+                } elseif ($etaAlRilascio < 80) {
+                    $anniValidita = 3;
+                } else {
+                    $anniValidita = 2;
+                }
             }
 
-            // 3. IL TUO RAGIONAMENTO: Anno di rilascio + Anni di validità
+            // Calcolo: Anno di rilascio + Anni di validità
             $annoScadenza = $dataRilascio->year + $anniValidita;
 
-            // 4. Assegniamo il GIORNO e il MESE del suo compleanno a quell'anno
+            // Assegniamo il GIORNO e il MESE del suo compleanno a quell'anno
             $scadenzaEffettiva = Carbon::create(
                 $annoScadenza, 
                 $dataNascita->month, 
@@ -70,12 +82,15 @@ class Patente extends Model
             );
 
         } else {
-            // Caso di emergenza: se ti sei dimenticato di inserire la data di nascita dell'utente, 
-            // il sistema fa un calcolo base di +10 anni esatti dal rilascio per non andare in errore.
-            $scadenzaEffettiva = $dataRilascio->copy()->addYears(10);
+            // Caso di emergenza: manca la data di nascita dell'utente
+            if ($haPatentePesante) {
+                $scadenzaEffettiva = $dataRilascio->copy()->addYears(3);
+            } else {
+                $scadenzaEffettiva = $dataRilascio->copy()->addYears(10);
+            }
         }
 
-        // 5. Inserisce o aggiorna la scadenza nella tabella deadlines
+        // Inserisce o aggiorna la scadenza nella tabella deadlines
         Deadline::updateOrCreate(
             [
                 'user_id' => $this->user_id,
@@ -83,9 +98,8 @@ class Patente extends Model
             ],
             [
                 'data_scadenza' => $scadenzaEffettiva,
-                // Se hai inserito un importo usa quello, altrimenti lascia null
                 'importo' => $this->importo, 
-                'note' => 'Rinnovo Patente ' . ($this->tipo ? 'cat. '.$this->tipo : '') . '. Da rinnovare entro il giorno del compleanno!',
+                'note' => 'Rinnovo Patente ' . ($this->tipo ? 'cat. '.strtoupper($this->tipo) : '') . '. Da rinnovare entro il giorno del compleanno!',
                 'pagato' => false
             ]
         );
