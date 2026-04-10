@@ -13,7 +13,15 @@ class CartaIdentita extends Model
     protected $fillable = ['user_id', 'numero', 'comune_rilascio', 'data_rilascio', 'data_scadenza', 'note'];
     protected $casts = ['data_rilascio' => 'date', 'data_scadenza' => 'date'];
 
-    public function user() { return $this->belongsTo(User::class); }
+    public function user() 
+    { 
+        return $this->belongsTo(User::class); 
+    }
+
+    public function deadlines()
+    {
+        return $this->hasMany(Deadline::class);
+    }
 
     protected static function booted()
     {

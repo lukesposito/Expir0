@@ -12,6 +12,9 @@ class BolloController extends Controller
     public function index(Request $request)
     {
         $bolli = Bollo::with('vehicle')
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function($bollo) {

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Vehicle;
+use App\Models\Deadline;
 use Illuminate\Database\Eloquent\Model;
 
 class Revisione extends Model
@@ -34,9 +36,9 @@ class Revisione extends Model
     }
     
     // Relazione con Deadline
-    public function deadline()
+    public function deadlines()
     {
-        return $this->hasOne(Deadline::class);
+        return $this->hasMany(Deadline::class);
     }
 
     // Event: quando salvi una revisione, sincronizza deadline
@@ -55,9 +57,11 @@ class Revisione extends Model
     // Metodo per sincronizzare deadline
     public function syncDeadline()
     {
-        // Se esiste già una deadline, aggiornala
-        if ($this->deadline) {
-            $this->deadline->update([
+        // Usiamo ->first() per prendere la scadenza collegata (se esiste)
+        $scadenza = $this->deadlines()->first();
+
+        if ($scadenza) {
+            $scadenza->update([
                 'vehicle_id' => $this->vehicle_id,
                 'data_scadenza' => $this->data_prossima_revisione,
                 'importo' => $this->importo,

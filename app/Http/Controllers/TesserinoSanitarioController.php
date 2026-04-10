@@ -11,20 +11,26 @@ class TesserinoSanitarioController extends Controller
     public function index(Request $request)
     {
         // Recuperiamo tutti i tesserini con i relativi utenti
-        $documenti = TesserinoSanitario::with('user')->orderBy('data_scadenza', 'asc')->get()->map(function($doc) {
-            return [
-                'id' => $doc->id,
-                'user_id' => $doc->user_id,
-                'codice_fiscale' => $doc->codice_fiscale,
-                'data_scadenza' => $doc->data_scadenza ? $doc->data_scadenza->format('Y-m-d') : null,
-                'note' => $doc->note,
-                'user' => [
-                    'id' => $doc->user->id,
-                    'name' => $doc->user->name,
-                    'email' => $doc->user->email,
-                ]
-            ];
-        });
+        $documenti = TesserinoSanitario::with('user')
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
+            ->orderBy('data_scadenza', 'asc')
+            ->get()
+            ->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'user_id' => $doc->user_id,
+                    'codice_fiscale' => $doc->codice_fiscale,
+                    'data_scadenza' => $doc->data_scadenza ? $doc->data_scadenza->format('Y-m-d') : null,
+                    'note' => $doc->note,
+                    'user' => [
+                        'id' => $doc->user->id,
+                        'name' => $doc->user->name,
+                        'email' => $doc->user->email,
+                    ]
+                ];
+            });
 
         // RISPOSTA ASINCRONA JSON PER ALPINE.JS
         if ($request->wantsJson() || $request->ajax()) {

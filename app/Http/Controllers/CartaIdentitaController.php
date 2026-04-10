@@ -11,22 +11,28 @@ class CartaIdentitaController extends Controller
     public function index(Request $request)
     {
         // Recuperiamo tutte le carte d'identità con i relativi utenti
-        $documenti = CartaIdentita::with('user')->orderBy('data_scadenza', 'asc')->get()->map(function($doc) {
-            return [
-                'id' => $doc->id,
-                'user_id' => $doc->user_id,
-                'numero' => $doc->numero,
-                'comune_rilascio' => $doc->comune_rilascio,
-                'data_rilascio' => $doc->data_rilascio ? $doc->data_rilascio->format('Y-m-d') : null,
-                'data_scadenza' => $doc->data_scadenza ? $doc->data_scadenza->format('Y-m-d') : null,
-                'note' => $doc->note,
-                'user' => [
-                    'id' => $doc->user->id,
-                    'name' => $doc->user->name,
-                    'email' => $doc->user->email,
-                ]
-            ];
-        });
+        $documenti = CartaIdentita::with('user')
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
+            ->orderBy('data_scadenza', 'asc')
+            ->get()
+            ->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'user_id' => $doc->user_id,
+                    'numero' => $doc->numero,
+                    'comune_rilascio' => $doc->comune_rilascio,
+                    'data_rilascio' => $doc->data_rilascio ? $doc->data_rilascio->format('Y-m-d') : null,
+                    'data_scadenza' => $doc->data_scadenza ? $doc->data_scadenza->format('Y-m-d') : null,
+                    'note' => $doc->note,
+                    'user' => [
+                        'id' => $doc->user->id,
+                        'name' => $doc->user->name,
+                        'email' => $doc->user->email,
+                    ]
+                ];
+            });
 
         // RISPOSTA ASINCRONA JSON PER ALPINE.JS (SPA)
         if ($request->wantsJson() || $request->ajax()) {

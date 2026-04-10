@@ -31,5 +31,13 @@ class Assicurazione extends Model
         });
     }
 
-    public function vehicle() { return $this->belongsTo(Vehicle::class); }
+    public function vehicle() 
+    { 
+        return $this->belongsTo(Vehicle::class);
+    }
+    
+    public function deadlines()
+    {
+        return $this->hasMany(Deadline::class);
+    }
 }

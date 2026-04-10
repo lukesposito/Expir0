@@ -13,6 +13,9 @@ class RevisioneController extends Controller
     public function index(Request $request)
     {
         $revisioni = Revisione::with('vehicle')
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
             ->orderBy('data_prossima_revisione', 'desc')
             ->get()
             ->map(function($revisione) {
@@ -44,7 +47,7 @@ class RevisioneController extends Controller
             return response()->json(['revisioni' => $revisioni]);
         }
         
-        $vehicles = Vehicle::all();  // Tutti i veicoli della famiglia
+        $vehicles = Vehicle::all();  
         
         return view('revisioni.index', compact('revisioni', 'vehicles'));
     }

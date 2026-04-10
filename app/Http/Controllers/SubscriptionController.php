@@ -13,6 +13,9 @@ class SubscriptionController extends Controller
     public function index()
     {
         $subscriptions = Subscription::with(['user', 'vehicle'])
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function ($sub) {

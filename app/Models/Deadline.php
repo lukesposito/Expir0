@@ -12,12 +12,15 @@ class Deadline extends Model
     protected $fillable = [
         'vehicle_id',
         'user_id',
+        'patente_id',
         'revisione_id',
         'bollo_id',
         'assicurazione_id',
         'carta_identita_id',
         'tesserino_sanitario_id',
         'subscription_id',
+        'subscription_nome',
+        'subscription_categoria',
         'tipo',
         'data_scadenza',
         'importo',
@@ -194,6 +197,18 @@ class Deadline extends Model
     {
         // Ritorna true se la scadenza è nell'anno in corso (es. 2026)
         return $this->data_scadenza->year === Carbon::now()->year;
+    }
+
+    // Estrae il nome dell'abbonamento collegato
+    public function getSubscriptionNomeAttribute()
+    {
+        return $this->subscription ? $this->subscription->nome : null;
+    }
+
+    // Estrae la categoria dell'abbonamento collegato
+    public function getSubscriptionCategoriaAttribute()
+    {
+        return $this->subscription ? $this->subscription->categoria : null;
     }
 
     protected static function booted()

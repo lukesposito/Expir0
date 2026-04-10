@@ -11,7 +11,11 @@ class AssicurazioneController extends Controller
 {
     public function index(Request $request)
     {
+        // Aggiungiamo whereHas per filtrare solo quelle NON pagate nella dashboard delle scadenze
         $assicurazioni = Assicurazione::with('vehicle')
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function($assicurazione) {

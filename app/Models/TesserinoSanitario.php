@@ -13,7 +13,15 @@ class TesserinoSanitario extends Model
     protected $fillable = ['user_id', 'codice_fiscale', 'data_scadenza', 'note'];
     protected $casts = ['data_scadenza' => 'date'];
 
-    public function user() { return $this->belongsTo(User::class); }
+    public function user() 
+    { 
+        return $this->belongsTo(User::class); 
+    }
+
+    public function deadlines()
+    {
+        return $this->hasMany(Deadline::class);
+    }
 
     protected static function booted()
     {

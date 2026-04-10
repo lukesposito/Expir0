@@ -55,6 +55,11 @@ class DashboardController extends Controller
             ->first();
         
         $budgetMensileConsigliato = $mesePiuCostoso ? $mesePiuCostoso->totale : 0;
+
+        $storicoPagamenti = Deadline::where('pagato', true)
+                            ->whereYear('data_scadenza', Carbon::now()->year)
+                            ->orderBy('data_scadenza', 'desc')
+                            ->get();
         
         // ==================== SCADENZE PROSSIME (30 GIORNI) ====================
         

@@ -5,35 +5,40 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Patente;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PatenteController extends Controller
 {
     public function index(Request $request)
     {
-        $patenti = Patente::with('user')->withCount('deadlines')->get()->map(function($patente) {
-            return [
-                'id' => $patente->id,
-                'numero_patente' => $patente->numero_patente,
-                'tipo' => $patente->tipo,
-                'data_rilascio' => $patente->data_rilascio ? $patente->data_rilascio->format('Y-m-d') : null,
-                'data_rilascio_formatted' => $patente->data_rilascio ? $patente->data_rilascio->format('d/m/Y') : null,
-                'importo' => $patente->importo, // Passiamo l'importo
-                'deadlines_count' => $patente->deadlines_count,
-                'user' => [
-                    'id' => $patente->user->id,
-                    'name' => $patente->user->name,
-                    'email' => $patente->user->email,
-                ]
-            ];
-        });
+        $patenti = Patente::with('user')
+            ->whereHas('deadlines', function($query) {
+                $query->where('pagato', false);
+            })
+            // RIMOSSO: ->withCount('deadlines')
+            ->get()
+            ->map(function($patente) {
+                return [
+                    'id' => $patente->id,
+                    'numero_patente' => $patente->numero_patente,
+                    'tipo' => $patente->tipo,
+                    'data_rilascio' => $patente->data_rilascio ? $patente->data_rilascio->format('Y-m-d') : null,
+                    'data_rilascio_formatted' => $patente->data_rilascio ? $patente->data_rilascio->format('d/m/Y') : null,
+                    'data_scadenza' => $patente->data_scadenza ? $patente->data_scadenza->format('Y-m-d') : null,
+                    'data_scadenza_formatted' => $patente->data_scadenza ? $patente->data_scadenza->format('d/m/Y') : null,
+                    'importo' => $patente->importo,
+                    'user' => [
+                        'id' => $patente->user->id,
+                        'name' => $patente->user->name,
+                        'email' => $patente->user->email,
+                    ]
+                ];
+            });
 
-        // SE LA RICHIESTA VIENE DA ALPINE (AJAX), RISPONDI CON IL JSON PULITO
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['patenti' => $patenti]);
         }
 
-        // ALTRIMENTI (al primo caricamento), CARICA LA PAGINA NORMALE
         $users = User::orderBy('name')->get();
         return view('patenti.index', compact('patenti', 'users'));
     }
@@ -45,6 +50,7 @@ class PatenteController extends Controller
             'numero_patente' => 'required|string|max:20|unique:patentes',
             'tipo' => 'nullable|string|max:10',
             'data_rilascio' => 'nullable|date',
+            'data_scadenza' => 'nullable|date',
             'importo' => 'nullable|numeric|min:0'
         ]);
 
@@ -53,9 +59,12 @@ class PatenteController extends Controller
             $validated['tipo'] = strtoupper($validated['tipo']);
         }
 
+        if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
+            $validated['data_scadenza'] = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+        }
+
         Patente::create($validated);
 
-        // SE E' UNA CHIAMATA AJAX (come quella che fa ora Alpine), RESTITUISCI JSON
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Patente aggiunta con successo!']);
         }
@@ -70,12 +79,17 @@ class PatenteController extends Controller
             'numero_patente' => 'required|string|max:20|unique:patentes,numero_patente,' . $patente->id,
             'tipo' => 'nullable|string|max:10',
             'data_rilascio' => 'nullable|date',
+            'data_scadenza' => 'nullable|date',
             'importo' => 'nullable|numeric|min:0'
         ]);
 
         $validated['numero_patente'] = strtoupper($validated['numero_patente']);
         if (!empty($validated['tipo'])) {
             $validated['tipo'] = strtoupper($validated['tipo']);
+        }
+
+        if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
+            $validated['data_scadenza'] = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
         }
 
         $patente->update($validated);
@@ -96,5 +110,31 @@ class PatenteController extends Controller
         }
 
         return redirect()->route('patenti.index')->with('success', 'Patente eliminata!');
+    }
+
+    private function calcolaScadenzaPatente($userId, $dataRilascioStr, $tipo)
+    {
+        $user = User::find($userId);
+        $dataRilascio = Carbon::parse($dataRilascioStr);
+        $categorie = explode(',', strtoupper(str_replace(' ', '', $tipo ?? '')));
+        $haPatentePesante = in_array('C', $categorie) || in_array('CE', $categorie);
+
+        if ($user && $user->data_nascita) {
+            $dataNascita = Carbon::parse($user->data_nascita);
+            $eta = $dataNascita->diffInYears($dataRilascio);
+
+            if ($haPatentePesante) {
+                $anni = 3;
+            } else {
+                if ($eta < 50) $anni = 10;
+                elseif ($eta < 70) $anni = 5;
+                elseif ($eta < 80) $anni = 3;
+                else $anni = 2;
+            }
+
+            return Carbon::create($dataRilascio->year + $anni, $dataNascita->month, $dataNascita->day)->format('Y-m-d');
+        }
+
+        return $dataRilascio->copy()->addYears($haPatentePesante ? 3 : 10)->format('Y-m-d');
     }
 }
