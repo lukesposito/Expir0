@@ -19,193 +19,118 @@ use App\Models\Subscription;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $oggi = Carbon::now();
-        $tra30giorni = Carbon::now()->addDays(30);
-        $inizioAnno = Carbon::now()->startOfYear();
-        $fineAnno = Carbon::now()->endOfYear();
+        $selectedYear = $request->input('year', $oggi->year);
         
-        // ==================== CONTATORI ====================
-        
-        $totaleVeicoli = Vehicle::count();
-        $totalePatenti = Patente::count();
-        $totaleScadenze = Deadline::count();
-        
-        // Usa gli scope del model per query pulite
-        $scadenzeImminenti = Deadline::imminenti()->count();
-        $scadenzeUrgenti = Deadline::urgenti()->count();
-        
-        // ==================== STATISTICHE FINANZIARIE ====================
-        
-        $costiAnnuali = Deadline::whereYear('data_scadenza', $oggi->year)->sum('importo');
-        $pagatoQuestAnno = Deadline::whereYear('data_scadenza', $oggi->year)->where('pagato', true)->sum('importo');
-        $daPagareQuestAnno = Deadline::whereBetween('data_scadenza', [$oggi, $fineAnno])->where('pagato', false)->sum('importo');
-        $spesaMediaVeicolo = $totaleVeicoli > 0 ? $costiAnnuali / $totaleVeicoli : 0;
-        
-        $spesoQuestoMese = Deadline::whereMonth('data_scadenza', $oggi->month)
-            ->whereYear('data_scadenza', $oggi->year)
-            ->where('pagato', true)
-            ->sum('importo');
-        
-        $mesePiuCostoso = Deadline::whereYear('data_scadenza', $oggi->year)
-            ->selectRaw('MONTH(data_scadenza) as mese, SUM(importo) as totale')
-            ->groupBy('mese')
-            ->orderBy('totale', 'desc')
-            ->first();
-        
-        $budgetMensileConsigliato = $mesePiuCostoso ? $mesePiuCostoso->totale : 0;
+        // 1. Recupero anni disponibili per il menu a tendina
+        $yearsFromDb = Deadline::selectRaw('YEAR(data_scadenza) as year')
+                        ->whereNotNull('data_scadenza')->distinct()->pluck('year')->toArray();
+        $availableYears = array_values(array_unique(array_merge($yearsFromDb, [$oggi->year])));
+        rsort($availableYears);
 
-        $storicoPagamenti = Deadline::where('pagato', true)
-                            ->whereYear('data_scadenza', Carbon::now()->year)
-                            ->orderBy('data_scadenza', 'desc')
-                            ->get();
-        
-        // ==================== SCADENZE PROSSIME (30 GIORNI) ====================
-        
-        $prossimaScadenze = Deadline::with(['vehicle', 'user', 'subscription'])
-            ->imminenti()
-            ->orderBy('data_scadenza', 'asc')
-            ->limit(10)
-            ->get();
-        
-        // ==================== CALENDARIO COMPLETO ====================
-        
-        // Aggiungiamo 'subscription' ai with() per caricare le spese
-        $calendarEvents = Deadline::with(['vehicle', 'user', 'subscription'])
-            ->orderBy('data_scadenza', 'asc')
-            ->get()
-            ->map(function($deadline) {
-                $backgroundColor = $deadline->tipo_color; 
-                $borderColor = $deadline->tipo_color;
+        // 2. Calcolo dei dati per l'anno selezionato (centralizzato)
+        $data = $this->getDashboardData($selectedYear);
 
-                if ($deadline->pagato) {
-                    $backgroundColor = '#10b981'; 
-                    $borderColor = '#059669';    
-                } elseif ($deadline->data_scadenza->isPast()) {
-                    $backgroundColor = '#ef4444'; 
-                    $borderColor = '#b91c1c';    
-                }
-
-                // Costruiamo il titolo in modo sicuro per evitare l'errore "on null"
-                $soggetto = 'Famiglia'; // Fallback se non c'è né veicolo né utente
-                
-                if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription) {
-                    $soggetto = $deadline->subscription->nome;
-                } elseif ($deadline->vehicle) {
-                    $soggetto = $deadline->vehicle->targa;
-                } elseif ($deadline->user) {
-                    $soggetto = $deadline->user->name;
-                }
-
-                $tipoFormattato = ucfirst(str_replace('_', ' ', $deadline->tipo));
-
-                return [
-                    'id' => $deadline->id,
-                    'tipo' => $deadline->tipo,
-                    'title' => $soggetto . ' - ' . $tipoFormattato,
-                    'start' => $deadline->data_scadenza->format('Y-m-d'),
-                    'importo' => $deadline->importo ?? 0,
-                    'pagato' => $deadline->pagato,
-                    'backgroundColor' => $backgroundColor,
-                    'borderColor' => $borderColor,
-                    'extendedProps' => [
-                        'pagato' => $deadline->pagato,
-                        'importo' => $deadline->importo ?? 0
-                    ]
-                ];
-            });
-        
-        // ==================== GRAFICI: SPESE ====================
-        
-        $spesePerTipo = Deadline::whereYear('data_scadenza', $oggi->year)
-            ->selectRaw('tipo, SUM(importo) as totale')
-            ->groupBy('tipo')
-            ->get()
-            ->mapWithKeys(function($item) {
-                return [$item->tipo => $item->totale];
-            });
-        
-        $speseMensili = [];
-        for ($mese = 1; $mese <= 12; $mese++) {
-            $pagatoMese = Deadline::whereYear('data_scadenza', $oggi->year)->whereMonth('data_scadenza', $mese)->where('pagato', true)->sum('importo');
-            $daPagareMese = Deadline::whereYear('data_scadenza', $oggi->year)->whereMonth('data_scadenza', $mese)->where('pagato', false)->sum('importo');
-            $speseMensili[] = [
-                'mese' => Carbon::create($oggi->year, $mese, 1)->locale('it')->isoFormat('MMM'),
-                'pagato' => $pagatoMese,
-                'da_pagare' => $daPagareMese,
-                'totale' => $pagatoMese + $daPagareMese
-            ];
+        // 3. SE È AJAX: Restituiamo solo il "pacchetto dati" JSON, niente HTML!
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($data);
         }
-        
-        // ==================== REVISIONI IN SCADENZA ====================
-        
-        $revisioniInScadenza = Revisione::with('vehicle')
-            ->whereBetween('data_prossima_revisione', [$oggi, $tra30giorni])
-            ->orderBy('data_prossima_revisione', 'asc')
-            ->get()
-            ->map(function($revisione) use ($oggi) {
-                $prossima = Carbon::parse($revisione->data_prossima_revisione);
-                $giorniRimanenti = $oggi->diffInDays($prossima, false);
-                return [
-                    'vehicle_targa' => $revisione->vehicle->targa,
-                    'vehicle_marca' => $revisione->vehicle->marca,
-                    'data_prossima' => $revisione->data_prossima_revisione->format('d/m/Y'),
-                    'giorni_rimanenti' => (int) $giorniRimanenti,
-                    'urgente' => $giorniRimanenti <= 30,
-                ];
-            });
-        
-        // ==================== STATISTICHE ARCHIVIO DIGITALE ====================
-        
+
+        // 4. SE È IL PRIMO CARICAMENTO: Passiamo tutto alla vista Blade
         $categorieStats = $this->calcolaStatisticheArchivio();
-        $deadlines = Deadline::with(['vehicle', 'user'])->get();
         
-        return view('dashboard', compact(
-            'totaleVeicoli', 'totalePatenti', 'totaleScadenze', 'scadenzeImminenti',
-            'scadenzeUrgenti', 'costiAnnuali', 'pagatoQuestAnno', 'daPagareQuestAnno',
-            'spesaMediaVeicolo', 'budgetMensileConsigliato', 'spesoQuestoMese',
-            'prossimaScadenze', 'calendarEvents', 'spesePerTipo', 'speseMensili',
-            'revisioniInScadenza', 'categorieStats', 'deadlines'
-        ));
+        return view('dashboard', array_merge($data, [
+            'availableYears' => $availableYears,
+            'selectedYear' => $selectedYear,
+            'categorieStats' => $categorieStats
+        ]));
+    }
+
+    /**
+     * Il "motore" che preleva i dati. Usato sia per la pagina intera che per l'AJAX.
+     */
+    private function getDashboardData($selectedYear)
+    {
+        // Contatori Base
+        $totaleVeicoli = Vehicle::count();
+        $scadenzeUrgenti = Deadline::whereYear('data_scadenza', $selectedYear)->urgenti()->count();
+        $scadenzeImminenti = Deadline::whereYear('data_scadenza', $selectedYear)->imminenti()->count();
+        $daPagareQuestAnno = Deadline::whereYear('data_scadenza', $selectedYear)->where('pagato', false)->sum('importo');
+
+        // Preleviamo le scadenze dell'anno
+        $deadlines = Deadline::with(['vehicle', 'user', 'subscription'])
+            ->whereYear('data_scadenza', $selectedYear)
+            ->get();
+
+        // Trasformiamo i dati in un Array pulito per JavaScript (Alpine & ChartJS)
+        $jsExpenses = $deadlines->map(function($d) {
+            $data = Carbon::parse($d->data_scadenza)->startOfDay();
+            $giorniDiff = (int) Carbon::now()->startOfDay()->diffInDays($data, false);
+            
+            $soggetto = 'Spesa di Famiglia';
+            if ($d->tipo === 'spesa_abbonamento' && $d->subscription) {
+                $soggetto = $d->subscription->nome;
+            } elseif ($d->vehicle) {
+                $soggetto = strtoupper($d->vehicle->marca . ' ' . $d->vehicle->modello);
+            } elseif ($d->user) {
+                $soggetto = $d->user->name;
+            }
+            
+            return [
+                'id' => $d->id,
+                'titolo' => $soggetto,
+                'tipo' => $d->tipo,
+                'tipo_label' => ucfirst(str_replace('_', ' ', $d->tipo)),
+                'tipo_color' => $d->tipo_color ?? '#64748b',
+                'tipo_icon' => $d->tipo_icon ?? '📄',
+                'importo' => (float) ($d->importo ?? 0),
+                'importo_formattato' => '€' . number_format($d->importo ?? 0, 2, ',', '.'),
+                'pagato' => (bool) $d->pagato,
+                'mese' => $data->month - 1, // 0 = Gennaio, 11 = Dicembre
+                'giorni' => $giorniDiff,
+                'is_scaduto' => $giorniDiff < 0,
+                'data_formattata' => $data->format('d/m/Y')
+            ];
+        })->values()->toArray();
+
+        return [
+            'stats' => [
+                'scadenzeUrgenti' => $scadenzeUrgenti,
+                'scadenzeImminenti' => $scadenzeImminenti,
+                'daPagareQuestAnno' => (float) $daPagareQuestAnno,
+                'totaleVeicoli' => $totaleVeicoli
+            ],
+            'jsExpenses' => $jsExpenses
+        ];
     }
 
     public function stats()
     {
-        // Restituisce le statistiche dei DOCUMENTI aggiornate tramite chiamata JSON di Alpine.js
         return response()->json($this->calcolaStatisticheArchivio());
     }
 
-    /**
-     * Funzione unica e centralizzata per calcolare le percentuali dei DOCUMENTI CARICATI
-     */
     private function calcolaStatisticheArchivio()
     {
         $categorieStats = [];
-        
-        // Contiamo le "cose fisiche" possedute, non le scadenze!
         $totaleVeicoli = Vehicle::count();
 
-        // Definiamo qual è il "100%" per ogni categoria
         $totaliAttesi = [
-            'bollo' => $totaleVeicoli,               // Mi aspetto 1 bollo per ogni auto
-            'assicurazione' => $totaleVeicoli,       // Mi aspetto 1 assicurazione per ogni auto
-            'revisione' => $totaleVeicoli,           // Mi aspetto 1 referto per ogni auto
-            'patente' => Patente::count(),           // Mi aspetto 1 file per ogni patente registrata
-            'carta_identita' => CartaIdentita::count(),       // Mi aspetto 1 file per ogni carta identità
-            'tesserino_sanitario' => TesserinoSanitario::count() // Mi aspetto 1 file per ogni tesserino
+            'bollo' => $totaleVeicoli,               
+            'assicurazione' => $totaleVeicoli,       
+            'revisione' => $totaleVeicoli,           
+            'patente' => Patente::count(),           
+            'carta_identita' => CartaIdentita::count(),       
+            'tesserino_sanitario' => TesserinoSanitario::count() 
         ];
 
         foreach ($totaliAttesi as $catForm => $totaleAtteso) {
-            // Quanti PDF/Immagini ha fisicamente caricato l'utente per questa categoria
             $documentiCaricati = Document::where('categoria', $catForm)->count();
-            
             $percentuale = 0;
             if ($totaleAtteso > 0) {
-                // Calcola la percentuale matematica esatta (senza mai sforare il 100%)
                 $percentuale = min(100, round(($documentiCaricati / $totaleAtteso) * 100));
             } elseif ($documentiCaricati > 0) {
-                // Se non hai ancora registrato l'auto/documento ma hai caricato il file in anticipo
                 $percentuale = 100;
             }
             
@@ -222,7 +147,6 @@ class DashboardController extends Controller
     public function documents()
     {
         $docs = Document::with('vehicle')->orderBy('created_at', 'desc')->get();
-        
         return response()->json([
             'documents' => $docs->map(function($doc) {
                 return [

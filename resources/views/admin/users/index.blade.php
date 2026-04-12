@@ -6,9 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
-             x-data="usersManager()"
-             x-init="init()">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" x-data="usersManager()" x-init="init()">
 
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <div class="w-full md:w-1/2 relative">
@@ -33,16 +31,17 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Utente</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Ruolo</th>
                                 <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Accesso</th>
+                                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Notifiche</th>
                                 <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase">Azioni</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="user in filteredUsers" :key="user.id">
-                                <tr class="hover:bg-gray-50 transition" :class="{'opacity-60 bg-gray-50': user.is_deleted}">
+                                <tr class="hover:bg-gray-50 transition" :class="{'opacity-60 bg-red-50': !user.is_active}">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center">
-                                            <div class="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center text-white font-bold"
-                                                 :class="user.role === 'admin' ? 'bg-indigo-600' : 'bg-gray-400'">
+                                            <div class="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center text-white font-bold shadow-sm"
+                                                 :class="user.role === 'admin' ? 'bg-gradient-to-br from-indigo-500 to-indigo-700' : 'bg-gradient-to-br from-gray-400 to-gray-500'">
                                                 <span x-text="user.name.charAt(0).toUpperCase()"></span>
                                             </div>
                                             <div class="ml-4">
@@ -52,30 +51,31 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider"
-                                              :class="user.role === 'admin' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'"
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm"
+                                              :class="user.role === 'admin' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' : 'bg-gray-100 text-gray-800 border border-gray-200'"
                                               x-text="user.role">
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex flex-col items-center gap-1">
-                                            <label class="switch switch-sm" :class="{'opacity-50 pointer-events-none': user.id === {{ auth()->id() }} }">
-                                                <input type="checkbox" :checked="!user.is_deleted" @change="toggleUserStatus(user)" :disabled="user.id === {{ auth()->id() }}">
-                                                <span class="slider"></span>
-                                            </label>
-                                            <span class="text-xs font-bold" :class="user.is_deleted ? 'text-red-500' : 'text-green-500'" x-text="user.is_deleted ? 'Disabilitato' : 'Attivo'"></span>
+                                            <span class="text-xs font-black uppercase tracking-wider" :class="user.is_active ? 'text-green-600' : 'text-red-600'" x-text="user.is_active ? 'Attivo' : 'Bloccato'"></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex flex-col items-center gap-1">
+                                            <span class="text-xs font-black uppercase tracking-wider" :class="user.receives_notifications ? 'text-blue-600' : 'text-gray-400'" x-text="user.receives_notifications ? 'Abilitate' : 'Spente'"></span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right space-x-3">
-                                        <button @click="openEditModal(user)" class="text-indigo-600 hover:text-indigo-900 font-bold text-sm bg-indigo-50 px-3 py-2 rounded-lg transition hover:bg-indigo-100">
-                                            Modifica
+                                        <button @click="openEditModal(user)" class="text-indigo-600 hover:text-indigo-900 font-bold text-sm bg-indigo-50 px-3 py-2 rounded-lg transition hover:bg-indigo-100 border border-indigo-100 shadow-sm">
+                                            Modifica / Impostazioni
                                         </button>
                                     </td>
                                 </tr>
                             </template>
                             
                             <tr x-show="filteredUsers.length === 0">
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-500">Nessun utente trovato.</td>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">Nessun utente trovato.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -87,26 +87,15 @@
                 <div class="modal-container">
                     <div @click.stop class="modal-content-wrapper">
                         <div class="modal-header">
-                            <h3 class="modal-title" x-text="isEditing ? 'Modifica Utente' : 'Nuovo Utente'"></h3>
+                            <h3 class="modal-title" x-text="isEditing ? 'Modifica Impostazioni Utente' : 'Nuovo Utente'"></h3>
                             <button @click="closeUserModal()" class="modal-close"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                         </div>
 
-                        <form @submit.prevent="submitForm" class="modal-body">
+                        <form @submit.prevent="submitForm" class="modal-body max-h-[80vh] overflow-y-auto">
                             <div class="space-y-5">
-                                <div>
-                                    <label class="form-label">Nome Completo *</label>
-                                    <input type="text" x-model="formData.name" required class="form-input">
-                                </div>
-                                <div>
-                                    <label class="form-label">Indirizzo Email *</label>
-                                    <input type="email" x-model="formData.email" required class="form-input">
-                                </div>
-                                
-                                <div>
-                                    <label class="form-label">Data di Nascita *</label>
-                                    <input type="date" x-model="formData.data_nascita" required class="form-input">
-                                </div>
-
+                                <div><label class="form-label">Nome Completo *</label><input type="text" x-model="formData.name" required class="form-input"></div>
+                                <div><label class="form-label">Indirizzo Email *</label><input type="email" x-model="formData.email" required class="form-input"></div>
+                                <div><label class="form-label">Data di Nascita *</label><input type="date" x-model="formData.data_nascita" required class="form-input"></div>
                                 <div>
                                     <label class="form-label">Ruolo *</label>
                                     <select x-model="formData.role" required class="form-input">
@@ -118,6 +107,32 @@
                                     <label class="form-label mb-1" x-text="isEditing ? 'Nuova Password (lascia vuoto per non cambiarla)' : 'Password *'"></label>
                                     <input type="password" x-model="formData.password" :required="!isEditing" class="form-input" minlength="8">
                                 </div>
+
+                                <div class="mt-6 border-t border-gray-200 pt-5">
+                                    <h4 class="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wider">Pannello di Controllo Admin</h4>
+                                    
+                                    <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-3">
+                                        <div>
+                                            <p class="font-bold text-gray-900 text-sm">Accesso al Sistema</p>
+                                            <p class="text-xs text-gray-500">Se disattivato, l'utente non potrà fare il login.</p>
+                                        </div>
+                                        <label class="switch" :class="{'opacity-50 pointer-events-none': formData.id === {{ auth()->id() }} }">
+                                            <input type="checkbox" x-model="formData.is_active" :disabled="formData.id === {{ auth()->id() }}">
+                                            <span class="slider slider-green"></span>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <div>
+                                            <p class="font-bold text-gray-900 text-sm">Notifiche Email</p>
+                                            <p class="text-xs text-gray-500">Invia il riepilogo scadenze a questa persona.</p>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" x-model="formData.receives_notifications">
+                                            <span class="slider slider-blue"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="modal-footer">
@@ -125,39 +140,6 @@
                                 <button type="submit" class="btn-primary" :disabled="isSubmitting" x-text="isSubmitting ? 'Salvataggio...' : 'Salva Utente'"></button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            </div>
-
-            <div x-show="showNotification" x-cloak @keydown.escape.window="showNotification = false" class="modal-overlay" style="z-index: 1070;">
-                <div @click="showNotification = false" class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
-                <div class="modal-container w-full max-w-sm" x-transition>
-                    <div @click.stop class="modal-content-wrapper bg-white rounded-2xl shadow-2xl p-8 text-center border-t-8" :class="notificationType === 'success' ? 'border-green-500' : 'border-red-500'">
-                        <h3 class="text-2xl font-bold mb-2" :class="notificationType === 'success' ? 'text-green-600' : 'text-red-600'" x-text="notificationType === 'success' ? 'Operazione Riuscita!' : 'Attenzione!'"></h3>
-                        <p class="text-gray-600 text-lg mb-6" x-text="notificationMessage"></p>
-                        <button @click="showNotification = false" class="w-full py-3 rounded-lg font-bold text-white transition transform hover:scale-105" :class="notificationType === 'success' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'">OK</button>
-                    </div>
-                </div>
-            </div>
-
-            <div x-show="showConfirmModal" x-cloak class="modal-overlay" :class="{ 'modal-active': showConfirmModal, 'modal-out': isClosingConfirm }">
-                <div @click="closeConfirmModal()" class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
-                <div class="modal-container w-full max-w-md">
-                    <div @click.stop class="modal-content-wrapper bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-                        <div class="p-6 text-center pt-8">
-                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100 mb-4">
-                                <svg class="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                            </div>
-                            <h3 class="text-2xl font-black text-slate-800 mb-2">Conferma Azione</h3>
-                            <p class="text-sm text-slate-500 mb-6">
-                                Sei sicuro di voler <span x-text="userToToggle?.is_deleted ? 'abilitare' : 'disabilitare'"></span> l'utente <br>
-                                <strong class="text-slate-800" x-text="userToToggle?.name"></strong>?
-                            </p>
-                        </div>
-                        <div class="px-6 pb-6 bg-slate-50/50 pt-4 border-t border-slate-100 flex justify-center gap-3">
-                            <button @click="closeConfirmModal()" class="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Annulla</button>
-                            <button @click="executeToggle()" class="flex-1 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors shadow-sm">Conferma</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -181,6 +163,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -191,14 +174,13 @@
                 searchQuery: '',
                 
                 showUserModal: false, isClosingModal: false,
-                showConfirmModal: false, isClosingConfirm: false,
                 showSuccessModal: false, isClosingSuccess: false,
                 
                 isEditing: false, isSubmitting: false,
                 successMessage: '', successType: 'success',
                 
-                formData: { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '' },
-                userToToggle: null,
+                // Form aggiornato coi nuovi campi
+                formData: { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '', is_active: true, receives_notifications: true },
 
                 get filteredUsers() {
                     if (!this.searchQuery) return this.users;
@@ -206,13 +188,28 @@
                     return this.users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
                 },
 
-                openCreateModal() { this.isEditing = false; this.formData = { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '' }; this.showUserModal = true; },
-                openEditModal(user) { this.isEditing = true; this.formData = { id: user.id, name: user.name, email: user.email, role: user.role, password: '', data_nascita: user.data_nascita || '' }; this.showUserModal = true; },
+                openCreateModal() { 
+                    this.isEditing = false; 
+                    this.formData = { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '', is_active: true, receives_notifications: true }; 
+                    this.showUserModal = true; 
+                },
+                openEditModal(user) { 
+                    this.isEditing = true; 
+                    this.formData = { 
+                        id: user.id, 
+                        name: user.name, 
+                        email: user.email, 
+                        role: user.role, 
+                        password: '', 
+                        data_nascita: user.data_nascita || '',
+                        is_active: user.is_active == 1 || user.is_active == true, // Forza cast booleano
+                        receives_notifications: user.receives_notifications == 1 || user.receives_notifications == true
+                    }; 
+                    this.showUserModal = true; 
+                },
                 closeUserModal() { this.isClosingModal = true; setTimeout(() => { this.showUserModal = false; this.isClosingModal = false; }, 300); },
                 
-                closeConfirmModal() { this.isClosingConfirm = true; setTimeout(() => { this.showConfirmModal = false; this.isClosingConfirm = false; this.userToToggle = null; }, 300); },
                 closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; }, 300); },
-                
                 showSuccess(msg, type = 'success') {
                     this.successMessage = msg; this.successType = type; this.showSuccessModal = true;
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
@@ -234,9 +231,14 @@
                     const data = new FormData();
                     data.append('_token', '{{ csrf_token() }}');
                     if (this.isEditing) data.append('_method', 'PUT');
+                    
                     data.append('name', this.formData.name);
                     data.append('email', this.formData.email);
                     data.append('role', this.formData.role);
+                    // Passiamo i booleani convertiti in 1 o 0 per il backend
+                    data.append('is_active', this.formData.is_active ? '1' : '0');
+                    data.append('receives_notifications', this.formData.receives_notifications ? '1' : '0');
+
                     if (this.formData.data_nascita) data.append('data_nascita', this.formData.data_nascita);
                     if (this.formData.password) data.append('password', this.formData.password);
 
@@ -255,39 +257,6 @@
                         this.showSuccess('Errore di connessione', 'error');
                     } finally {
                         this.isSubmitting = false;
-                    }
-                },
-
-                // Intercetta il click sullo switch e apre il modale di conferma
-                toggleUserStatus(user) {
-                    this.userToToggle = user;
-                    this.showConfirmModal = true;
-                    // Previene il cambio visivo dello switch fino alla conferma
-                    event.preventDefault(); 
-                },
-
-                // Esegue l'API dopo aver confermato nel modale
-                async executeToggle() {
-                    if(!this.userToToggle) return;
-                    try {
-                        const response = await fetch(`/admin/users/${this.userToToggle.id}/toggle`, {
-                            method: 'PATCH',
-                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                        });
-                        const data = await response.json();
-                        
-                        this.closeConfirmModal();
-                        
-                        if (response.ok) {
-                            await this.refreshData();
-                            this.showSuccess(data.message, 'success');
-                        } else {
-                            this.showSuccess(data.message || "Errore sconosciuto", 'error');
-                            await this.refreshData(); 
-                        }
-                    } catch (error) {
-                        this.closeConfirmModal();
-                        this.showSuccess('Errore di rete', 'error');
                     }
                 }
             }
@@ -308,14 +277,15 @@
         .form-input { width: 100%; padding: 0.625rem 0.875rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; transition: border-color 0.15s; }
         .form-input:focus { outline: none; border-color: #4f46e5; }
 
-        /* Toggle Switch iOS */
-        .switch { position: relative; display: inline-block; }
-        .switch-sm { width: 44px; height: 24px; }
+        /* Toggle Switch Universale */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ef4444; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #10b981; }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider-green { background-color: #10b981; }
+        input:checked + .slider-blue { background-color: #3b82f6; }
+        input:focus + .slider { box-shadow: 0 0 1px #10b981; }
+        input:checked + .slider:before { transform: translateX(24px); }
 
         /* Modali */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -333,5 +303,8 @@
         .modal-out .modal-content-wrapper { animation: blowUpModalTwo 0.4s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         @keyframes blowUpModal { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes blowUpModalTwo { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+        
+        @keyframes checkmark { 0% { stroke-dashoffset: 50; stroke-dasharray: 50; } 100% { stroke-dashoffset: 0; stroke-dasharray: 50; } }
+        .animate-check { stroke-dashoffset: 50; stroke-dasharray: 50; animation: checkmark 0.6s ease-in-out forwards; }
     </style>
 </x-app-layout>

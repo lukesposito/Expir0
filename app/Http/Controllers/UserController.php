@@ -30,25 +30,30 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $this->checkAdmin();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'data_nascita' => 'nullable|date',
-            'password' => ['required', Password::defaults()],
             'role' => 'required|in:admin,user',
+            'data_nascita' => 'required|date',
+            'password' => 'required|string|min:8',
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'data_nascita' => $validated['data_nascita'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'is_deleted' => false,
-        ]);
+        $user = new User();
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->role = $validated['role'];
+        $user->data_nascita = $validated['data_nascita'];
+        $user->password = bcrypt($validated['password']);
 
-        return response()->json(['message' => 'Utente creato con successo!']);
+        $user->is_active = $request->boolean('is_active', true); // true di default se manca
+        $user->receives_notifications = $request->boolean('receives_notifications', true);
+        $user->save();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Utente creato con successo!']);
+        }
+
+        // return redirect()->back()->with('success', 'Utente creato con successo.');
     }
 
     public function update(Request $request, User $user)
@@ -71,10 +76,17 @@ class UserController extends Controller
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
+
+        $user->is_active = $request->boolean('is_active');
+        $user->receives_notifications = $request->boolean('receives_notifications');
         
         $user->save();
 
-        return response()->json(['message' => 'Utente aggiornato con successo!']);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Utente aggiornato con successo!']);
+        }
+
+        // return redirect()->back()->with('success', 'Utente aggiornato con successo.');
     }
 
     public function toggleStatus(Request $request, User $user)

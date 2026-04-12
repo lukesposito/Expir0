@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riepilogo Scadenze</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #374151; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #374151; -webkit-font-smoothing: antialiased; }
         .wrapper { width: 100%; padding: 40px 0; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .header { text-align: center; padding: 30px; background-color: #111827; color: white; }
-        .header h1 { margin: 0; font-size: 24px; letter-spacing: -0.5px; }
         .content { padding: 30px; }
         .intro { font-size: 16px; line-height: 1.6; color: #4b5563; margin-bottom: 25px; }
         
         .section { border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #e5e7eb; }
-        .section-title { padding: 12px 20px; font-weight: bold; color: white; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .section-title { padding: 12px 20px; font-weight: bold; color: white; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .bg-red { background-color: #dc2626; }
         .bg-orange { background-color: #ea580c; }
@@ -27,7 +25,7 @@
         .item-title { font-weight: bold; color: #111827; font-size: 15px; margin-bottom: 4px; }
         .item-subtitle { color: #6b7280; font-size: 13px; }
         .item-date { text-align: right; font-weight: bold; color: #111827; }
-        .item-days { font-size: 12px; margin-top: 4px; }
+        .item-days { font-size: 12px; margin-top: 4px; font-weight: 600; }
 
         .btn-container { text-align: center; margin: 40px 0 20px; }
         .btn { display: inline-block; background-color: #4f46e5; color: white !important; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: bold; font-size: 15px; }
@@ -37,8 +35,15 @@
 <body>
     <div class="wrapper">
         <div class="container">
-            <div class="header">
-                <h1>Riepilogo Scadenze</h1>
+            
+            <div class="header" style="text-align: center; padding: 30px 20px; background-color: #ffffff; border-bottom: 1px solid #f3f4f6;">
+                <img src="{{ config('app.url') }}/images/logo.png" alt="Expir0 Logo" style="max-height: 65px; width: auto; margin: 0 auto 10px auto; display: block; border: 0;">
+                <div style="font-size: 26px; font-weight: 900; color: #111827; letter-spacing: -0.5px; font-family: sans-serif;">
+                    Expir<span style="color: #4f46e5;">0</span>
+                </div>
+                <h1 style="margin: 15px 0 0 0; font-size: 18px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    Riepilogo Scadenze
+                </h1>
             </div>
 
             <div class="content">
@@ -133,7 +138,7 @@
 
             <div class="footer">
                 Questo è un riepilogo automatico generato dal sistema.<br>
-                Se hai già provveduto al pagamento, accedi al portale per aggiornare lo stato.
+                <a href="{{ config('app.url') }}/profile" style="color: #6b7280; text-decoration: underline;">Gestisci le tue preferenze di notifica</a>
             </div>
         </div>
     </div>

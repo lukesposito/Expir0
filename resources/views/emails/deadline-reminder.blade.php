@@ -29,7 +29,6 @@
     }
 
     // --- FORMATTAZIONE DEI DATI ---
-    // Gestione del Soggetto (Veicolo, Persona o Nome Spesa)
     $soggetto = 'N/D';
     if (in_array($deadline->tipo, ['patente', 'carta_identita', 'tesserino_sanitario'])) {
         $soggetto = $deadline->user ? $deadline->user->name : 'Membro della Famiglia';
@@ -43,7 +42,6 @@
         $soggetto = $deadline->subscription ? $deadline->subscription->nome : 'Spesa/Abbonamento';
     }
 
-    // Formattazione Tipo e Data
     $tipoFormattato = ucwords(str_replace('_', ' ', $deadline->tipo));
     $dataScadenza = \Carbon\Carbon::parse($deadline->data_scadenza)->format('d/m/Y');
     $importoFormattato = $deadline->importo > 0 ? '€ ' . number_format($deadline->importo, 2, ',', '.') : 'Da verificare';
@@ -56,135 +54,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title }}</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f3f4f6;
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-            color: #374151;
-        }
-        .wrapper {
-            width: 100%;
-            table-layout: fixed;
-            background-color: #f3f4f6;
-            padding: 40px 0;
-        }
-        .main-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .header {
-            text-align: center;
-            padding: 30px 20px 20px;
-            background-color: #ffffff;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: 900;
-            color: #111827;
-            letter-spacing: -0.5px;
-            text-decoration: none;
-        }
-        .logo span {
-            color: #4f46e5;
-        }
-        .alert-banner {
-            padding: 16px 20px;
-            text-align: center;
-            color: #ffffff;
-            font-weight: bold;
-            font-size: 16px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .content {
-            padding: 30px 40px;
-        }
-        .message {
-            font-size: 15px;
-            line-height: 1.6;
-            color: #4b5563;
-            margin-bottom: 30px;
-        }
-        .details-box {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .details-table td {
-            padding: 10px 0;
-            font-size: 15px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .details-table tr:last-child td {
-            border-bottom: none;
-        }
-        .label {
-            font-weight: 600;
-            color: #6b7280;
-            width: 40%;
-        }
-        .value {
-            font-weight: 700;
-            color: #111827;
-            text-align: right;
-        }
-        .value-highlight {
-            color: {{ $color }};
-            font-size: 16px;
-        }
-        .btn-container {
-            text-align: center;
-            margin: 30px 0 10px;
-        }
-        .btn {
-            display: inline-block;
-            background-color: #111827;
-            color: #ffffff !important;
-            text-decoration: none;
-            padding: 14px 28px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 15px;
-            transition: background-color 0.2s;
-        }
-        .btn:hover {
-            background-color: #374151;
-        }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            font-size: 12px;
-            color: #9ca3af;
-            background-color: #f9fafb;
-            border-top: 1px solid #f3f4f6;
-        }
-        .footer-links {
-            margin-top: 10px;
-        }
-        .footer-links a {
-            color: #6b7280;
-            text-decoration: underline;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; color: #374151; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f3f4f6; padding: 40px 0; }
+        .main-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .alert-banner { padding: 16px 20px; text-align: center; color: #ffffff; font-weight: bold; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .content { padding: 30px 40px; }
+        .message { font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 30px; }
+        .details-box { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+        .details-table { width: 100%; border-collapse: collapse; }
+        .details-table td { padding: 10px 0; font-size: 15px; border-bottom: 1px solid #e5e7eb; }
+        .details-table tr:last-child td { border-bottom: none; }
+        .label { font-weight: 600; color: #6b7280; width: 40%; }
+        .value { font-weight: 700; color: #111827; text-align: right; }
+        .value-highlight { color: {{ $color }}; font-size: 16px; }
+        .btn-container { text-align: center; margin: 30px 0 10px; }
+        .btn { display: inline-block; background-color: #111827; color: #ffffff !important; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: 600; font-size: 15px; transition: background-color 0.2s; }
+        .btn:hover { background-color: #374151; }
+        .footer { text-align: center; padding: 30px; font-size: 12px; color: #9ca3af; background-color: #f9fafb; border-top: 1px solid #f3f4f6; }
+        .footer-links { margin-top: 10px; }
+        .footer-links a { color: #6b7280; text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="wrapper">
         <div class="main-container">
             
-            <div class="header">
-                <div class="logo">Expir<span>0</span></div>
+            <div class="header" style="text-align: center; padding: 30px 20px; background-color: #ffffff; border-bottom: 1px solid #f3f4f6;">
+                <img src="{{ config('app.url') }}/images/logo.png" alt="Expir0 Logo" style="max-height: 65px; width: auto; margin: 0 auto 10px auto; display: block; border: 0;">
+                <div style="font-size: 26px; font-weight: 900; color: #111827; letter-spacing: -0.5px; font-family: sans-serif;">
+                    Expir<span style="color: #4f46e5;">0</span>
+                </div>
             </div>
 
             <div class="alert-banner" style="background-color: {{ $color }};">
@@ -203,7 +102,7 @@
                             <td class="value">{{ $tipoFormattato }}</td>
                         </tr>
                         <tr>
-                            <td class="label">Intestatario / Riferimento</td>
+                            <td class="label">Intestatario / Rif.</td>
                             <td class="value">{{ $soggetto }}</td>
                         </tr>
                         <tr>
@@ -240,11 +139,10 @@
             </div>
 
             <div class="footer">
-                Questo è un messaggio generato automaticamente dal sistema di gestione scadenze.<br>
-                Si prega di non rispondere a questa email. Se hai già provveduto al rinnovo, ignora questo avviso e aggiorna lo stato nel portale.
+                Questo è un messaggio automatico dal sistema di gestione scadenze.<br>
+                Si prega di non rispondere a questa email.
                 <div class="footer-links">
-                    <a href="{{ config('app.url') }}">Vai al sito</a> | 
-                    <a href="#">Privacy Policy</a>
+                    <a href="{{ config('app.url') }}">Vai al sito</a> | <a href="{{ config('app.url') }}/profile">Gestisci Notifiche</a>
                 </div>
             </div>
 

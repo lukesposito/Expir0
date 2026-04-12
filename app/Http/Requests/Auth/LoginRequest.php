@@ -49,6 +49,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (! Auth::user()->is_active) {
+            Auth::guard('web')->logout(); // Lo buttiamo subito fuori!
+
+            throw ValidationException::withMessages([
+                'email' => 'Il tuo account è stato disabilitato dall\'amministratore. Contatta il supporto.',
+            ]);
+        }
+
         if (Auth::user()->is_deleted) {
             Auth::logout(); // Lo scolleghiamo immediatamente
             

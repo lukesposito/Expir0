@@ -26,12 +26,18 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request)
     {
+        // 1. Aggiorna i campi standard (nome, email) validati dalla Request
         $request->user()->fill($request->validated());
+
+        // 2. AGGIUNTO: Catturiamo l'interruttore delle notifiche!
+        // Usiamo boolean() così Laravel trasforma automaticamente "1" o "0" in true/false
+        $request->user()->receives_notifications = $request->boolean('receives_notifications');
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
+        // 3. Salviamo tutto nel database
         $request->user()->save();
 
         // MAGIA SPA: Risposta JSON

@@ -24,6 +24,8 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
         'name',
         'email',
         'password',
+        'is_active',              
+        'receives_notifications', 
         'data_nascita',
         'role',
         'is_deleted',
@@ -51,6 +53,8 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',              
+            'receives_notifications' => 'boolean', 
         ];
     }
 }

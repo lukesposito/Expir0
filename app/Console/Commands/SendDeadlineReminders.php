@@ -22,12 +22,15 @@ class SendDeadlineReminders extends Command
         $scadenze = Deadline::with(['user', 'vehicle', 'subscription'])
                             ->where('pagato', false)
                             ->get();
+        // Prendiamo solo gli utenti attivi che vogliono ricevere notifiche
+        $utentiValidi = User::where('is_active', true)
+                            ->where('receives_notifications', true)
+                            ->get();
 
-        $tuttiGliUtenti = User::all();
         $digestPerUtente = []; 
 
         // 1. PREPARIAMO UN "CESTO" VUOTO PER OGNI UTENTE
-        foreach ($tuttiGliUtenti as $user) {
+        foreach ($utentiValidi as $user) {
             if (!empty($user->email)) {
                 $digestPerUtente[$user->email] = [
                     'urgente' => [], 
@@ -106,18 +109,18 @@ class SendDeadlineReminders extends Command
                 }
             }
 
-            // 5. METTO LA SCADENZA NEI CESTINI CORRETTI
+            // 5. METTO LA SCADENZA NEI CESTINI CORRETTI (Se l'utente è disabilitato, verrà semplicemente ignorata!)
             if ($haTriggerato && $urgenza) {
                 $daAggiornare[] = $deadline; 
 
                 if ($isPersonal) {
-                    // SCADENZA PERSONALE: Va SOLO nel cesto del proprietario
+                    // SCADENZA PERSONALE: Controlliamo se esiste il cesto per questo utente
                     if (isset($digestPerUtente[$ownerEmail])) {
                         $digestPerUtente[$ownerEmail][$urgenza][] = $itemData;
                     }
                 } else {
-                    // SCADENZA DI FAMIGLIA (Es. Auto): Va nel cesto di TUTTI gli utenti!
-                    foreach ($tuttiGliUtenti as $user) {
+                    // SCADENZA DI FAMIGLIA: Va nel cesto di TUTTI gli utenti VALIDI!
+                    foreach ($utentiValidi as $user) {
                         if (!empty($user->email) && isset($digestPerUtente[$user->email])) {
                             $digestPerUtente[$user->email][$urgenza][] = $itemData;
                         }
