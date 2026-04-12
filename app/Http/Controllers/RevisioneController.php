@@ -19,8 +19,9 @@ class RevisioneController extends Controller
             ->orderBy('data_prossima_revisione', 'desc')
             ->get()
             ->map(function($revisione) {
-                $oggi = Carbon::now();
-                $prossima = Carbon::parse($revisione->data_prossima_revisione);
+                $oggi = Carbon::now()->startOfDay();
+                // Calcoliamo i giorni in base alla fine del mese di scadenza
+                $prossima = Carbon::parse($revisione->data_prossima_revisione)->endOfDay();
                 $giorniRimanenti = $oggi->diffInDays($prossima, false);
                 
                 return [
@@ -29,10 +30,14 @@ class RevisioneController extends Controller
                     'vehicle_targa' => $revisione->vehicle->targa,
                     'vehicle_marca' => $revisione->vehicle->marca,
                     'vehicle_modello' => $revisione->vehicle->modello,
-                    'data_ultima_revisione' => $revisione->data_ultima_revisione->format('Y-m-d'),
-                    'data_ultima_revisione_formatted' => $revisione->data_ultima_revisione->format('d/m/Y'),
-                    'data_prossima_revisione' => $revisione->data_prossima_revisione->format('Y-m-d'),
-                    'data_prossima_revisione_formatted' => $revisione->data_prossima_revisione->format('d/m/Y'),
+                    
+                    // Formattiamo in Y-m per gli input type="month" (es. 2026-08)
+                    'data_ultima_revisione' => $revisione->data_ultima_revisione ? $revisione->data_ultima_revisione->format('Y-m') : null,
+                    'data_prossima_revisione' => $revisione->data_prossima_revisione->format('Y-m'),
+                    
+                    // Formattiamo per la vista in Mese e Anno (es. "Agosto 2026")
+                    'data_prossima_revisione_formatted' => ucfirst($revisione->data_prossima_revisione->locale('it')->isoFormat('MMMM YYYY')),
+                    
                     'importo' => $revisione->importo ?? 0,
                     'importo_formatted' => number_format($revisione->importo ?? 0, 2, ',', '.'),
                     'centro_revisione' => $revisione->centro_revisione,
@@ -42,7 +47,7 @@ class RevisioneController extends Controller
                 ];
             });
         
-        // RISPOSTA ASINCRONA JSON PER ALPINE.JS (AGGIORNAMENTO SILENZIOSO)
+        // RISPOSTA ASINCRONA JSON PER ALPINE.JS
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['revisioni' => $revisioni]);
         }
@@ -56,22 +61,29 @@ class RevisioneController extends Controller
     {
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
-            'data_ultima_revisione' => 'required|date',
-            'data_prossima_revisione' => 'required|date|after:data_ultima_revisione',
+            'data_ultima_revisione' => 'nullable|date_format:Y-m',
+            'data_prossima_revisione' => 'required|date_format:Y-m',
             'importo' => 'nullable|numeric|min:0',
             'centro_revisione' => 'nullable|string|max:255',
             'esito' => 'required|in:positivo,negativo,da_fare',
             'note' => 'nullable|string|max:500',
         ]);
 
+        // Salva la scadenza all'ULTIMO giorno del mese selezionato
+        $validated['data_prossima_revisione'] = Carbon::createFromFormat('Y-m', $request->data_prossima_revisione)->endOfMonth()->toDateString();
+        
+        if ($request->filled('data_ultima_revisione')) {
+            $validated['data_ultima_revisione'] = Carbon::createFromFormat('Y-m', $request->data_ultima_revisione)->startOfMonth()->toDateString();
+        } else {
+            $validated['data_ultima_revisione'] = null;
+        }
+
         Revisione::create($validated);
 
-        // SE LA RICHIESTA ARRIVA DA JAVASCRIPT/FETCH
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Revisione aggiunta con successo!']);
         }
 
-        // FALLBACK TRADIZIONALE
         return redirect()->route('revisioni.index')->with('success', 'Revisione aggiunta con successo');
     }
 
@@ -79,36 +91,40 @@ class RevisioneController extends Controller
     {
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
-            'data_ultima_revisione' => 'required|date',
-            'data_prossima_revisione' => 'required|date|after:data_ultima_revisione',
+            'data_ultima_revisione' => 'nullable|date_format:Y-m',
+            'data_prossima_revisione' => 'required|date_format:Y-m',
             'importo' => 'nullable|numeric|min:0',
             'centro_revisione' => 'nullable|string|max:255',
             'esito' => 'required|in:positivo,negativo,da_fare',
             'note' => 'nullable|string|max:500',
         ]);
 
+        // Salva la scadenza all'ULTIMO giorno del mese selezionato
+        $validated['data_prossima_revisione'] = Carbon::createFromFormat('Y-m', $request->data_prossima_revisione)->endOfMonth()->toDateString();
+        
+        if ($request->filled('data_ultima_revisione')) {
+            $validated['data_ultima_revisione'] = Carbon::createFromFormat('Y-m', $request->data_ultima_revisione)->startOfMonth()->toDateString();
+        } else {
+            $validated['data_ultima_revisione'] = null;
+        }
+
         $revisione->update($validated);
 
-        // SE LA RICHIESTA ARRIVA DA JAVASCRIPT/FETCH
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Revisione aggiornata con successo!']);
         }
 
-        // FALLBACK TRADIZIONALE
         return redirect()->route('revisioni.index')->with('success', 'Revisione aggiornata con successo');
     }
 
-    // Ho aggiunto Request $request per poter intercettare la chiamata JSON
     public function destroy(Request $request, Revisione $revisione)
     {
         $revisione->delete();
 
-        // SE LA RICHIESTA ARRIVA DA JAVASCRIPT/FETCH
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Revisione eliminata definitivamente!']);
         }
 
-        // FALLBACK TRADIZIONALE
         return redirect()->route('revisioni.index')->with('success', 'Revisione eliminata con successo');
     }
 }

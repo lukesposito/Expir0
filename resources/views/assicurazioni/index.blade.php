@@ -13,17 +13,16 @@
         <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
             
             <p class="font-medium text-lg bg-white p-3 rounded-lg border border-orange-100">
-                🛡️ <strong>Senza questa, non si circola!</strong> Qui teniamo sotto controllo le polizze RC Auto e Moto. Come il bollo e la revisione, anche l'assicurazione è legata alla <strong>singola vettura</strong>.
+                🛡️ <strong>Senza questa, non si circola!</strong> Qui teniamo sotto controllo le polizze RC Auto e Moto. L'assicurazione è legata alla <strong>singola vettura</strong>.
             </p>
 
             <div>
                 <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova Polizza</h4>
-                <p>Hai appena assicurato un veicolo nuovo o cambiato compagnia?</p>
                 <ol class="list-decimal ml-5 mt-2 space-y-1">
                     <li>Clicca sul pulsante arancione <strong>"Aggiungi Assicurazione"</strong> qui sopra.</li>
                     <li>Seleziona il <strong>Veicolo</strong> dal menu a tendina.</li>
-                    <li>Scrivi il nome della <strong>Compagnia</strong> (es. Unipol, Generali, Prima.it) e il <strong>Numero di Polizza</strong> (lo trovi sul contratto, è utilissimo in caso di incidente!).</li>
-                    <li>Scegli la <strong>Data di Inizio</strong> e, soprattutto, la <strong>Data di Scadenza</strong>.</li>
+                    <li>Scrivi il nome della <strong>Compagnia</strong> (es. Unipol) e il <strong>Numero di Polizza</strong>.</li>
+                    <li>Scegli la <strong>Data di Scadenza</strong>. (La data di inizio è facoltativa!).</li>
                     <li>Inserisci l'<strong>Importo</strong> che hai pagato e clicca su Salva.</li>
                 </ol>
             </div>
@@ -32,22 +31,8 @@
                 <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔄 2. Cosa fare quando rinnovi l'assicurazione?</h4>
                 <p>È passato un anno e hai pagato il rinnovo della polizza? <strong>Non cliccare su "Aggiungi"!</strong></p>
                 <p class="mt-1 bg-white p-2 rounded text-slate-800 text-sm border border-slate-200">
-                    Cerca l'assicurazione dell'auto nella lista e clicca sul tasto blu <strong>Modifica</strong>. Aggiorna semplicemente la data di scadenza all'anno successivo e inserisci il nuovo importo pagato. Cosi facendo avrai sempre la situazione in ordine.
+                    Cerca l'assicurazione dell'auto nella lista e clicca sul tasto blu <strong>Modifica</strong>. Aggiorna semplicemente la data di scadenza all'anno successivo e inserisci il nuovo importo pagato.
                 </p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">💡 3. Piccoli consigli pratici</h4>
-                <ul class="space-y-2 ml-2 mt-2">
-                    <li class="flex items-start gap-2">
-                        <span class="text-orange-500 mt-1"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <div><strong>Ricerca rapida:</strong> Se fai un incidente o vieni fermato e non ricordi la compagnia, apri l'app e usa la barra di ricerca in alto digitando la tua targa. Avrai subito nome compagnia e numero di polizza sottomano!</div>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="text-orange-500 mt-1"><i class="fa-solid fa-note-sticky"></i></span>
-                        <div><strong>Le note:</strong> Usa il campo note per scriverti cose importanti (es. "Copre anche i cristalli" oppure "Assistenza stradale inclusa").</div>
-                    </li>
-                </ul>
             </div>
 
         </div>
@@ -64,7 +49,7 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"></div>
                         <input type="text" 
                                x-model="searchQuery"
-                               placeholder="Cerca per targa, compagnia o n° polizza..." 
+                               placeholder="Cerca per targa, compagnia o polizza..." 
                                class="w-full pl-11 pr-10 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition text-base shadow-sm">
                         <div x-show="searchQuery" 
                              @click="searchQuery = ''"
@@ -94,15 +79,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </div>
-                        </div>
-                        <div class="flex items-center justify-between mt-3" x-show="searchQuery">
-                            <p class="text-sm text-gray-600">
-                                <span class="font-semibold" x-text="filteredAssicurazioni.length"></span> risultati trovati
-                            </p>
-                            <button @click="searchQuery = ''" 
-                                    class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                                Cancella ricerca
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -136,24 +112,23 @@
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-semibold text-gray-900 font-mono uppercase" x-text="a.vehicle_targa"></div>
                                         <div class="text-sm text-gray-500 capitalize">
-                                            <span x-text="a.vehicle_marca"></span> <span x-text="a.vehicle_modello"></span>
+                                            <span x-text="a.vehicle_marca + ' ' + a.vehicle_modello"></span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="text-sm font-semibold text-gray-900" x-text="a.compagnia || 'N/D'"></div>
-                                        <div class="text-xs text-gray-500" x-text="'Pol: ' + (a.polizza || 'N/D')"></div>
+                                        <div class="text-sm font-bold text-gray-900" x-text="a.compagnia || 'N/D'"></div>
+                                        <div class="text-xs text-gray-500" x-text="'Pol: ' + (a.polizza || '—')"></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="text-xs text-gray-500">Dal: <span x-text="a.data_inizio_formatted"></span></div>
+                                        <div class="text-xs text-gray-500" x-show="a.data_inizio_formatted !== '—'">Dal: <span x-text="a.data_inizio_formatted"></span></div>
                                         <div class="text-sm font-semibold text-gray-700">Al: <span x-text="a.data_scadenza_formatted"></span></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="text-sm font-bold" 
-                                              :class="a.giorni_rimanenti <= 30 ? 'text-red-600' : 'text-green-600'">
+                                        <span class="text-sm font-bold" :class="a.giorni_rimanenti <= 30 ? 'text-red-600' : 'text-green-600'">
                                             <span x-text="a.giorni_rimanenti"></span> gg
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-semibold text-gray-900">
+                                    <td class="px-6 py-4 text-sm font-bold text-gray-900">
                                         €<span x-text="a.importo_formatted"></span>
                                     </td>
                                     <td class="px-6 py-5 space-x-3">
@@ -172,7 +147,6 @@
                             <tr x-show="filteredAssicurazioni.length === 0">
                                 <td colspan="6" class="px-6 py-12 text-center">
                                     <p class="text-gray-500 font-medium">Nessuna assicurazione trovata</p>
-                                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -181,7 +155,7 @@
             </div>
 
             <div class="mobile-only space-y-4 px-4">
-                <template x-for="(a, index) in filteredAssicurazioni" :key="a.id || index">
+                <template x-for="(a, index) in filteredAssicurazioni" :key="index">
                     <div class="bg-white rounded-2xl shadow-xl border overflow-hidden"
                          :class="a.giorni_rimanenti <= 30 ? 'border-red-300' : 'border-gray-200'">
                         <div class="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 px-5 py-6">
@@ -195,9 +169,6 @@
                                 <div class="ml-4">
                                     <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl px-3.5 py-2 border border-white border-opacity-30">
                                         <div class="flex items-center">
-                                            <svg class="h-5 w-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
                                             <span class="text-lg font-bold text-white" x-text="a.giorni_rimanenti + ' gg'"></span>
                                         </div>
                                     </div>
@@ -209,9 +180,7 @@
                             <div class="space-y-5">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
-                                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
+                                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     </div>
                                     <div class="ml-4 flex-1">
                                         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">N° Polizza</p>
@@ -221,9 +190,7 @@
 
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center">
-                                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
+                                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     </div>
                                     <div class="ml-4 flex-1">
                                         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Scadenza</p>
@@ -235,11 +202,8 @@
 
                                 <template x-if="a.importo > 0">
                                     <div class="flex items-center bg-gray-100 rounded-lg p-3">
-                                        <svg class="h-6 w-6 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
                                         <div class="flex-1">
-                                            <p class="text-xs font-medium text-gray-500">Importo Annuo</p>
+                                            <p class="text-xs font-medium text-gray-500">Importo</p>
                                             <p class="text-xl font-bold text-gray-900">€<span x-text="a.importo_formatted"></span></p>
                                         </div>
                                     </div>
@@ -247,30 +211,19 @@
                             </div>
                             
                             <div class="mt-6 pt-5 border-t border-gray-200 flex justify-center gap-3 pb-2">
-                                <button @click="openEditModal(a)"
-                                        class="btn-card-action btn-card-edit btn-card-compact" style="background-color: #3b82f6 !important;">
-                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
+                                <button @click="openEditModal(a)" class="btn-card-action btn-card-edit btn-card-compact">
+                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     <span>Modifica</span>
                                 </button>
                                 
-                                <button @click="openDeleteModal(a)"
-                                        class="btn-card-action btn-card-delete btn-card-compact">
-                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
+                                <button @click="openDeleteModal(a)" class="btn-card-action btn-card-delete btn-card-compact">
+                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     <span>Elimina</span>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </template>
-                
-                <div x-show="filteredAssicurazioni.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
-                    <p class="text-gray-500 font-medium">Nessuna assicurazione trovata</p>
-                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
-                </div>
             </div>
 
             <div x-show="showCreateModal" 
@@ -292,7 +245,6 @@
 
                         <form @submit.prevent="submitForm($event, '{{ route('assicurazioni.store') }}', 'POST')" class="modal-body">
                             @csrf
-                            
                             <div class="space-y-5">
                                 <div>
                                     <label class="form-label">Veicolo *</label>
@@ -315,8 +267,8 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="form-label">Data Inizio *</label>
-                                        <input type="date" name="data_inizio" required class="form-input">
+                                        <label class="form-label text-gray-500">Data Inizio (Opzionale)</label>
+                                        <input type="date" name="data_inizio" class="form-input">
                                     </div>
                                     <div>
                                         <label class="form-label">Data Scadenza *</label>
@@ -329,7 +281,7 @@
                                 </div>
                                 <div>
                                     <label class="form-label">Note</label>
-                                    <textarea name="note" rows="3" class="form-input"></textarea>
+                                    <textarea name="note" rows="2" class="form-input" placeholder="Eventuali note..."></textarea>
                                 </div>
                             </div>
                             
@@ -361,13 +313,12 @@
 
                         <form @submit.prevent="submitForm($event, `/assicurazioni/${editAssicurazione.id}`, 'PUT')" class="modal-body">
                             @csrf
-                            
                             <div class="space-y-5">
                                 <div>
                                     <label class="form-label">Veicolo *</label>
                                     <select name="vehicle_id" x-model="editAssicurazione.vehicle_id" required class="form-input">
                                         @foreach($vehicles as $v)
-                                            <option value="{{ $v->id }}">{{ $v->targa }} - {{ $v->marca }}</option>
+                                            <option value="{{ $v->id }}">{{ $v->targa }} - {{ $v->marca }} {{ $v->modello }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -383,8 +334,8 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="form-label">Data Inizio *</label>
-                                        <input type="date" name="data_inizio" x-model="editAssicurazione.data_inizio" required class="form-input">
+                                        <label class="form-label text-gray-500">Data Inizio (Opzionale)</label>
+                                        <input type="date" name="data_inizio" x-model="editAssicurazione.data_inizio" class="form-input">
                                     </div>
                                     <div>
                                         <label class="form-label">Data Scadenza *</label>
@@ -393,11 +344,11 @@
                                 </div>
                                 <div>
                                     <label class="form-label">Importo (€)</label>
-                                    <input type="number" name="importo" x-model="editAssicurazione.importo" step="0.01" class="form-input">
+                                    <input type="number" name="importo" x-model="editAssicurazione.importo" step="0.01" min="0" class="form-input">
                                 </div>
                                 <div>
                                     <label class="form-label">Note</label>
-                                    <textarea name="note" x-model="editAssicurazione.note" rows="3" class="form-input"></textarea>
+                                    <textarea name="note" x-model="editAssicurazione.note" rows="2" class="form-input"></textarea>
                                 </div>
                             </div>
                             
@@ -425,10 +376,9 @@
                                 <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             </div>
                             <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Elimina Assicurazione</h3>
-                            <p class="text-sm text-gray-600 text-center mb-1">Sei sicuro di voler eliminare l'assicurazione del veicolo</p>
+                            <p class="text-sm text-gray-600 text-center mb-1">Sei sicuro di voler eliminare la polizza del veicolo</p>
                             <p class="text-center mb-4">
-                                <strong class="text-lg text-gray-900 font-bold capitalize" x-text="deleteAssicurazione.vehicle_marca + ' ' + deleteAssicurazione.vehicle_modello"></strong>
-                                <span class="uppercase text-sm font-mono text-gray-500 ml-1" x-text="'(' + deleteAssicurazione.vehicle_targa + ')'"></span>?
+                                <strong class="text-gray-900 uppercase" x-text="deleteAssicurazione.vehicle_targa"></strong>?
                             </p>
                             <p class="text-xs text-red-600 text-center bg-red-50 py-2 px-4 rounded-lg">
                                 ⚠️ Verranno eliminate anche tutte le scadenze associate
@@ -446,8 +396,14 @@
                 </div>
             </div>
 
-            <div x-show="showSuccessModal" x-cloak class="modal-overlay" :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
+            <div x-show="showSuccessModal" 
+                 x-cloak
+                 @keydown.escape.window="closeSuccessModal()"
+                 class="modal-overlay"
+                 :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
+                
                 <div @click="closeSuccessModal()" class="modal-backdrop"></div>
+                
                 <div class="modal-container">
                     <div @click.stop class="modal-content-wrapper">
                         <div class="p-8 text-center">
@@ -463,25 +419,25 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </div>
+                            
                             <h3 class="text-2xl font-bold text-gray-900 mb-3"
-                                :class="{
-                                    'text-green-900': successType === 'success',
-                                    'text-red-900': successType === 'error'
-                                }">
+                                :class="successType === 'success' ? 'text-green-900' : 'text-red-900'">
                                 <span x-show="successType === 'success'">Operazione completata!</span>
-                                <span x-show="successType === 'error'">Attenzione!</span>
+                                <span x-show="successType === 'error'">Errore</span>
                             </h3>
+                            
                             <p class="text-gray-600 text-lg mb-6" x-text="successMessage"></p>
+                            
                             <button @click="closeSuccessModal()" 
-                                    class="px-6 py-2.5 rounded-lg font-semibold text-white shadow-lg transition transform hover:scale-105"
-                                    :class="successType === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'">
+                                    class="px-6 py-2.5 rounded-lg font-semibold transition duration-150 shadow-lg transform hover:scale-105"
+                                    :class="successType === 'success' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'">
                                 OK
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
         </div>
     </div>
 
@@ -507,21 +463,21 @@
                     if (!this.searchQuery) return this.assicurazioni;
                     const query = this.searchQuery.toLowerCase();
                     return this.assicurazioni.filter(a => {
-                        const targa = a.vehicle_targa ? a.vehicle_targa.toLowerCase() : '';
-                        const compagnia = a.compagnia ? a.compagnia.toLowerCase() : '';
-                        const polizza = a.polizza ? a.polizza.toLowerCase() : '';
-                        return targa.includes(query) || compagnia.includes(query) || polizza.includes(query);
+                        return (
+                            (a.vehicle_targa && a.vehicle_targa.toLowerCase().includes(query)) ||
+                            (a.vehicle_marca && a.vehicle_marca.toLowerCase().includes(query)) ||
+                            (a.compagnia && a.compagnia.toLowerCase().includes(query)) ||
+                            (a.polizza && a.polizza.toLowerCase().includes(query))
+                        );
                     });
                 },
 
-                // GESTIONE MODALI
                 openCreateModal() { this.showCreateModal = true; },
                 closeCreateModal() { this.isClosingCreate = true; setTimeout(() => { this.showCreateModal = false; this.isClosingCreate = false; }, 500); },
                 
                 openEditModal(a) { 
                     this.editAssicurazione = JSON.parse(JSON.stringify(a)); 
                     
-                    // Pulisco le date per i campi input type="date"
                     if(this.editAssicurazione.data_inizio && this.editAssicurazione.data_inizio.includes('T')) {
                         this.editAssicurazione.data_inizio = this.editAssicurazione.data_inizio.split('T')[0];
                     }
@@ -542,7 +498,6 @@
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
                 },
 
-                // AGGIORNAMENTO DATI IN BACKGROUND
                 async refreshData() {
                     try {
                         const res = await fetch('{{ route("assicurazioni.index") }}', {
@@ -557,7 +512,6 @@
                     }
                 },
 
-                // SUBMIT POST/PUT ASINCRONO
                 async submitForm(event, url, method) {
                     this.isSubmitting = true;
                     const form = event.target;
@@ -579,7 +533,7 @@
                             this.closeEditModal();
                             if(method === 'POST') form.reset();
                             
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Operazione completata con successo!', 'success');
                         } else {
                             this.showSuccess(data.message || 'Errore di validazione dati', 'error');
@@ -591,7 +545,6 @@
                     }
                 },
 
-                // DELETE ASINCRONO
                 async submitDelete(url) {
                     this.isSubmitting = true;
                     try {
@@ -609,7 +562,7 @@
 
                         if (response.ok) {
                             this.closeDeleteModal();
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Assicurazione eliminata con successo!', 'success');
                         } else {
                             this.closeDeleteModal();
@@ -628,9 +581,13 @@
 
     <style>
         [x-cloak] { display: none !important; }
+
+        /* Responsive Visibility */
         .desktop-only { display: block; }
         .mobile-only { display: none; }
         @media (max-width: 1023px) { .desktop-only { display: none; } .mobile-only { display: block; } }
+
+        /* Barra ricerca responsive */
         .mobile-only-search { display: block; }
         .desktop-only-search { display: none; }
         @media (min-width: 1024px) { .mobile-only-search { display: none !important; } .desktop-only-search { display: block !important; } }
@@ -639,10 +596,10 @@
         .btn-add-custom {
             background: linear-gradient(135deg, #ee7300 0%, #fa6400 100%);
             color: white; font-weight: 600; font-size: 1rem; padding: 0.875rem 1.75rem; border-radius: 0.75rem; border: none; cursor: pointer;
-            box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.4); transition: all 0.25s ease; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
+            box-shadow: 0 4px 14px -2px rgba(250, 100, 0, 0.4); transition: all 0.25s ease; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
         }
-        .btn-add-custom:hover { background: linear-gradient(135deg, #fa6400 0%, #b15000 100%); box-shadow: 0 8px 20px -2px rgba(37, 99, 235, 0.5); transform: translateY(-2px); }
-        .btn-add-custom:active { transform: translateY(0); box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.4); }
+        .btn-add-custom:hover { background: linear-gradient(135deg, #fa6400 0%, #c44d00 100%); box-shadow: 0 8px 20px -2px rgba(250, 100, 0, 0.5); transform: translateY(-2px); }
+        .btn-add-custom:active { transform: translateY(0); box-shadow: 0 2px 8px -2px rgba(250, 100, 0, 0.4); }
         .btn-add-custom svg { transition: transform 0.25s ease; }
         .btn-add-custom:hover svg { transform: rotate(90deg); }
 
@@ -690,6 +647,7 @@
 
         @keyframes fadeIn { 0% { background: rgba(0, 0, 0, 0); } 100% { background: rgba(0, 0, 0, 0.7); } }
         @keyframes fadeOut { 0% { background: rgba(0, 0, 0, 0.7); } 100% { background: rgba(0, 0, 0, 0); } }
+
         @keyframes checkmark { 0% { stroke-dashoffset: 50; stroke-dasharray: 50; } 100% { stroke-dashoffset: 0; stroke-dasharray: 50; } }
         .animate-check { stroke-dashoffset: 50; stroke-dasharray: 50; animation: checkmark 0.6s ease-in-out forwards; }
         @keyframes pulse-success { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
@@ -706,10 +664,10 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.5rem; background-color: #f9fafb; border-top: 1px solid #e5e7eb; }
         .form-label { display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
         .form-input { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; transition: all 0.15s; }
-        .form-input:focus { outline: none; border-color: #3b82f6; ring: 2px; ring-color: rgba(59, 130, 246, 0.3); }
+        .form-input:focus { outline: none; border-color: #f97316; ring: 2px; ring-color: rgba(249, 115, 22, 0.3); }
 
-        .btn-primary { padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #ee7300 0%, #fa6400 100%); color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
-        .btn-primary:hover { background: linear-gradient(135deg, #fa6400 0%, #b44c07 100%); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3); transform: translateY(-1px); }
+        .btn-primary { padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #ee7300 0%, #fa6400 100%); color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(250, 100, 0, 0.2); }
+        .btn-primary:hover { background: linear-gradient(135deg, #fa6400 0%, #c44d00 100%); box-shadow: 0 4px 8px rgba(250, 100, 0, 0.3); transform: translateY(-1px); }
         .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-secondary { padding: 0.625rem 1.25rem; background: white; color: #374151; font-weight: 600; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; }
         .btn-secondary:hover { background: #f9fafb; border-color: #9ca3af; }

@@ -11,7 +11,6 @@ class AssicurazioneController extends Controller
 {
     public function index(Request $request)
     {
-        // Aggiungiamo whereHas per filtrare solo quelle NON pagate nella dashboard delle scadenze
         $assicurazioni = Assicurazione::with('vehicle')
             ->whereHas('deadlines', function($query) {
                 $query->where('pagato', false);
@@ -19,8 +18,8 @@ class AssicurazioneController extends Controller
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function($assicurazione) {
-                $oggi = Carbon::now();
-                $scadenza = Carbon::parse($assicurazione->data_scadenza);
+                $oggi = Carbon::now()->startOfDay();
+                $scadenza = Carbon::parse($assicurazione->data_scadenza)->endOfDay();
                 $giorniRimanenti = $oggi->diffInDays($scadenza, false);
                 
                 return [
@@ -31,8 +30,9 @@ class AssicurazioneController extends Controller
                     'vehicle_modello' => $assicurazione->vehicle ? $assicurazione->vehicle->modello : '',
                     'compagnia' => $assicurazione->compagnia,
                     'polizza' => $assicurazione->polizza,
-                    'data_inizio' => $assicurazione->data_inizio->format('Y-m-d'),
-                    'data_inizio_formatted' => $assicurazione->data_inizio->format('d/m/Y'),
+                    // Data inizio opzionale
+                    'data_inizio' => $assicurazione->data_inizio ? $assicurazione->data_inizio->format('Y-m-d') : null,
+                    'data_inizio_formatted' => $assicurazione->data_inizio ? $assicurazione->data_inizio->format('d/m/Y') : '—',
                     'data_scadenza' => $assicurazione->data_scadenza->format('Y-m-d'),
                     'data_scadenza_formatted' => $assicurazione->data_scadenza->format('d/m/Y'),
                     'importo' => $assicurazione->importo ?? 0,
@@ -42,13 +42,11 @@ class AssicurazioneController extends Controller
                 ];
             });
         
-        // RISPOSTA ASINCRONA JSON PER ALPINE.JS
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['assicurazioni' => $assicurazioni]);
         }
 
         $vehicles = Vehicle::all();
-        
         return view('assicurazioni.index', compact('assicurazioni', 'vehicles'));
     }
 
@@ -58,8 +56,8 @@ class AssicurazioneController extends Controller
             'vehicle_id' => 'required|exists:vehicles,id',
             'compagnia' => 'nullable|string|max:100',
             'polizza' => 'nullable|string|max:100',
-            'data_inizio' => 'required|date',
-            'data_scadenza' => 'required|date|after:data_inizio',
+            'data_inizio' => 'nullable|date', // <--- OPZIONALE
+            'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
         ]);
@@ -79,8 +77,8 @@ class AssicurazioneController extends Controller
             'vehicle_id' => 'required|exists:vehicles,id',
             'compagnia' => 'nullable|string|max:100',
             'polizza' => 'nullable|string|max:100',
-            'data_inizio' => 'required|date',
-            'data_scadenza' => 'required|date|after:data_inizio',
+            'data_inizio' => 'nullable|date', // <--- OPZIONALE
+            'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
         ]);
@@ -97,11 +95,9 @@ class AssicurazioneController extends Controller
     public function destroy(Request $request, Assicurazione $assicurazione)
     {
         $assicurazione->delete();
-
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Assicurazione eliminata definitivamente!']);
         }
-
         return redirect()->route('assicurazioni.index')->with('success', 'Assicurazione eliminata con successo');
     }
 }

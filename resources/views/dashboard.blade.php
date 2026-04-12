@@ -506,9 +506,18 @@
                     chartTipoInstance = new Chart(document.getElementById('spesePerTipoChart').getContext('2d'), {
                         type: 'doughnut',
                         data: {
-                            labels: ['Bollo', 'Assicurazione', 'Patente', 'Revisione', 'Carta d\'Identità', 'Tesserino Sanitario'],
+                            labels: ['Bollo', 'Assicurazione', 'Patente', 'Revisione', 'Abbonamenti'],
                             datasets: [{
-                                data: Array(6).fill(0), backgroundColor: ['#eab308', '#3b82f6', '#ec4899', '#22c55e', '#a8a29e', '#14b8a6'], borderWidth: 0, hoverOffset: 10
+                                data: Array(5).fill(0), 
+                                backgroundColor: [
+                                    '#eab308', // Giallo Bollo
+                                    '#3b82f6', // Blu Assicurazione
+                                    '#ec4899', // Rosa Patente
+                                    '#22c55e', // Verde Revisione
+                                    '#6366f1'  // Indigo Abbonamenti (Nuovo!)
+                                ], 
+                                borderWidth: 0, 
+                                hoverOffset: 10
                             }]
                         },
                         options: { 
@@ -517,7 +526,8 @@
                             onHover: (e, elements) => { e.native.target.style.cursor = elements.length ? 'pointer' : 'default'; },
                             onClick: (e, elements) => {
                                 if (elements.length > 0) {
-                                    const categorie = ['bollo', 'assicurazione', 'patente', 'revisione', 'carta_identita', 'tesserino_sanitario'];
+                                    // ORDINE CATEGORIE AGGIORNATO
+                                    const categorie = ['bollo', 'assicurazione', 'patente', 'revisione', 'spesa_abbonamento'];
                                     this.setChartFilter('categoria', categorie[elements[0].index]);
                                 }
                             }
@@ -545,10 +555,28 @@
                     chartMensileInstance.data.datasets[1].data = daPagareMese;
                     chartMensileInstance.update();
 
-                    let spese = { bollo: 0, assicurazione: 0, patente: 0, revisione: 0, carta_identita: 0, tesserino_sanitario: 0 };
-                    filtered.forEach(e => { if (spese[e.tipo] !== undefined) spese[e.tipo] += e.importo; });
+                    // --- CALCOLO SOMME PER CATEGORIA ---
+                    let spese = { 
+                        bollo: 0, 
+                        assicurazione: 0, 
+                        patente: 0, 
+                        revisione: 0, 
+                        spesa_abbonamento: 0 
+                    };
+
+                    filtered.forEach(e => { 
+                        if (spese[e.tipo] !== undefined) {
+                            spese[e.tipo] += e.importo; 
+                        }
+                    });
                     
-                    chartTipoInstance.data.datasets[0].data = [spese.bollo, spese.assicurazione, spese.patente, spese.revisione, spese.carta_identita, spese.tesserino_sanitario];
+                    chartTipoInstance.data.datasets[0].data = [
+                        spese.bollo, 
+                        spese.assicurazione, 
+                        spese.patente, 
+                        spese.revisione, 
+                        spese.spesa_abbonamento
+                    ];
                     chartTipoInstance.update();
                 },
 
