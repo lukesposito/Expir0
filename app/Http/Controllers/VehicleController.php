@@ -3,20 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
     public function index(Request $request)
     {
-        $vehicles = Vehicle::withCount('deadlines')->orderBy('marca')->get();
+        // Aggiunto with('user') per far arrivare i dati dell'intestatario ad Alpine.js
+        $vehicles = Vehicle::with('user')->withCount('deadlines')->orderBy('marca')->get();
         
         // QUESTO E' QUELLO CHE PERMETTE L'AGGIORNAMENTO SILENZIOSO DA ALPINE
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['vehicles' => $vehicles]);
         }
+
+        // Peschiamo tutti gli utenti attivi per le tendine delle modali
+        $users = User::orderBy('name')->get();
         
-        return view('vehicles.index', compact('vehicles'));
+        return view('vehicles.index', compact('vehicles', 'users'));
     }
 
     public function create()
@@ -30,6 +35,7 @@ class VehicleController extends Controller
             'targa' => 'required|string|max:10|unique:vehicles',
             'marca' => 'nullable|string|max:50',
             'modello' => 'nullable|string|max:50',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         // Forza la targa ad essere maiuscola nel DB
@@ -57,6 +63,7 @@ class VehicleController extends Controller
             'targa' => 'required|string|max:10|unique:vehicles,targa,' . $vehicle->id,
             'marca' => 'nullable|string|max:50',
             'modello' => 'nullable|string|max:50',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         // Forza la targa ad essere maiuscola

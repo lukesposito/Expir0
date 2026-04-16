@@ -10,6 +10,38 @@
              x-data="vehiclesManager()" 
              x-init="init()">
 
+            <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm mt-4">
+                <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                    Guida passo-passo: Come gestisco i Veicoli? (Clicca per leggere)
+                </summary>
+                <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
+                        🚘 <strong>Benvenuto nel Garage di famiglia!</strong> Qui creiamo il nostro parco macchine e moto. Prima di poter inserire una scadenza (come un Bollo o un'Assicurazione), il veicolo deve essere registrato qui.
+                    </p>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire un nuovo veicolo</h4>
+                        <p>Hai comprato una macchina nuova o stai iniziando ora a usare il gestionale?</p>
+                        <ol class="list-decimal ml-5 mt-2 space-y-1">
+                            <li>Clicca sul pulsante indaco <strong>"Nuovo Veicolo"</strong>.</li>
+                            <li>Inserisci la <strong>Targa</strong> (le lettere diventeranno automaticamente maiuscole).</li>
+                            <li>Inserisci <strong>Marca e Modello</strong> per riconoscerlo meglio.</li>
+                            <li><strong>Novità:</strong> Ora puoi selezionare l'<strong>Intestatario</strong>. Se l'auto è di proprietà esclusiva di una persona, selezionala dal menu. Se è usata da tutti, puoi lasciarlo su "Veicolo di Famiglia".</li>
+                            <li>Clicca su Salva!</li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✏️ 2. Modificare o Vendere un veicolo</h4>
+                        <ul class="list-disc ml-5 mt-2 space-y-2">
+                            <li><strong>Errore di battitura o cambio intestatario?</strong> Clicca sul pulsante giallo "Modifica" (l'icona con la matita) accanto al veicolo per correggere i dati.</li>
+                            <li><strong>Hai venduto l'auto?</strong> Puoi eliminarla cliccando sul cestino rosso. <br> <span class="text-red-600 font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> Attenzione:</span> Eliminando un veicolo, verranno eliminate per sempre anche tutte le sue scadenze collegate (bolli, assicurazioni, revisioni)!</li>
+                        </ul>
+                    </div>
+                </div>
+            </details>
+
             <div class="mb-6">
                 <div class="mobile-only-search">
                     <div class="relative">
@@ -76,6 +108,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Targa</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modello</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intestatario</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenze</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                             </tr>
@@ -86,6 +119,10 @@
                                     <td class="px-6 py-4 font-semibold text-gray-900 uppercase font-mono" x-text="v.targa"></td>
                                     <td class="px-6 py-4 text-gray-700 capitalize" x-text="v.marca"></td>
                                     <td class="px-6 py-4 text-gray-700 capitalize" x-text="v.modello"></td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700" 
+                                            x-text="v.user ? '👤 ' + v.user.name : '👨‍👩‍👧‍👦 Famiglia'"></span>
+                                    </td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" x-text="v.deadlines_count"></span>
                                     </td>
@@ -208,6 +245,15 @@
                                     <label class="form-label">Modello</label>
                                     <input type="text" name="modello" class="form-input capitalize" placeholder="ES: Punto">
                                 </div>
+                                <div>
+                                    <label class="form-label">Intestatario</label>
+                                    <select name="user_id" class="form-input">
+                                        <option value="">-- Veicolo di Famiglia (Nessun intestatario) --</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" @click="closeCreateModal()" class="btn-secondary">Annulla</button>
@@ -243,6 +289,15 @@
                                 <div>
                                     <label class="form-label">Modello</label>
                                     <input type="text" name="modello" x-model="editVehicle.modello" class="form-input capitalize">
+                                </div>
+                                <div>
+                                    <label class="form-label">Intestatario</label>
+                                    <select name="user_id" x-model="editVehicle.user_id" class="form-input">
+                                        <option value="">-- Veicolo di Famiglia (Nessun intestatario) --</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                             <div class="modal-footer">
