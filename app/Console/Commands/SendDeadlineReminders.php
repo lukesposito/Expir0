@@ -18,19 +18,16 @@ class SendDeadlineReminders extends Command
     {
         $oggi = Carbon::now()->startOfDay();
         
-        // Prendiamo le scadenze non pagate
-        $scadenze = Deadline::with(['user', 'vehicle', 'subscription'])
+        $scadenze = Deadline::with(['user', 'vehicle', 'subscription.user'])
                             ->where('pagato', false)
                             ->get();
                             
-        // Prendiamo solo gli utenti attivi che vogliono ricevere notifiche
         $utentiValidi = User::where('is_active', true)
                             ->where('receives_notifications', true)
                             ->get();
 
         $digestPerUtente = []; 
 
-        // 1. PREPARIAMO UN "CESTO" VUOTO PER OGNI UTENTE
         foreach ($utentiValidi as $user) {
             if (!empty($user->email)) {
                 $digestPerUtente[$user->email] = [
@@ -48,94 +45,117 @@ class SendDeadlineReminders extends Command
             $dataScadenza = Carbon::parse($deadline->data_scadenza)->startOfDay();
             $giorniRimanenti = (int) $oggi->diffInDays($dataScadenza, false);
             $scadeQuestAnno = $dataScadenza->year === $oggi->year;
+            $isTesserino = strtolower($deadline->tipo) === 'tesserino_sanitario';
             
-            // 2. CAPISCO SE È PERSONALE O DI FAMIGLIA
             $isPersonal = false;
             $ownerEmail = null;
+            $utenteAssociato = null;
 
-            // Se è un documento umano o un abbonamento intestato a qualcuno, è PERSONALE
+            // Identificazione proprietario
             if (in_array(strtolower($deadline->tipo), ['patente', 'carta_identita', 'tesserino_sanitario'])) {
                 if ($deadline->user && !empty($deadline->user->email)) {
                     $isPersonal = true;
                     $ownerEmail = $deadline->user->email;
+                    $utenteAssociato = $deadline->user;
                 }
             } elseif ($deadline->tipo === 'spesa_abbonamento') {
-                if ($deadline->user && !empty($deadline->user->email)) {
+                $utenteAssociato = $deadline->user ?? ($deadline->subscription->user ?? null);
+                if ($utenteAssociato && !empty($utenteAssociato->email)) {
                     $isPersonal = true;
-                    $ownerEmail = $deadline->user->email;
+                    $ownerEmail = $utenteAssociato->email;
                 }
             }
 
-            // 3. PREPARO I DATI PER LA MAIL
-            $soggetto = 'N/D';
-            if ($isPersonal) {
-                $soggetto = $deadline->user->name;
-            } elseif ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription) {
-                $soggetto = $deadline->subscription->nome;
-            } elseif ($deadline->vehicle) {
-                $soggetto = strtoupper($deadline->vehicle->marca . ' ' . $deadline->vehicle->modello . ' (' . $deadline->vehicle->targa . ')');
+            // 1. PREPARAZIONE TITOLO E SOTTOTITOLO EMAIL
+            if ($isTesserino) {
+                $nomeProprietario = $utenteAssociato ? $utenteAssociato->name : 'Membro Famiglia';
+                $titolo = 'Tesserino Sanitario - ' . $nomeProprietario;
+                $sottotitolo = 'Il nuovo documento verrà spedito automaticamente a casa dall\'Agenzia delle Entrate.';
+            } else {
+                $titolo = ucwords(str_replace('_', ' ', $deadline->tipo));
+                $sottotitolo = 'Spesa di Famiglia';
+
+                if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription) {
+                    // TITOLO: Nome del servizio (Netflix, Palestra, ecc.)
+                    $titolo = $deadline->subscription->nome;
+                    
+                    // COSTRUZIONE SOTTOTITOLO DINAMICO
+                    $parti = [];
+                    
+                    // Aggiungiamo le Note o la Categoria
+                    if (!empty($deadline->subscription->note)) {
+                        $parti[] = $deadline->subscription->note;
+                    } else {
+                        $parti[] = $deadline->subscription->categoria;
+                    }
+
+                    // AGGIUNGIAMO SEMPRE L'INTESTATARIO SE PRESENTE
+                    if ($isPersonal && $utenteAssociato) {
+                         $parti[] = 'Intestatario: ' . $utenteAssociato->name;
+                    }
+
+                    $sottotitolo = implode(' • ', $parti);
+
+                } else {
+                    if ($deadline->tipo === 'revisione') {
+                        $titolo = 'Revisione Ministeriale';
+                    }
+                    if ($isPersonal && $utenteAssociato) {
+                        $sottotitolo = $utenteAssociato->name;
+                    } elseif ($deadline->vehicle) {
+                        $sottotitolo = strtoupper($deadline->vehicle->marca . ' ' . $deadline->vehicle->modello . ' (' . $deadline->vehicle->targa . ')');
+                    }
+                }
             }
 
-            // ==========================================
-            // NUOVA GESTIONE DATE PER REVISIONE E ALTRO
-            // ==========================================
-            if ($deadline->tipo === 'revisione') {
-                // Per le revisioni usiamo "Entro Agosto 2026"
-                $dataVisualizzata = "Entro " . ucfirst($dataScadenza->locale('it')->isoFormat('MMMM YYYY'));
-            } else {
-                // Per tutto il resto data standard
-                $dataVisualizzata = $dataScadenza->format('d/m/Y');
-            }
+            $dataVisualizzata = ($deadline->tipo === 'revisione') 
+                ? "Entro " . ucfirst($dataScadenza->locale('it')->isoFormat('MMMM YYYY'))
+                : $dataScadenza->format('d/m/Y');
 
             $itemData = [
-                'tipo' => ($deadline->tipo === 'revisione') ? 'Revisione Ministeriale' : ucwords(str_replace('_', ' ', $deadline->tipo)),
-                'soggetto' => $soggetto,
-                'data' => $dataVisualizzata, // <- Inserisco la data dinamica
+                'tipo' => $titolo,
+                'soggetto' => $sottotitolo,
+                'data' => $dataVisualizzata,
                 'giorni' => $giorniRimanenti,
                 'importo' => $deadline->importo > 0 ? '€ ' . number_format($deadline->importo, 2, ',', '.') : '-'
             ];
 
-            // 4. VERIFICO L'URGENZA E I TRIGGER
+            // 2. LOGICA TRIGGER
             $haTriggerato = false;
             $urgenza = null;
 
-            // Logica di scatto avvisi (7gg, 15gg, 30gg)
-            if ($giorniRimanenti <= 7 && $giorniRimanenti >= -30 && !$deadline->notified_7) {
-                $urgenza = 'urgente';
-                $deadline->notified_7 = true; 
-                $deadline->notified_15 = true; 
-                $deadline->notified_30 = true;
-                $haTriggerato = true;
-            } elseif ($giorniRimanenti <= 15 && $giorniRimanenti > 7 && !$deadline->notified_15) {
-                $urgenza = 'breve';
-                $deadline->notified_15 = true; 
-                $deadline->notified_30 = true;
-                $haTriggerato = true;
-            } elseif ($giorniRimanenti <= 30 && $giorniRimanenti > 15 && !$deadline->notified_30) {
-                $urgenza = 'avviso';
-                $deadline->notified_30 = true;
-                $haTriggerato = true;
-            } else {
-                // Avviso Annuale (Solo per Documenti a lungo termine)
-                $documentiLungoTermine = ['patente', 'carta_identita', 'tesserino_sanitario'];
-                if (in_array(strtolower($deadline->tipo), $documentiLungoTermine) && $scadeQuestAnno && !$deadline->notified_year) {
-                    $urgenza = 'annuale';
-                    $deadline->notified_year = true;
+            if (!$isTesserino) {
+                if ($giorniRimanenti <= 7 && $giorniRimanenti >= -30 && !$deadline->notified_7) {
+                    $urgenza = 'urgente';
+                    $deadline->notified_7 = true; $deadline->notified_15 = true; $deadline->notified_30 = true;
+                    $haTriggerato = true;
+                } elseif ($giorniRimanenti <= 15 && $giorniRimanenti > 7 && !$deadline->notified_15) {
+                    $urgenza = 'breve';
+                    $deadline->notified_15 = true; $deadline->notified_30 = true;
+                    $haTriggerato = true;
+                } elseif ($giorniRimanenti <= 30 && $giorniRimanenti > 15 && !$deadline->notified_30) {
+                    $urgenza = 'avviso';
+                    $deadline->notified_30 = true;
                     $haTriggerato = true;
                 }
             }
 
-            // 5. METTO LA SCADENZA NEI CESTINI CORRETTI
+            $documentiLungoTermine = ['patente', 'carta_identita', 'tesserino_sanitario'];
+            if (in_array(strtolower($deadline->tipo), $documentiLungoTermine) && $scadeQuestAnno && !$deadline->notified_year) {
+                $urgenza = 'annuale';
+                $deadline->notified_year = true;
+                $haTriggerato = true;
+            }
+
             if ($haTriggerato && $urgenza) {
                 $daAggiornare[] = $deadline; 
-
                 if ($isPersonal) {
                     if (isset($digestPerUtente[$ownerEmail])) {
                         $digestPerUtente[$ownerEmail][$urgenza][] = $itemData;
                     }
                 } else {
                     foreach ($utentiValidi as $user) {
-                        if (!empty($user->email) && isset($digestPerUtente[$user->email])) {
+                        if (isset($digestPerUtente[$user->email])) {
                             $digestPerUtente[$user->email][$urgenza][] = $itemData;
                         }
                     }
@@ -143,24 +163,19 @@ class SendDeadlineReminders extends Command
             }
         }
 
-        // =========================================
-        // INVIO DI UNA SOLA MAIL PER UTENTE
-        // =========================================
         $emailInviate = 0;
         foreach ($digestPerUtente as $email => $notifiche) {
-            $totaleNotifiche = count($notifiche['urgente']) + count($notifiche['breve']) + count($notifiche['avviso']) + count($notifiche['annuale']);
-            
-            if ($totaleNotifiche > 0) {
+            $totale = count($notifiche['urgente']) + count($notifiche['breve']) + count($notifiche['avviso']) + count($notifiche['annuale']);
+            if ($totale > 0) {
                 Mail::to($email)->send(new DeadlineDigestMail($notifiche));
                 $emailInviate++;
             }
         }
 
-        // Aggiorniamo i "notified_x" nel DB solo se la mail è partita davvero
-        foreach ($daAggiornare as $deadline) {
-            $deadline->save();
+        foreach ($daAggiornare as $deadline) { 
+            $deadline->save(); 
         }
-
-        $this->info("Controllo completato! Inviate {$emailInviate} email riepilogative.");
+        
+        $this->info("Inviate {$emailInviate} email riepilogative aggiornate.");
     }
 }

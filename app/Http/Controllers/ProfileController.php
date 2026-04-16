@@ -18,6 +18,8 @@ class ProfileController extends Controller
     {
         return view('profile.edit', [
             'user' => $request->user(),
+            // AGGIUNTO: Peschiamo le passkey dell'utente ordinate per data
+            'passkeys' => $request->user()->webAuthnCredentials()->orderBy('created_at', 'desc')->get(),
         ]);
     }
 
@@ -26,21 +28,15 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request)
     {
-        // 1. Aggiorna i campi standard (nome, email) validati dalla Request
         $request->user()->fill($request->validated());
-
-        // 2. AGGIUNTO: Catturiamo l'interruttore delle notifiche!
-        // Usiamo boolean() così Laravel trasforma automaticamente "1" o "0" in true/false
         $request->user()->receives_notifications = $request->boolean('receives_notifications');
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
-        // 3. Salviamo tutto nel database
         $request->user()->save();
 
-        // MAGIA SPA: Risposta JSON
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Informazioni del profilo aggiornate con successo!']);
         }
@@ -60,12 +56,26 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * ELIMINA UNA PASSKEY (Dispositivo Registrato)
+     */
+    public function destroyPasskey(Request $request, $id)
+    {
+        // Elimina l'impronta SOLO se appartiene a questo utente (sicurezza)
+        $deleted = $request->user()->webAuthnCredentials()->where('id', $id)->delete();
+
+        if ($deleted) {
+            return response()->json(['message' => 'Dispositivo revocato con successo!']);
+        }
+
+        return response()->json(['message' => 'Impossibile trovare il dispositivo.'], 404);
     }
 }

@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class SubscriptionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $subscriptions = Subscription::with(['user', 'vehicle'])
             ->whereHas('deadlines', function($query) {
@@ -19,7 +19,7 @@ class SubscriptionController extends Controller
             ->orderBy('data_scadenza', 'asc')
             ->get()
             ->map(function ($sub) {
-                $scadenza = Carbon::parse($sub->data_scadenza);
+                $scadenza = Carbon::parse($sub->data_scadenza)->startOfDay();
                 $oggi = Carbon::now()->startOfDay();
                 
                 return [
@@ -30,8 +30,8 @@ class SubscriptionController extends Controller
                     'data_scadenza_formatted' => $sub->data_scadenza->format('d/m/Y'),
                     'importo' => $sub->importo,
                     'importo_formatted' => $sub->importo ? number_format($sub->importo, 2, ',', '.') : '0,00',
-                    'rinnovo_automatico' => $sub->rinnovo_automatico,
-                    'giorni_preavviso' => $sub->giorni_preavviso,
+                    'rinnovo_automatico' => (bool) $sub->rinnovo_automatico,
+                    'giorni_preavviso' => (int) $sub->giorni_preavviso,
                     'url_gestione' => $sub->url_gestione,
                     'note' => $sub->note,
                     'user_id' => $sub->user_id,
@@ -42,12 +42,12 @@ class SubscriptionController extends Controller
                 ];
             });
 
-        $users = User::orderBy('name')->get();
-        $vehicles = Vehicle::orderBy('targa')->get();
-
-        if (request()->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['subscriptions' => $subscriptions]);
         }
+
+        $users = User::orderBy('name')->get();
+        $vehicles = Vehicle::orderBy('targa')->get();
 
         return view('subscriptions.index', compact('subscriptions', 'users', 'vehicles'));
     }
@@ -59,7 +59,6 @@ class SubscriptionController extends Controller
             'categoria' => 'required|string|max:255',
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
-            'rinnovo_automatico' => 'boolean',
             'giorni_preavviso' => 'required|integer|min:0',
             'url_gestione' => 'nullable|url',
             'note' => 'nullable|string',
@@ -67,8 +66,15 @@ class SubscriptionController extends Controller
             'vehicle_id' => 'nullable|exists:vehicles,id',
         ]);
 
+        // Cattura sicura del booleano da AJAX FormData
+        $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+
         Subscription::create($validated);
-        return response()->json(['message' => 'Spesa salvata con successo!'], 201);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Spesa salvata con successo!'], 201);
+        }
+        return redirect()->route('subscriptions.index')->with('success', 'Spesa salvata!');
     }
 
     public function update(Request $request, Subscription $subscription)
@@ -78,7 +84,6 @@ class SubscriptionController extends Controller
             'categoria' => 'required|string|max:255',
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
-            'rinnovo_automatico' => 'boolean',
             'giorni_preavviso' => 'required|integer|min:0',
             'url_gestione' => 'nullable|url',
             'note' => 'nullable|string',
@@ -86,16 +91,24 @@ class SubscriptionController extends Controller
             'vehicle_id' => 'nullable|exists:vehicles,id',
         ]);
 
-        // Assicurati che i checkbox non inviati contino come false
-        $validated['rinnovo_automatico'] = $request->has('rinnovo_automatico');
+        // Cattura sicura del booleano da AJAX FormData
+        $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
 
         $subscription->update($validated);
-        return response()->json(['message' => 'Spesa aggiornata con successo!']);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Spesa aggiornata con successo!']);
+        }
+        return redirect()->route('subscriptions.index')->with('success', 'Spesa aggiornata!');
     }
 
-    public function destroy(Subscription $subscription)
+    public function destroy(Request $request, Subscription $subscription)
     {
         $subscription->delete();
-        return response()->json(['message' => 'Spesa eliminata con successo!']);
+        
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Spesa eliminata con successo!']);
+        }
+        return redirect()->route('subscriptions.index')->with('success', 'Spesa eliminata!');
     }
 }

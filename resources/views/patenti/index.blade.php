@@ -5,34 +5,34 @@
         </h2>
     </x-slot>
 
-    <details class="bg-pink-50 p-5 rounded-xl mb-8 border-2 border-pink-200 shadow-sm mt-4">
-        <summary class="font-black text-pink-800 cursor-pointer text-xl flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-2xl"></i>
-            Guida passo-passo: Come gestisco le Patenti? (Clicca per leggere)
-        </summary>
-        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-pink-100">
-                🚗 <strong>Benvenuto nell'archivio Patenti di famiglia!</strong> Qui teniamo traccia delle patenti di guida di tutti.
-            </p>
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova patente</h4>
-                <p>Hai appena preso la patente o non l'hai mai inserita prima?</p>
-                <ol class="list-decimal ml-5 mt-2 space-y-1">
-                    <li>Clicca sul pulsante rosa brillante <strong>"Aggiungi Patente"</strong> che vedi qui sopra.</li>
-                    <li>Si aprirà una finestrella. Scegli la <strong>Persona</strong> a cui appartiene.</li>
-                    <li>Scrivi il <strong>Numero della Patente</strong> e il <strong>Tipo</strong>.</li>
-                    <li>Clicca su Salva!</li>
-                </ol>
-                <p class="mt-3 bg-white p-2 rounded text-slate-800 text-sm font-semibold border border-slate-200">
-                    <i class="fa-solid fa-magic text-pink-500"></i> <strong>Magia automatica:</strong> Se lasci vuota la data di scadenza, il sistema la calcolerà da solo in base all'età!
-                </p>
-            </div>
-        </div>
-    </details>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" x-data="patentiManager()" x-init="init()">
 
+            <details class="bg-pink-50 p-5 rounded-xl mb-8 border-2 border-pink-200 shadow-sm mt-4">
+                <summary class="font-black text-pink-800 cursor-pointer text-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                    Guida passo-passo: Come gestisco le Patenti? (Clicca per leggere)
+                </summary>
+                <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-pink-100">
+                        🚗 <strong>Benvenuto nell'archivio Patenti di famiglia!</strong> Qui teniamo traccia delle patenti di guida di tutti.
+                    </p>
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova patente</h4>
+                        <p>Hai appena preso la patente o non l'hai mai inserita prima?</p>
+                        <ol class="list-decimal ml-5 mt-2 space-y-1">
+                            <li>Clicca sul pulsante rosa brillante <strong>"Aggiungi Patente"</strong> che vedi qui sopra.</li>
+                            <li>Si aprirà una finestrella. Scegli la <strong>Persona</strong> a cui appartiene.</li>
+                            <li>Scrivi il <strong>Numero della Patente</strong> e il <strong>Tipo</strong>.</li>
+                            <li>Clicca su Salva!</li>
+                        </ol>
+                        <p class="mt-3 bg-white p-2 rounded text-slate-800 text-sm font-semibold border border-slate-200">
+                            <i class="fa-solid fa-magic text-pink-500"></i> <strong>Magia automatica:</strong> Se lasci vuota la data di scadenza, il sistema la calcolerà da solo in base all'età!
+                        </p>
+                    </div>
+                </div>
+            </details>
+            
             <div class="mb-6">
                 <div class="mobile-only-search">
                     <div class="relative">

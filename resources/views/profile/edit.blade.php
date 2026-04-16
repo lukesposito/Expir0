@@ -253,6 +253,41 @@
                         this.isSubmitting = false;
                     }
                 }
+
+                // Aggiungi questa funzione dentro il tuo componente Alpine (es. x-data="profileManager()")
+                async revokePasskey(id) {
+                    if (!confirm('Sei sicuro di voler revocare l\'accesso a questo dispositivo? Non potrai più usarlo per fare il login.')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/profile/passkey/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            // Rimuove l'elemento dalla vista con una transizione fluida
+                            const element = document.getElementById(`passkey-${id}`);
+                            if (element) {
+                                element.style.opacity = '0';
+                                setTimeout(() => element.remove(), 300);
+                            }
+                            alert('Dispositivo revocato!'); // Sostituisci con il tuo Toast di successo se ne hai uno
+                        } else {
+                            alert(data.message || 'Errore durante la revoca.');
+                        }
+                    } catch (error) {
+                        console.error('Errore:', error);
+                        alert('Errore di connessione al server.');
+                    }
+                }
             }
         }
     </script>

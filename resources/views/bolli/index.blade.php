@@ -4,58 +4,58 @@
             Gestione Bolli
         </h2>
     </x-slot>
-
-    <details class="bg-yellow-50 p-5 rounded-xl mb-8 border-2 border-yellow-200 shadow-sm mt-4">
-        <summary class="font-black text-yellow-800 cursor-pointer text-xl flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-2xl"></i>
-            Guida passo-passo: Come gestisco i Bolli? (Clicca per leggere)
-        </summary>
-        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-            
-            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-yellow-100">
-                💰 <strong>La famigerata tassa di proprietà!</strong> Il bollo auto (o moto) si paga ogni anno ed è <strong>legato alla targa del veicolo</strong>, non alla persona che lo guida. Dimenticarlo significa pagare multe e interessi, ma non succederà più!
-            </p>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire un nuovo Bollo</h4>
-                <p>Hai appena pagato il bollo in tabaccheria o online? Registralo subito!</p>
-                <ol class="list-decimal ml-5 mt-2 space-y-1">
-                    <li>Clicca sul pulsante giallo scuro <strong>"Aggiungi Bollo"</strong> qui sopra.</li>
-                    <li>Scegli l'<strong>Auto o la Moto</strong> dalla tendina (ricorda che l'auto deve essere già stata creata nella pagina "Veicoli"!).</li>
-                    <li>Scegli la <strong>Data di Scadenza</strong>. Attenzione: non la data in cui l'hai pagato, ma la data del *prossimo anno* in cui scadrà! (di solito è l'ultimo giorno del mese).</li>
-                    <li>Scrivi l'<strong>Importo</strong> esatto che hai pagato (es. 154.50). Questo aiuterà il sistema a fare i calcoli nella tua Dashboard principale.</li>
-                    <li>Nelle <strong>Note</strong> puoi scrivere dove l'hai pagato, giusto per ricordartelo. Clicca su Salva!</li>
-                </ol>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 2. Trovare un bollo specifico</h4>
-                <p>Se hai tanti mezzi, usa la barra bianca in alto "Cerca per targa, marca...". Digita "Fiat" o "AB123CD" per far apparire immediatamente il bollo che stai cercando.</p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Cosa fare quando paghi il rinnovo?</h4>
-                <p>Questa è la cosa più importante: quando arriva l'anno nuovo e paghi il bollo, <strong>non devi cliccare su "Aggiungi Bollo" e crearne uno doppio!</strong></p>
-                <p class="mt-1">Devi semplicemente cercare quello vecchio nella lista e cliccare sul tasto blu <strong>Modifica</strong>. Lì dentro, cambi la data mettendola all'anno successivo e aggiorni l'importo. In questo modo avrai sempre un solo "cassetto" ordinato per ogni macchina.</p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante Elimina</h4>
-                <p>Usa il tasto rosso <strong>Elimina</strong> SOLO in due casi:</p>
-                <ul class="list-disc ml-5 mt-1 space-y-1">
-                    <li>Se hai fatto confusione e inserito due volte lo stesso bollo per la stessa macchina.</li>
-                    <li>Se l'auto è diventata d'epoca (oltre i 30 anni) e non paga più il bollo.</li>
-                </ul>
-                <p class="text-sm italic mt-1">Nota: Se vendi o rottami l'auto, non cancellare il bollo da qui, vai invece nella pagina "Veicoli" e cancella direttamente l'automobile intera!</p>
-            </div>
-
-        </div>
-    </details>
     
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="bolliManager()"
              x-init="init()">
+            
+            <details class="bg-yellow-50 p-5 rounded-xl mb-8 border-2 border-yellow-200 shadow-sm mt-4">
+                <summary class="font-black text-yellow-800 cursor-pointer text-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                    Guida passo-passo: Come gestisco i Bolli? (Clicca per leggere)
+                </summary>
+                <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                    
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-yellow-100">
+                        💰 <strong>La famigerata tassa di proprietà!</strong> Il bollo auto (o moto) si paga ogni anno ed è <strong>legato alla targa del veicolo</strong>, non alla persona che lo guida. Dimenticarlo significa pagare multe e interessi, ma non succederà più!
+                    </p>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire un nuovo Bollo</h4>
+                        <p>Hai appena pagato il bollo in tabaccheria o online? Registralo subito!</p>
+                        <ol class="list-decimal ml-5 mt-2 space-y-1">
+                            <li>Clicca sul pulsante giallo scuro <strong>"Aggiungi Bollo"</strong> qui sopra.</li>
+                            <li>Scegli l'<strong>Auto o la Moto</strong> dalla tendina (ricorda che l'auto deve essere già stata creata nella pagina "Veicoli"!).</li>
+                            <li>Scegli la <strong>Data di Scadenza</strong>. Attenzione: non la data in cui l'hai pagato, ma la data del *prossimo anno* in cui scadrà! (di solito è l'ultimo giorno del mese).</li>
+                            <li>Scrivi l'<strong>Importo</strong> esatto che hai pagato (es. 154.50). Questo aiuterà il sistema a fare i calcoli nella tua Dashboard principale.</li>
+                            <li>Nelle <strong>Note</strong> puoi scrivere dove l'hai pagato, giusto per ricordartelo. Clicca su Salva!</li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 2. Trovare un bollo specifico</h4>
+                        <p>Se hai tanti mezzi, usa la barra bianca in alto "Cerca per targa, marca...". Digita "Fiat" o "AB123CD" per far apparire immediatamente il bollo che stai cercando.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Cosa fare quando paghi il rinnovo?</h4>
+                        <p>Questa è la cosa più importante: quando arriva l'anno nuovo e paghi il bollo, <strong>non devi cliccare su "Aggiungi Bollo" e crearne uno doppio!</strong></p>
+                        <p class="mt-1">Devi semplicemente cercare quello vecchio nella lista e cliccare sul tasto blu <strong>Modifica</strong>. Lì dentro, cambi la data mettendola all'anno successivo e aggiorni l'importo. In questo modo avrai sempre un solo "cassetto" ordinato per ogni macchina.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante Elimina</h4>
+                        <p>Usa il tasto rosso <strong>Elimina</strong> SOLO in due casi:</p>
+                        <ul class="list-disc ml-5 mt-1 space-y-1">
+                            <li>Se hai fatto confusione e inserito due volte lo stesso bollo per la stessa macchina.</li>
+                            <li>Se l'auto è diventata d'epoca (oltre i 30 anni) e non paga più il bollo.</li>
+                        </ul>
+                        <p class="text-sm italic mt-1">Nota: Se vendi o rottami l'auto, non cancellare il bollo da qui, vai invece nella pagina "Veicoli" e cancella direttamente l'automobile intera!</p>
+                    </div>
+
+                </div>
+            </details>
 
             <div class="mb-6">
                 <div class="mobile-only-search">

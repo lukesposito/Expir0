@@ -22,29 +22,24 @@
                     <div>
                         <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova spesa</h4>
                         <ol class="list-decimal ml-5 mt-2 space-y-1">
-                            <li>Clicca sul pulsante viola <strong>"Aggiungi Spesa/Abbonamento"</strong> in alto.</li>
+                            <li>Clicca sul pulsante viola <strong>"Aggiungi Spesa"</strong> in alto.</li>
                             <li>Dai un <strong>Nome</strong> facile da ricordare (es. "Abbonamento Palestra").</li>
-                            <li>Scegli la <strong>Categoria</strong> giusta (ti aiuterà a trovarla più in fretta dopo).</li>
+                            <li>Scegli la <strong>Categoria</strong> giusta e l'eventuale <strong>Intestatario</strong>.</li>
                             <li>Scegli la <strong>Data di Scadenza</strong> o del prossimo pagamento.</li>
                         </ol>
                     </div>
                     <div>
-                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🤖 2. Il "Rinnovo Automatico" (Molto Importante!)</h4>
-                        <p>Quando crei una spesa, vedrai un interruttore chiamato "Rinnovo Automatico". Come si usa?</p>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🤖 2. Il "Rinnovo Automatico"</h4>
                         <ul class="space-y-2 ml-2 mt-2">
                             <li class="flex items-start gap-2">
                                 <span class="text-green-500 mt-1"><i class="fa-solid fa-toggle-on"></i></span>
-                                <div><strong>Lascialo ACCESO</strong> per cose come Netflix o Amazon Prime: i soldi te li scalano dalla carta da soli, tu non devi fare bonifici. Il sistema lo saprà e aggiornerà l'anno da solo!</div>
+                                <div><strong>ACCESO:</strong> Per cose come Netflix o Prime. I soldi si scalano da soli dalla carta, tu non devi fare bonifici.</div>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="text-gray-400 mt-1"><i class="fa-solid fa-toggle-off"></i></span>
-                                <div><strong>Lascialo SPENTO</strong> per cose come la Caldaia, l'IMU o la TARI: in questi casi devi fisicamente chiamare un tecnico o andare in posta a pagare, quindi l'app aspetterà che tu confermi di averlo fatto.</div>
+                                <div><strong>SPENTO:</strong> Per cose come la Caldaia, l'IMU o la TARI. In questi casi l'app aspetterà che tu confermi di averlo pagato.</div>
                             </li>
                         </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">⏰ 3. I giorni di preavviso</h4>
-                        <p>A volte ti abboni a qualcosa e ti dimentichi di disdire in tempo, finendo per pagare un anno intero a vuoto. <br>Se imposti <strong>"Avvisami 5 giorni prima"</strong>, l'app ti manderà un promemoria con il giusto anticipo, dandoti il tempo di bloccare il pagamento!</p>
                     </div>
                 </div>
             </details>
@@ -203,14 +198,6 @@
                         </div>
                     </div>
                 </template>
-                
-                <div x-show="filteredSubscriptions.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
-                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-box-open text-4xl text-gray-400"></i>
-                    </div>
-                    <p class="text-gray-500 font-medium">Nessuna spesa trovata</p>
-                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
-                </div>
             </div>
 
             <div x-show="showCreateModal" x-cloak @keydown.escape.window="closeCreateModal()" class="modal-overlay" :class="{ 'modal-active': showCreateModal && !isClosingCreate, 'modal-out': isClosingCreate }">
@@ -224,28 +211,28 @@
                         <form @submit.prevent="submitCreate($event)" class="modal-body">
                             @csrf
                             <div class="space-y-5">
-                                <div><label class="form-label">Nome Servizio / Spesa *</label><input type="text" name="nome" required class="form-input" placeholder="Es. Netflix, Manutenzione Caldaia"></div>
+                                <div><label class="form-label">Nome Servizio / Spesa *</label><input type="text" name="nome" required class="form-input" placeholder="Es. Netflix, Palestra"></div>
                                 <div>
                                     <label class="form-label">Categoria *</label>
                                     <select name="categoria" required class="form-input">
                                         <option value="Casa e Manutenzione">🏠 Casa e Manutenzione</option>
                                         <option value="Software e App">💻 Software e App</option>
                                         <option value="Intrattenimento">🍿 Intrattenimento (TV, Musica)</option>
-                                        <option value="Salute e Benessere">🏥 Salute e Benessere (Palestra)</option>
+                                        <option value="Salute e Benessere">🏥 Salute e Benessere</option>
                                         <option value="Tasse e Tributi">🏛️ Tasse e Tributi (IMU, TARI)</option>
                                         <option value="Altro">📦 Altro</option>
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="form-label">Data Prossima Scadenza *</label><input type="date" name="data_scadenza" required class="form-input"></div>
-                                    <div><label class="form-label">Importo (€)</label><input type="number" name="importo" step="0.01" class="form-input" placeholder="0.00"></div>
+                                    <div><label class="form-label">Prossima Scadenza *</label><input type="date" name="data_scadenza" required class="form-input"></div>
+                                    <div><label class="form-label">Importo (€)</label><input type="number" name="importo" step="0.01" min="0" class="form-input" placeholder="0.00"></div>
                                 </div>
                                 
                                 <div class="bg-violet-50 p-4 rounded-lg border border-violet-100">
                                     <div class="flex items-center justify-between mb-3">
                                         <div>
                                             <p class="font-bold text-violet-900 text-sm">Rinnovo Automatico?</p>
-                                            <p class="text-xs text-violet-700">I soldi vengono scalati da soli dalla carta?</p>
+                                            <p class="text-xs text-violet-700">I soldi vengono scalati da soli?</p>
                                         </div>
                                         <label class="switch">
                                             <input type="checkbox" name="rinnovo_automatico" value="1">
@@ -253,8 +240,8 @@
                                         </label>
                                     </div>
                                     <div class="mt-3">
-                                        <label class="font-bold text-violet-900 text-sm block mb-1">Giorni di Preavviso Disdetta</label>
-                                        <p class="text-xs text-violet-700 mb-2">Quanti giorni prima vuoi essere avvisato per avere il tempo di disdire/chiamare?</p>
+                                        <label class="font-bold text-violet-900 text-sm block mb-1">Preavviso (Giorni)</label>
+                                        <p class="text-xs text-violet-700 mb-2">Quanti giorni prima vuoi essere avvisato?</p>
                                         <input type="number" name="giorni_preavviso" min="0" value="3" class="form-input w-full" placeholder="Es. 3">
                                     </div>
                                 </div>
@@ -268,7 +255,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="form-label">Veicolo (Opzionale, es. Telepass)</label>
+                                        <label class="form-label">Veicolo (Opzionale)</label>
                                         <select name="vehicle_id" class="form-input">
                                             <option value="">Nessun veicolo</option>
                                             @foreach($vehicles as $v) <option value="{{ $v->id }}">{{ $v->marca }} {{ $v->modello }}</option> @endforeach
@@ -276,8 +263,8 @@
                                     </div>
                                 </div>
                                 
-                                <div><label class="form-label">Link per Gestione/Disdetta online</label><input type="url" name="url_gestione" class="form-input" placeholder="https://..."></div>
-                                <div><label class="form-label">Note aggiuntive</label><textarea name="note" rows="2" class="form-input"></textarea></div>
+                                <div><label class="form-label">Link Gestione online</label><input type="url" name="url_gestione" class="form-input" placeholder="https://..."></div>
+                                <div><label class="form-label">Note</label><textarea name="note" rows="2" class="form-input"></textarea></div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" @click="closeCreateModal()" class="btn-secondary">Annulla</button>
@@ -306,14 +293,14 @@
                                         <option value="Casa e Manutenzione">🏠 Casa e Manutenzione</option>
                                         <option value="Software e App">💻 Software e App</option>
                                         <option value="Intrattenimento">🍿 Intrattenimento (TV, Musica)</option>
-                                        <option value="Salute e Benessere">🏥 Salute e Benessere (Palestra)</option>
+                                        <option value="Salute e Benessere">🏥 Salute e Benessere</option>
                                         <option value="Tasse e Tributi">🏛️ Tasse e Tributi (IMU, TARI)</option>
                                         <option value="Altro">📦 Altro</option>
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="form-label">Data Prossima Scadenza *</label><input type="date" name="data_scadenza" x-model="editSub.data_scadenza" required class="form-input"></div>
-                                    <div><label class="form-label">Importo (€)</label><input type="number" name="importo" x-model="editSub.importo" step="0.01" class="form-input"></div>
+                                    <div><label class="form-label">Prossima Scadenza *</label><input type="date" name="data_scadenza" x-model="editSub.data_scadenza" required class="form-input"></div>
+                                    <div><label class="form-label">Importo (€)</label><input type="number" name="importo" x-model="editSub.importo" step="0.01" min="0" class="form-input"></div>
                                 </div>
                                 
                                 <div class="bg-violet-50 p-4 rounded-lg border border-violet-100">
@@ -327,7 +314,7 @@
                                         </label>
                                     </div>
                                     <div class="mt-3">
-                                        <label class="font-bold text-violet-900 text-sm block mb-1">Giorni di Preavviso Disdetta</label>
+                                        <label class="font-bold text-violet-900 text-sm block mb-1">Preavviso (Giorni prima)</label>
                                         <input type="number" name="giorni_preavviso" x-model="editSub.giorni_preavviso" min="0" class="form-input w-full">
                                     </div>
                                 </div>
@@ -349,8 +336,8 @@
                                     </div>
                                 </div>
                                 
-                                <div><label class="form-label">Link per Gestione/Disdetta online</label><input type="url" name="url_gestione" x-model="editSub.url_gestione" class="form-input"></div>
-                                <div><label class="form-label">Note aggiuntive</label><textarea name="note" x-model="editSub.note" rows="2" class="form-input"></textarea></div>
+                                <div><label class="form-label">Link Gestione online</label><input type="url" name="url_gestione" x-model="editSub.url_gestione" class="form-input"></div>
+                                <div><label class="form-label">Note</label><textarea name="note" x-model="editSub.note" rows="2" class="form-input"></textarea></div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" @click="closeEditModal()" class="btn-secondary">Annulla</button>
@@ -544,7 +531,6 @@
         .desktop-only-search { display: none; }
         @media (min-width: 1024px) { .mobile-only-search { display: none !important; } .desktop-only-search { display: block !important; } }
 
-        /* Bottoni e Modali Viola */
         .btn-add-custom {
             background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
             color: white; font-weight: 600; font-size: 1rem; padding: 0.875rem 1.75rem; border-radius: 0.75rem; border: none; cursor: pointer;
@@ -564,7 +550,6 @@
         .btn-card-delete { background-color: #ef4444 !important; }
         .btn-card-delete:hover { background-color: #dc2626 !important; transform: translateY(-2px); }
 
-        /* Switch Autorenew */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
@@ -572,7 +557,6 @@
         input:checked + .slider { background-color: #10b981; }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* Modal Base Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0); }
         .modal-active .modal-backdrop { animation: fadeIn 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }

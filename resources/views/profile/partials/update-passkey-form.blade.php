@@ -17,14 +17,44 @@
         <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h3 class="text-lg font-bold text-blue-900 mb-1">
-                    Dispositivi Registrati: {{ auth()->user()->webAuthnCredentials()->count() ?? 0 }}
+                    Dispositivi Registrati: <span x-text="passkeyCount">{{ $passkeys->count() }}</span>
                 </h3>
-                <p class="text-sm text-blue-700">Puoi registrare più dispositivi (es. il tuo smartphone e il tuo PC).</p>
+                <p class="text-sm text-blue-700">Puoi registrare più dispositivi (es. il tuo smartphone e il PC).</p>
             </div>
             <button type="button" @click="registerPasskey()" class="btn-primary whitespace-nowrap shadow-md" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none;" :disabled="isSubmitting">
                 <i class="fa-solid fa-plus mr-2"></i> 
                 <span x-text="isSubmitting ? 'Attendi...' : 'Registra Dispositivo'"></span>
             </button>
+        </div>
+
+        <div class="mt-6 space-y-3">
+            @forelse($passkeys as $pk)
+                <div id="passkey-{{ $pk->id }}" class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900">Chiave di Sicurezza</p>
+                            <p class="text-xs text-gray-500">
+                                Aggiunta il: {{ $pk->created_at->format('d/m/Y') }} alle {{ $pk->created_at->format('H:i') }}
+                            </p>
+                            <p class="text-[10px] font-mono text-gray-400 mt-0.5 truncate max-w-[150px] sm:max-w-xs" title="{{ $pk->id }}">
+                                ID: {{ substr($pk->id, 0, 15) }}...
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" @click="revokePasskey('{{ $pk->id }}')" class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-bold transition-colors">
+                        Revoca
+                    </button>
+                </div>
+            @empty
+                <div class="text-center py-6 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <i class="fa-solid fa-shield-halved text-gray-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-semibold text-gray-600">Nessuna Passkey configurata.</p>
+                    <p class="text-xs text-gray-500 mt-1">Clicca su "Registra Dispositivo" per iniziare.</p>
+                </div>
+            @endforelse
         </div>
     </div>
 </section>

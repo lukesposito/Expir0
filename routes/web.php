@@ -31,6 +31,15 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::post('/check-email-passkey', function (Request $request) {
+    $user = User::where('email', $request->email)->first();
+    
+    return response()->json([
+        'exists' => !!$user,
+        'has_passkey' => $user ? $user->webAuthnCredentials()->exists() : false
+    ]);
+})->name('check.passkey');
+
 // IL GRUPPO PRINCIPALE: tutte le rotte che devono essere protette da login, verifica email e 2FA
 Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -84,6 +93,8 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::post('/2fa/disable', [TwoFactorController::class, 'disable'])->name('2fa.disable');
     Route::get('/2fa/verify', [TwoFactorController::class, 'index'])->name('2fa.index');
     Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify');
+    // ROTTA PER ELIMINARE LE PASSKEY (WebAuthn)
+    Route::delete('/profile/passkey/{id}', [ProfileController::class, 'destroyPasskey'])->name('profile.passkey.destroy');
     // ROTTE ADMIN (Gestione Utenti)
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
@@ -100,7 +111,7 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
 // Mettila FUORI dal middleware 'auth' così Google/Apple possono leggerla!
 Route::get('/calendario/feed/{token}', function ($token) {
     // 1. Controllo di sicurezza: scegliamo una password segreta per il link
-    $segreto = 'RmaSegreto2026!'; // Cambia questo valore e mantienilo segreto! Puoi anche generarlo con un comando artisan e salvarlo in .env
+    $segreto = env('CALENDAR_FEED_TOKEN');
     
     if ($token !== $segreto) {
         abort(403, 'Accesso negato: Token calendario non valido.');

@@ -5,34 +5,34 @@
         </h2>
     </x-slot>
 
-    <details class="bg-green-50 p-5 rounded-xl mb-8 border-2 border-green-200 shadow-sm mt-4">
-        <summary class="font-black text-green-800 cursor-pointer text-xl flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-2xl"></i>
-            Guida passo-passo: Come gestisco le Revisioni? (Clicca per leggere)
-        </summary>
-        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-            
-            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-green-100">
-                🔧 <strong>Questa è l'agenda per la salute della tua auto!</strong> Qui teniamo traccia delle revisioni ministeriali, un controllo obbligatorio per legge. Al contrario delle patenti, la revisione si fa <strong>sempre su un veicolo specifico</strong>.
-            </p>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ Come inserire una nuova Revisione</h4>
-                <ol class="list-decimal ml-5 mt-2 space-y-1">
-                    <li>Clicca sul pulsante verde brillante <strong>"Aggiungi Revisione"</strong>.</li>
-                    <li>Scegli l'<strong>Auto</strong> (o la moto) dalla tendina.</li>
-                    <li>Scegli il <strong>Mese di Scadenza</strong> (le revisioni scadono sempre a fine mese).</li>
-                    <li>(Opzionale) Inserisci il mese in cui l'hai fatta l'ultima volta.</li>
-                    <li>Imposta l'<strong>Esito</strong> e il <strong>Prezzo</strong> pagato, e clicca su Salva!</li>
-                </ol>
-            </div>
-        </div>
-    </details>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="revisioniManager()"
              x-init="init()">
+
+            <details class="bg-green-50 p-5 rounded-xl mb-8 border-2 border-green-200 shadow-sm mt-4">
+                <summary class="font-black text-green-800 cursor-pointer text-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                    Guida passo-passo: Come gestisco le Revisioni? (Clicca per leggere)
+                </summary>
+                <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                    
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-green-100">
+                        🔧 <strong>Questa è l'agenda per la salute della tua auto!</strong> Qui teniamo traccia delle revisioni ministeriali, un controllo obbligatorio per legge. Al contrario delle patenti, la revisione si fa <strong>sempre su un veicolo specifico</strong>.
+                    </p>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ Come inserire una nuova Revisione</h4>
+                        <ol class="list-decimal ml-5 mt-2 space-y-1">
+                            <li>Clicca sul pulsante verde brillante <strong>"Aggiungi Revisione"</strong>.</li>
+                            <li>Scegli l'<strong>Auto</strong> (o la moto) dalla tendina.</li>
+                            <li>Scegli il <strong>Mese di Scadenza</strong> (le revisioni scadono sempre a fine mese).</li>
+                            <li>(Opzionale) Inserisci il mese in cui l'hai fatta l'ultima volta.</li>
+                            <li>Imposta l'<strong>Esito</strong> e il <strong>Prezzo</strong> pagato, e clicca su Salva!</li>
+                        </ol>
+                    </div>
+                </div>
+            </details>
 
             <div class="mb-6">
                 <div class="relative">

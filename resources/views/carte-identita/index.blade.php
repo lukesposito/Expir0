@@ -5,56 +5,56 @@
         </h2>
     </x-slot>
 
-    <details class="bg-amber-50 p-5 rounded-xl mb-8 border-2 border-amber-200 shadow-sm mt-4">
-        <summary class="font-black text-[#6f3404] cursor-pointer text-xl flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-2xl"></i>
-            Guida passo-passo: Come gestisco le Carte d'Identità? (Clicca per leggere)
-        </summary>
-        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-            
-            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-amber-100">
-                🪪 <strong>Il documento fondamentale!</strong> In questa pagina teniamo traccia delle Carte d'Identità di tutta la famiglia. Dimenticarsi di rinnovarla prima di un viaggio all'estero è un classico: con questo sistema non avrai più brutte sorprese all'aeroporto!
-            </p>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova Carta d'Identità</h4>
-                <p>Sei appena stato in Comune a fare la nuova tessera elettronica?</p>
-                <ol class="list-decimal ml-5 mt-2 space-y-1">
-                    <li>Clicca sul pulsante marrone scuro <strong>"Aggiungi Documento"</strong> qui in alto.</li>
-                    <li>Scegli dal menu a tendina il <strong>Membro della Famiglia</strong> (devi aver prima creato la persona nella pagina "Utenti").</li>
-                    <li>Digita il <strong>Numero Documento</strong> (lo trovi in alto a destra sulla carta, es: CA12345AA).</li>
-                    <li>Inserisci la <strong>Data di Rilascio</strong> e, cosa più importante, la <strong>Data di Scadenza</strong>. (Ricorda: di solito scade sempre il giorno del compleanno!).</li>
-                    <li>Scrivi il Comune che te l'ha rilasciata e clicca su Salva.</li>
-                </ol>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔄 2. Come si rinnova la Carta d'Identità?</h4>
-                <p>La carta d'identità scade ogni 10 anni (per gli adulti). Quando vai a rifarla in Comune, ti daranno un documento completamente nuovo, con un <strong>numero diverso</strong> dal precedente.</p>
-                <p class="mt-1 bg-white p-2 rounded text-slate-800 text-sm border border-slate-200">
-                    A differenza del bollo, qui puoi scegliere due strade: 
-                    <br>1) Cercare la vecchia carta, cliccare su <strong>Modifica</strong> e cambiare il numero e le date.
-                    <br>2) Se vuoi conservare lo storico per sicurezza, clicca su <strong>Aggiungi Documento</strong> per inserire la carta nuova, e poi elimina quella vecchia (o lasciala se preferisci). Noi ti consigliamo di usare il tasto Modifica per tenere la schermata più pulita.
-                </p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">⚠️ 3. Attenzione ai minorenni!</h4>
-                <p>Ricorda che le regole di scadenza sono diverse per i bambini:</p>
-                <ul class="space-y-1 ml-2 mt-2">
-                    <li class="flex items-center gap-2">👶 <strong>Da 0 a 3 anni:</strong> Scade ogni 3 anni.</li>
-                    <li class="flex items-center gap-2">👦 <strong>Da 3 a 18 anni:</strong> Scade ogni 5 anni.</li>
-                </ul>
-                <p class="text-sm italic mt-1">L'app ti ricorderà in automatico la scadenza in base alla data che hai inserito, senza farti fare conti strani!</p>
-            </div>
-
-        </div>
-    </details>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="carteIdentitaManager()"
              x-init="init()">
+
+            <details class="bg-amber-50 p-5 rounded-xl mb-8 border-2 border-amber-200 shadow-sm mt-4">
+                <summary class="font-black text-[#6f3404] cursor-pointer text-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                    Guida passo-passo: Come gestisco le Carte d'Identità? (Clicca per leggere)
+                </summary>
+                <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                    
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-amber-100">
+                        🪪 <strong>Il documento fondamentale!</strong> In questa pagina teniamo traccia delle Carte d'Identità di tutta la famiglia. Dimenticarsi di rinnovarla prima di un viaggio all'estero è un classico: con questo sistema non avrai più brutte sorprese all'aeroporto!
+                    </p>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">➕ 1. Come inserire una nuova Carta d'Identità</h4>
+                        <p>Sei appena stato in Comune a fare la nuova tessera elettronica?</p>
+                        <ol class="list-decimal ml-5 mt-2 space-y-1">
+                            <li>Clicca sul pulsante marrone scuro <strong>"Aggiungi Documento"</strong> qui in alto.</li>
+                            <li>Scegli dal menu a tendina il <strong>Membro della Famiglia</strong> (devi aver prima creato la persona nella pagina "Utenti").</li>
+                            <li>Digita il <strong>Numero Documento</strong> (lo trovi in alto a destra sulla carta, es: CA12345AA).</li>
+                            <li>Inserisci la <strong>Data di Rilascio</strong> e, cosa più importante, la <strong>Data di Scadenza</strong>. (Ricorda: di solito scade sempre il giorno del compleanno!).</li>
+                            <li>Scrivi il Comune che te l'ha rilasciata e clicca su Salva.</li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔄 2. Come si rinnova la Carta d'Identità?</h4>
+                        <p>La carta d'identità scade ogni 10 anni (per gli adulti). Quando vai a rifarla in Comune, ti daranno un documento completamente nuovo, con un <strong>numero diverso</strong> dal precedente.</p>
+                        <p class="mt-1 bg-white p-2 rounded text-slate-800 text-sm border border-slate-200">
+                            A differenza del bollo, qui puoi scegliere due strade: 
+                            <br>1) Cercare la vecchia carta, cliccare su <strong>Modifica</strong> e cambiare il numero e le date.
+                            <br>2) Se vuoi conservare lo storico per sicurezza, clicca su <strong>Aggiungi Documento</strong> per inserire la carta nuova, e poi elimina quella vecchia (o lasciala se preferisci). Noi ti consigliamo di usare il tasto Modifica per tenere la schermata più pulita.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">⚠️ 3. Attenzione ai minorenni!</h4>
+                        <p>Ricorda che le regole di scadenza sono diverse per i bambini:</p>
+                        <ul class="space-y-1 ml-2 mt-2">
+                            <li class="flex items-center gap-2">👶 <strong>Da 0 a 3 anni:</strong> Scade ogni 3 anni.</li>
+                            <li class="flex items-center gap-2">👦 <strong>Da 3 a 18 anni:</strong> Scade ogni 5 anni.</li>
+                        </ul>
+                        <p class="text-sm italic mt-1">L'app ti ricorderà in automatico la scadenza in base alla data che hai inserito, senza farti fare conti strani!</p>
+                    </div>
+
+                </div>
+            </details>
 
              <div class="mb-6">
                 <div class="mobile-only-search">

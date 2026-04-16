@@ -184,11 +184,33 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"> 
-                <div class="flex flex-col 2xl:flex-row justify-between items-start 2xl:items-center gap-4 mb-6">
+                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
                     <h3 class="font-bold text-xl text-slate-800 flex-shrink-0">
-                        <i class="fa-regular fa-calendar-days text-indigo-500 mr-2"></i> Calendario
+                        <i class="fa-regular fa-calendar-days text-indigo-500 mr-2"></i> Calendario Scadenze
                     </h3>
+                    
+                    <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                        <a href="https://www.google.com/calendar/render?cid={{ urlencode(url('/calendario/feed/' . env('CALENDAR_FEED_TOKEN'))) }}" 
+                           target="_blank"
+                           class="flex-1 sm:flex-none px-4 py-2 bg-[#f8f9fa] text-[#3c4043] rounded-xl text-xs font-bold hover:bg-white hover:shadow-md transition-all flex items-center justify-center gap-2 border border-slate-200">
+                            <i class="fa-brands fa-google text-lg text-[#4285F4]"></i> 
+                            <span>Google Calendar</span>
+                        </a>
+
+                        <a href="webcal://{{ str_replace(['http://', 'https://'], '', url('/calendario/feed/' . env('CALENDAR_FEED_TOKEN'))) }}" 
+                           class="flex-1 sm:flex-none px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 hover:shadow-md transition-all flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-apple text-lg"></i> 
+                            <span>iOS / Outlook</span>
+                        </a>
+    
+                        <a href="{{ route('calendario.feed', ['token' => env('CALENDAR_FEED_TOKEN')]) }}" 
+                           class="flex-1 sm:flex-none px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-indigo-100">
+                            <i class="fa-solid fa-file-export text-lg"></i> 
+                            <span>Scarica .ics</span>
+                        </a>
+                    </div>
                 </div>
+                
                 <div id="calendar" class="mt-2"></div>
             </div>
         </div>
