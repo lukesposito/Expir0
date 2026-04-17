@@ -5,61 +5,61 @@
         </h2>
     </x-slot>
 
-    <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm mt-4">
-        <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-2xl"></i>
-            Guida passo-passo: Come si usa questa lista? (Clicca per leggere)
-        </summary>
-        <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-            
-            <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
-                📅 <strong>Questa è la tua Agenda Elettronica.</strong> Qui dentro c'è l'elenco completo di <strong>TUTTE</strong> le tue scadenze, ordinate in automatico da quella più vicina a quella più lontana. 
-            </p>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 1. La barra di ricerca (in alto)</h4>
-                <p>È la casella bianca dove c'è scritto "Cerca per tipo, targa...". Ti serve se vuoi trovare subito qualcosa senza scorrere tutta la lista. Prova a scriverci dentro "Bollo" oppure la targa della tua auto (es. "AB123CD") o il nome di tuo figlio: la lista sotto si aggiornerà all'istante facendoti vedere solo quello che hai cercato!</p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">📋 2. Come leggere la lista</h4>
-                <p class="mb-2">A seconda che tu stia usando il telefono o il computer, l'elenco si adatta per essere sempre leggibile:</p>
-                <ul class="space-y-3 ml-2">
-                    <li class="flex items-start gap-2">
-                        <span class="text-indigo-500 mt-1"><i class="fa-solid fa-desktop"></i></span>
-                        <div><strong>Se sei al computer:</strong> Vedrai una tabella classica. Ogni riga è una scadenza. Leggendo da sinistra verso destra troverai: il veicolo o la persona, che cos'è, quando scade, quanto costa, e quanti giorni mancano.</div>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="text-indigo-500 mt-1"><i class="fa-solid fa-mobile-screen"></i></span>
-                        <div><strong>Se sei col telefono:</strong> Vedrai dei "riquadri" colorati uno sopra l'altro. Il colore cambia in base al tipo di documento (es. giallo per i bolli, verde per le revisioni).</div>
-                    </li>
-                </ul>
-                <p class="mt-3 bg-red-50 p-2 rounded text-red-800 text-sm font-semibold border border-red-200">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Attenzione al colore dei giorni! Se i giorni mancanti sono scritti in ROSSO, significa che manca meno di un mese (o che è già scaduto!).
-                </p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Il tasto magico: L'interruttore "Stato"</h4>
-                <p>Hai appena pagato il bollo in posta o rinnovato la carta d'identità in comune? Bravissimo!</p>
-                <p class="mt-1">Cerca quella voce nella lista e <strong>clicca sull'interruttore a scorrimento</strong>. Il sistema ti chiederà se vuoi archiviarla e generare automaticamente il rinnovo per l'anno prossimo!</p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante rosso "Elimina"</h4>
-                <p>Serve <strong>SOLO</strong> se hai fatto un errore. Ad esempio, se hai inserito una scadenza doppia o sbagliata per sbaglio.</p>
-                <p class="mt-1 bg-amber-50 p-2 rounded text-amber-800 text-sm border border-amber-200">
-                    <strong>Importante:</strong> Se elimini una scadenza da qui, cancellerai per sempre anche il documento a cui è collegata (se non ha altri rinnovi futuri)!
-                </p>
-            </div>
-
-        </div>
-    </details>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4" 
              x-data="deadlinesManager()"
              x-init="init()">
+
+                <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm mt-4">
+                    <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-2xl"></i>
+                        Guida passo-passo: Come si usa questa lista? (Clicca per leggere)
+                    </summary>
+                    <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                        
+                        <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
+                            📅 <strong>Questa è la tua Agenda Elettronica.</strong> Qui dentro c'è l'elenco completo di <strong>TUTTE</strong> le tue scadenze, ordinate in automatico da quella più vicina a quella più lontana. 
+                        </p>
+
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 1. La barra di ricerca (in alto)</h4>
+                            <p>È la casella bianca dove c'è scritto "Cerca per tipo, targa...". Ti serve se vuoi trovare subito qualcosa senza scorrere tutta la lista. Prova a scriverci dentro "Bollo" oppure la targa della tua auto (es. "AB123CD") o il nome di tuo figlio: la lista sotto si aggiornerà all'istante facendoti vedere solo quello che hai cercato!</p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">📋 2. Come leggere la lista</h4>
+                            <p class="mb-2">A seconda che tu stia usando il telefono o il computer, l'elenco si adatta per essere sempre leggibile:</p>
+                            <ul class="space-y-3 ml-2">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-indigo-500 mt-1"><i class="fa-solid fa-desktop"></i></span>
+                                    <div><strong>Se sei al computer:</strong> Vedrai una tabella classica. Ogni riga è una scadenza. Leggendo da sinistra verso destra troverai: il veicolo o la persona, che cos'è, quando scade, quanto costa, e quanti giorni mancano.</div>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-indigo-500 mt-1"><i class="fa-solid fa-mobile-screen"></i></span>
+                                    <div><strong>Se sei col telefono:</strong> Vedrai dei "riquadri" colorati uno sopra l'altro. Il colore cambia in base al tipo di documento (es. giallo per i bolli, verde per le revisioni).</div>
+                                </li>
+                            </ul>
+                            <p class="mt-3 bg-red-50 p-2 rounded text-red-800 text-sm font-semibold border border-red-200">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Attenzione al colore dei giorni! Se i giorni mancanti sono scritti in ROSSO, significa che manca meno di un mese (o che è già scaduto!).
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Il tasto magico: L'interruttore "Stato"</h4>
+                            <p>Hai appena pagato il bollo in posta o rinnovato la carta d'identità in comune? Bravissimo!</p>
+                            <p class="mt-1">Cerca quella voce nella lista e <strong>clicca sull'interruttore a scorrimento</strong>. Il sistema ti chiederà se vuoi archiviarla e generare automaticamente il rinnovo per l'anno prossimo!</p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante rosso "Elimina"</h4>
+                            <p>Serve <strong>SOLO</strong> se hai fatto un errore. Ad esempio, se hai inserito una scadenza doppia o sbagliata per sbaglio.</p>
+                            <p class="mt-1 bg-amber-50 p-2 rounded text-amber-800 text-sm border border-amber-200">
+                                <strong>Importante:</strong> Se elimini una scadenza da qui, cancellerai per sempre anche il documento a cui è collegata (se non ha altri rinnovi futuri)!
+                            </p>
+                        </div>
+
+                    </div>
+                </details>
 
             <div class="mb-6">
                 <div class="mobile-only-search">
@@ -100,16 +100,87 @@
                 </div>
             </div>
 
+            <div class="mobile-only bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-20" x-show="activeTab === 'da_pagare'">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" class="p-2 flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg">
+                        <option value="scadenza">Scadenza</option>
+                        <option value="importo">Importo</option>
+                        <option value="soggetto">Soggetto</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="desktop-only bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Soggetto</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenza</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Importo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" x-show="activeTab === 'da_pagare'">Giorni</th>
+                                <th class="px-4 py-3 text-center w-12" x-show="activeTab === 'da_pagare'">
+                                    <input type="checkbox" x-model="selectAll" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                </th>
+                                <th @click="sortBy('soggetto')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Soggetto
+                                        <span x-show="sortCol === 'soggetto'" class="text-indigo-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'soggetto'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('tipo')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Tipo
+                                        <span x-show="sortCol === 'tipo'" class="text-indigo-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'tipo'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('scadenza')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Scadenza
+                                        <span x-show="sortCol === 'scadenza'" class="text-indigo-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'scadenza'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('importo')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Importo
+                                        <span x-show="sortCol === 'importo'" class="text-indigo-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'importo'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('giorni')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" x-show="activeTab === 'da_pagare'">
+                                    <div class="flex items-center gap-2">
+                                        Giorni
+                                        <span x-show="sortCol === 'giorni'" class="text-indigo-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'giorni'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div></th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stato</th>
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                             </tr>
@@ -118,6 +189,9 @@
                         <tbody class="bg-white divide-y divide-gray-200" x-show="activeTab === 'da_pagare'">
                             <template x-for="d in filteredDaPagare" :key="d.id">
                                 <tr class="hover:bg-gray-50 transition" :class="{ 'bg-red-50': d.giorni_rimanenti <= 10 }">
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox" :value="d.id" x-model="selectedItems" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    </td>
                                     <td class="px-6 py-4">
                                         <template x-if="d.tipo === 'patente' && d.user_name">
                                             <div><div class="text-sm font-semibold text-gray-900" x-text="d.user_name"></div><div class="text-sm text-gray-500">Patente</div></div>
@@ -246,6 +320,9 @@
                                     <div class="ml-3">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white bg-opacity-20 text-white uppercase text-center text-[10px]"><span x-text="d.tipo === 'spesa_abbonamento' ? 'Spesa / Abbonamento' : d.tipo.replace('_', ' ')"></span></span>
                                     </div>
+                                    <div class="px-5 py-5 absolute top-5 right-0">
+                                        <input type="checkbox" :value="d.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-indigo-600">
+                                    </div>
                                 </div>
                             </div>
                             
@@ -296,6 +373,7 @@
                 <div x-show="activeTab === 'archivio'" class="space-y-6">
                     <template x-for="group in archivedByYear" :key="group.year">
                         <div class="bg-gray-100 rounded-2xl border border-gray-200 p-2 shadow-sm">
+
                             <button @click="toggleYear(group.year)" class="w-full px-4 py-4 flex justify-between items-center rounded-xl bg-white shadow-sm mb-1 transition-transform active:scale-95">
                                 <span class="text-xl font-black text-gray-800">Anno <span x-text="group.year"></span></span>
                                 <div class="flex items-center gap-2">
@@ -335,6 +413,37 @@
                 </div>
             </div>
 
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none w-full px-4">
+                <div x-show="selectedItems.length > 0" 
+                     style="display: none;"
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+                    
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-indigo-500 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionati</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkRenewModal = true" class="bg-emerald-500 hover:bg-emerald-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-check"></i> <span class="text-sm hidden sm:inline">Segna Pagati</span><span class="text-sm sm:hidden">Pagati</span>
+                        </button>
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showDeleteModal" x-cloak @keydown.escape.window="closeDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showDeleteModal && !isClosingDelete, 'modal-out': isClosingDelete }">
                 <div @click="closeDeleteModal()" class="modal-backdrop"></div>
                 <div class="modal-container">
@@ -355,7 +464,7 @@
                 </div>
             </div>
 
-            <div x-show="showRenewModal" x-cloak class="modal-overlay">
+            <div x-show="showRenewModal" x-cloak @keydown.escape.window="closeDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showRenewModal && !isClosingRenew, 'modal-out': isClosingRenew }">
                 <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
                 <div class="modal-container w-full max-w-md" @click.stop>
                     <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
@@ -373,7 +482,7 @@
                             <button @click="executePagamento(false)" class="w-full py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
                                 Solo Archivia
                             </button>
-                            <button @click="showRenewModal = false; deadlineToRenew = null;" class="w-full py-2 text-slate-500 font-semibold hover:text-slate-700 mt-1">
+                            <button @click="closeRenewModal()" class="w-full py-2 text-slate-500 font-semibold hover:text-slate-700 mt-1">
                                 Annulla
                             </button>
                         </div>
@@ -381,7 +490,7 @@
                 </div>
             </div>
 
-            <div x-show="showUnpayModal" x-cloak class="modal-overlay">
+            <div x-show="showUnpayModal" x-cloak @keydown.escape.window="closeUnpayModal()" class="modal-overlay" :class="{ 'modal-active': showUnpayModal && !isClosingUnpay, 'modal-out': isClosingUnpay }">
                 <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
                 <div class="modal-container w-full max-w-md" @click.stop>
                     <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
@@ -396,9 +505,44 @@
                             <button @click="executeUnpay()" class="w-full py-3.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 hover:shadow-lg transition-all flex justify-center items-center gap-2">
                                 <i class="fa-solid fa-rotate-left"></i> Sì, Annulla Pagamento
                             </button>
-                            <button @click="showUnpayModal = false; deadlineToUnpay = null;" class="w-full py-2 text-slate-500 font-semibold hover:text-slate-700 mt-1">
+                            <button @click="closeUnpayModal()" class="w-full py-2 text-slate-500 font-semibold hover:text-slate-700 mt-1">
                                 Indietro
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="showBulkDeleteModal" style="display: none;" class="modal-overlay">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> scadenze in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="showBulkDeleteModal = false" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutti</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="showBulkRenewModal" style="display: none;" class="modal-overlay">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-50 mb-4"><i class="fa-solid fa-check-double text-3xl text-indigo-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Archiviazione Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Vuoi archiviare <strong class="text-slate-800" x-text="selectedItems.length"></strong> scadenze e generare i rinnovi per l'anno prossimo?</p>
+                        </div>
+                        <div class="px-6 pb-6 bg-slate-50 pt-4 border-t border-slate-100 flex flex-col gap-3">
+                            <button @click="executeBulkPay(true)" class="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-rotate-right"></i> Archivia e Rinnova Tutti</button>
+                            <button @click="executeBulkPay(false)" class="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50">Solo Archivia</button>
+                            <button @click="showBulkRenewModal = false" class="w-full py-2 text-slate-400 font-semibold hover:text-slate-600 mt-1">Annulla</button>
                         </div>
                     </div>
                 </div>
@@ -438,6 +582,8 @@
                 
                 isClosingDelete: false, 
                 isClosingSuccess: false,
+                isClosingRenew: false,
+                isClosingUnpay: false,
                 successMessage: '', 
                 successType: 'success', 
                 isSubmitting: false,
@@ -449,13 +595,132 @@
                 
                 deadlines: @json($deadlines),
 
+                sortCol: 'scadenza',
+                sortAsc: true,
+                selectedItems: [],
+                showBulkDeleteModal: false,
+                showBulkRenewModal: false,
+
+                get selectAll() {
+                    return this.filteredDaPagare.length > 0 && this.selectedItems.length === this.filteredDaPagare.length;
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = this.filteredDaPagare.map(d => d.id);
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                toggleSelection(id) {
+                    if (this.selectedItems.includes(id)) {
+                        this.selectedItems = this.selectedItems.filter(i => i !== id);
+                    } else {
+                        this.selectedItems.push(id);
+                    }
+                },
+
+                // Funzione di Ordinamento
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true; // Default crescente quando cambi colonna
+                    }
+                },
+
+
+                // Questo Getter ora filtra E ordina i risultati!
                 get filteredDaPagare() {
                     let filtered = this.deadlines.filter(d => d.pagato == false);
+                    
+                    // 1. Filtro di ricerca
                     if (this.searchQuery) {
                         const q = this.searchQuery.toLowerCase();
                         filtered = filtered.filter(d => (d.tipo||'').toLowerCase().includes(q) || (d.vehicle_targa||'').toLowerCase().includes(q) || (d.user_name||'').toLowerCase().includes(q) || (d.subscription_nome||'').toLowerCase().includes(q));
                     }
-                    return filtered;
+
+                    // 2. Ordinamento dinamico
+                    return filtered.sort((a, b) => {
+                        let valA, valB;
+                        switch(this.sortCol) {
+                            case 'soggetto':
+                                valA = a.user_name || a.vehicle_targa || a.subscription_nome || 'zzzz';
+                                valB = b.user_name || b.vehicle_targa || b.subscription_nome || 'zzzz';
+                                break;
+                            case 'importo':
+                                valA = parseFloat(a.importo) || 0;
+                                valB = parseFloat(b.importo) || 0;
+                                break;
+                            case 'giorni':
+                                valA = parseInt(a.giorni_rimanenti) || 0;
+                                valB = parseInt(b.giorni_rimanenti) || 0;
+                                break;
+                            case 'scadenza':
+                                valA = a.data_scadenza || '9999-12-31';
+                                valB = b.data_scadenza || '9999-12-31';
+                                break;
+                            default:
+                                valA = a[this.sortCol] || '';
+                                valB = b[this.sortCol] || '';
+                        }
+
+                        if (typeof valA === 'string') valA = valA.toLowerCase();
+                        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                        if (valA < valB) return this.sortAsc ? -1 : 1;
+                        if (valA > valB) return this.sortAsc ? 1 : -1;
+                        return 0;
+                    });
+                },
+
+                // ESECUZIONE ELIMINA MULTIPLA (Fa chiamate asincrone senza toccare il backend!)
+                async executeBulkDelete() {
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        // Lancia le richieste di delete in parallelo
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/deadlines/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess('Scadenze eliminate con successo!', 'success');
+                    } catch(e) {
+                        this.showSuccess('Errore durante l\'eliminazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                // ESECUZIONE PAGAMENTO MULTIPLO
+                async executeBulkPay(rinnova) {
+                    this.isSubmitting = true;
+                    this.showBulkRenewModal = false;
+                    try {
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/deadlines/${id}/toggle-pagato`, {
+                                method: 'PATCH',
+                                body: JSON.stringify({ rinnova: rinnova }),
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess('Scadenze archiviate con successo!', 'success');
+                    } catch(e) {
+                        this.showSuccess('Errore durante l\'archiviazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
                 },
 
                 get archivedByYear() {
@@ -499,6 +764,8 @@
                 openDeleteModal(d) { this.deleteDeadline = d; this.showDeleteModal = true; },
                 closeDeleteModal() { this.isClosingDelete = true; setTimeout(() => { this.showDeleteModal = false; this.isClosingDelete = false; }, 500); },
                 closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; }, 500); },
+                closeRenewModal() { this.isClosingRenew = true; setTimeout(() => { this.showRenewModal = false; this.isClosingRenew = false; }, 500); },
+                closeUnpayModal() { this.isClosingUnpay = true; setTimeout(() => { this.showUnpayModal = false; this.isClosingUnpay = false; }, 500); },
                 
                 showSuccess(message, type = 'success') {
                     this.successMessage = message; this.successType = type; this.showSuccessModal = true;

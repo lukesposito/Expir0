@@ -165,10 +165,10 @@
                         <div>
                             <div class="flex justify-between mb-1">
                                 <span class="text-xs font-bold text-slate-700 uppercase">{{ $info['name'] }}</span>
-                                <span class="text-xs font-bold text-slate-700" x-text="(stats['{{ $tipo }}'] ? stats['{{ $tipo }}'].percentuale : 0) + '%'"></span>
+                                <span class="text-xs font-bold text-slate-700" x-text="(archStats['{{ $tipo }}'] ? archStats['{{ $tipo }}'].percentuale : 0) + '%'"></span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-1.5">
-                                <div class="bg-{{ $info['color'] }}-500 h-1.5 rounded-full transition-all duration-500" :style="`width: ${stats['{{ $tipo }}'] ? stats['{{ $tipo }}'].percentuale : 0}%`"></div>
+                                <div class="bg-{{ $info['color'] }}-500 h-1.5 rounded-full transition-all duration-500" :style="`width: ${archStats['{{ $tipo }}'] ? archStats['{{ $tipo }}'].percentuale : 0}%`"></div>
                             </div>
                         </div>
                         @endforeach
@@ -321,6 +321,25 @@
                                 </template>
                             </div>
                         </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="showDeleteDocModal" x-cloak class="modal-overlay" style="z-index: 1080;" :class="{ 'modal-active': showDeleteDocModal && !isClosingDeleteDoc, 'modal-out': isClosingDeleteDoc }">
+            <div @click="closeDeleteDoc()" class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+            <div class="modal-container w-full max-w-sm pointer-events-auto">
+                <div @click.stop class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                    <div class="p-7 text-center">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4 animate-pulse">
+                            <i class="fa-solid fa-trash-can text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 mb-2">Eliminare il documento?</h3>
+                        <p class="text-sm text-slate-500 mb-6">Stai per eliminare "<strong x-text="docToDeleteName" class="text-slate-700"></strong>". L'azione è irreversibile.</p>
+                        <div class="flex gap-3">
+                            <button @click="closeDeleteDoc()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">Annulla</button>
+                            <button @click="handleDocumentDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md transition-transform active:scale-95">Elimina</button>
+                        </div>
                     </div>
                 </div>
             </div>
