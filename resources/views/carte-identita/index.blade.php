@@ -98,14 +98,53 @@
                 </button>
             </div>
 
+            <div class="mobile-only bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-20">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" x-model="selectAll" class="w-5 h-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500 shadow-sm">
+                        <span class="text-sm font-bold text-gray-700">Seleziona Tutti</span>
+                    </label>
+                    <span class="text-xs font-bold text-gray-400" x-text="filteredDocs.length + ' risultati'"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" @change="sortAsc = true" class="p-2 flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg">
+                        <option value="data_scadenza">Scadenza</option>
+                        <option value="numero">Numero Documento</option>
+                        <option value="user">Persona</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-amber-50 text-amber-900 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="desktop-only bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persona</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Numero / Comune</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenza</th>
+                                <th class="px-4 py-3 text-center w-12">
+                                    <input type="checkbox" x-model="selectAll" class="w-4 h-4 rounded border-gray-300 text-amber-900 focus:ring-amber-500 cursor-pointer">
+                                </th>
+                                <th @click="sortBy('user')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Persona
+                                        <span x-show="sortCol === 'user'" x-cloak class="text-amber-900"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'user'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('numero')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Numero / Comune
+                                        <span x-show="sortCol === 'numero'" x-cloak class="text-amber-900"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'numero'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('data_scadenza')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Scadenza
+                                        <span x-show="sortCol === 'data_scadenza'" x-cloak class="text-amber-900"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'data_scadenza'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giorni</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
@@ -113,7 +152,10 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(doc, index) in filteredDocs" :key="doc.id || index">
-                                <tr class="hover:bg-gray-50 transition" :class="{ 'bg-red-50': calcGiorniRimanenti(doc.data_scadenza) <= 90 }">
+                                <tr class="hover:bg-gray-50 transition cursor-pointer" :class="{ 'bg-red-50': calcGiorniRimanenti(doc.data_scadenza) <= 90, 'bg-amber-50': selectedItems.includes(doc.id) }" @click.self="toggleSelection(doc.id)">
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox" :value="doc.id" x-model="selectedItems" class="w-4 h-4 rounded border-gray-300 text-amber-900 focus:ring-amber-500 cursor-pointer">
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-semibold text-gray-900" x-text="doc.user ? doc.user.name : ''"></div>
                                     </td>
@@ -146,8 +188,11 @@
                                 </tr>
                             </template>
                             
-                            <tr x-show="filteredDocs.length === 0">
-                                <td colspan="6" class="px-6 py-12 text-center">
+                            <tr x-show="filteredDocs.length === 0" x-cloak>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fa-solid fa-id-card text-4xl text-gray-400"></i>
+                                    </div>
                                     <p class="text-gray-500 font-medium">Nessun documento trovato</p>
                                     <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
                                 </td>
@@ -157,15 +202,19 @@
                 </div>
             </div>
 
-            <div class="mobile-only space-y-4 px-4">
+            <div class="mobile-only space-y-4 px-4 pb-20">
                 <template x-for="(doc, index) in filteredDocs" :key="doc.id || index">
-                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden" :class="calcGiorniRimanenti(doc.data_scadenza) <= 90 ? 'border-red-300' : 'border-gray-200'">
+                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden relative" :class="[calcGiorniRimanenti(doc.data_scadenza) <= 90 ? 'border-red-300' : 'border-gray-200', selectedItems.includes(doc.id) ? 'ring-4 ring-amber-400 transform scale-[1.02] shadow-2xl' : '']">
                         
-                        <div class="relative bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 px-5 py-6">
+                        <div class="absolute top-4 right-4 z-10 bg-white/40 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-white">
+                            <input type="checkbox" :value="doc.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-amber-900 focus:ring-amber-500 cursor-pointer shadow-sm">
+                        </div>
+
+                        <div class="relative bg-gradient-to-br from-[#a16207] via-[#a16207] to-[#6f3404] px-5 py-6">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                             <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
                             
-                            <div class="relative flex items-center justify-between">
+                            <div class="relative flex items-center pr-12">
                                 <div class="flex-1">
                                     <h3 class="text-2xl font-black text-white tracking-tight mb-1.5" x-text="doc.user ? doc.user.name : ''"></h3>
                                     <p class="text-base text-white opacity-90 uppercase tracking-widest font-mono" x-text="doc.numero"></p>
@@ -213,7 +262,7 @@
                             
                             <div class="mt-6 pt-5 border-t border-gray-200 flex justify-center gap-3 pb-2">
                                 <button @click="openEditModal(doc)"
-                                        class="btn-card-action btn-card-compact" style="background-color: #3b82f6 !important;">
+                                        class="btn-card-action btn-card-edit btn-card-compact">
                                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
@@ -231,12 +280,40 @@
                     </div>
                 </template>
                 
-                <div x-show="filteredDocs.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+                <div x-show="filteredDocs.length === 0" x-cloak class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
                     <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-id-card text-4xl text-gray-400"></i>
                     </div>
                     <p class="text-gray-500 font-medium">Nessun documento trovato</p>
                     <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
+                </div>
+            </div>
+
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
+                <div x-show="selectedItems.length > 0" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+                    
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-amber-700 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionati</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina Multipla</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -338,6 +415,23 @@
                 </div>
             </div>
 
+            <div x-show="showBulkDeleteModal" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> carte d'identità in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutte</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showSuccessModal" x-cloak @keydown.escape.window="closeSuccessModal()" class="modal-overlay" :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
                 <div @click="closeSuccessModal()" class="modal-backdrop"></div>
                 <div class="modal-container">
@@ -377,6 +471,13 @@
                 deleteDoc: { user: {} },
                 searchQuery: '',
                 
+                selectedItems: [],
+                showBulkDeleteModal: false,
+                isClosingBulkDelete: false,
+                
+                sortCol: 'data_scadenza',
+                sortAsc: true,
+
                 documenti: @json($documenti),
 
                 init() {
@@ -384,14 +485,32 @@
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
                 },
 
-                get filteredDocs() {
-                    if (!this.searchQuery) return this.documenti;
-                    const query = this.searchQuery.toLowerCase();
-                    return this.documenti.filter(doc => {
-                        const name = (doc.user && doc.user.name) ? doc.user.name.toLowerCase() : '';
-                        const numero = doc.numero ? doc.numero.toLowerCase() : '';
-                        return name.includes(query) || numero.includes(query);
-                    });
+                get selectAll() {
+                    return this.filteredDocs.length > 0 && this.selectedItems.length === this.filteredDocs.length;
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = [...this.filteredDocs.map(doc => doc.id)];
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                toggleSelection(id) {
+                    if (this.selectedItems.includes(id)) {
+                        this.selectedItems = this.selectedItems.filter(i => i !== id);
+                    } else {
+                        this.selectedItems.push(id);
+                    }
+                },
+
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true;
+                    }
                 },
 
                 calcGiorniRimanenti(dataScadenza) {
@@ -409,12 +528,52 @@
                     return new Date(data).toLocaleDateString('it-IT', opts);
                 },
 
-                // GESTIONE MODALI
+                get filteredDocs() {
+                    let filtered = Array.isArray(this.documenti) ? this.documenti : [];
+                    
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(doc => {
+                            const name = (doc.user && doc.user.name) ? doc.user.name.toLowerCase() : '';
+                            const numero = doc.numero ? doc.numero.toLowerCase() : '';
+                            return name.includes(query) || numero.includes(query);
+                        });
+                    }
+
+                    return filtered.sort((a, b) => {
+                        let aVal, bVal;
+                        switch (this.sortCol) {
+                            case 'data_scadenza': 
+                                aVal = a.data_scadenza ? new Date(a.data_scadenza) : new Date(0); 
+                                bVal = b.data_scadenza ? new Date(b.data_scadenza) : new Date(0); 
+                                break;
+                            case 'user': 
+                                aVal = a.user?.name || ''; 
+                                bVal = b.user?.name || ''; 
+                                break;
+                            case 'numero': 
+                                aVal = a.numero || ''; 
+                                bVal = b.numero || ''; 
+                                break;
+                            default: return 0;
+                        }
+                        if (aVal < bVal) return this.sortAsc ? -1 : 1;
+                        if (aVal > bVal) return this.sortAsc ? 1 : -1;
+                        return 0;
+                    });
+                },
+
                 openCreateModal() { this.showCreateModal = true; },
                 closeCreateModal() { this.isClosingCreate = true; setTimeout(() => { this.showCreateModal = false; this.isClosingCreate = false; }, 500); },
                 
                 openEditModal(doc) { 
                     this.editDoc = JSON.parse(JSON.stringify(doc)); 
+                    if(this.editDoc.data_rilascio && this.editDoc.data_rilascio.includes('T')) {
+                        this.editDoc.data_rilascio = this.editDoc.data_rilascio.split('T')[0];
+                    }
+                    if(this.editDoc.data_scadenza && this.editDoc.data_scadenza.includes('T')) {
+                        this.editDoc.data_scadenza = this.editDoc.data_scadenza.split('T')[0];
+                    }
                     this.showEditModal = true; 
                 },
                 closeEditModal() { this.isClosingEdit = true; setTimeout(() => { this.showEditModal = false; this.isClosingEdit = false; }, 500); },
@@ -428,7 +587,33 @@
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
                 },
 
-                // AGGIORNAMENTO DATI IN BACKGROUND
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
+                
+                async executeBulkDelete() {
+                    if (this.selectedItems.length === 0) return;
+                    
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/carte-identita/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        const count = this.selectedItems.length;
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess(`Eliminati ${count} documenti con successo!`, 'success');
+                    } catch (error) {
+                        this.showSuccess('Errore durante l\'eliminazione dei documenti', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
                 async refreshData() {
                     try {
                         const res = await fetch('{{ route("carte-identita.index") }}', {
@@ -443,7 +628,6 @@
                     }
                 },
 
-                // SUBMIT POST/PUT ASINCRONO
                 async submitForm(event, url, method) {
                     this.isSubmitting = true;
                     const form = event.target;
@@ -465,7 +649,7 @@
                             this.closeEditModal();
                             if(method === 'POST') form.reset();
                             
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Operazione completata con successo!', 'success');
                         } else {
                             this.showSuccess(data.message || 'Errore di validazione dati', 'error');
@@ -477,7 +661,6 @@
                     }
                 },
 
-                // DELETE ASINCRONO
                 async submitDelete(url) {
                     this.isSubmitting = true;
                     try {
@@ -495,7 +678,7 @@
 
                         if (response.ok) {
                             this.closeDeleteModal();
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Documento eliminato con successo!', 'success');
                         } else {
                             this.closeDeleteModal();

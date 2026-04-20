@@ -236,11 +236,28 @@
                 async registerPasskey() {
                     this.isSubmitting = true;
                     try {
-                        // Usiamo window.Webpass.attest
-                        const { success, error } = await window.Webpass.attest("/webauthn/register/options", "/webauthn/register");
+                        // 1. Suggeriamo un nome basato sul browser in uso
+                        const ua = window.navigator.userAgent;
+                        let suggestedName = "Mio PC";
+                        if (/iPhone|iPad|iPod/i.test(ua)) suggestedName = "Mio iPhone";
+                        else if (/Android/i.test(ua)) suggestedName = "Mio Android";
+                        else if (/Macintosh/i.test(ua)) suggestedName = "Mio Mac";
+
+                        // 2. Chiediamo conferma all'utente
+                        const deviceLabel = prompt("Dai un nome a questo dispositivo (es: PC Casa, iPhone Ufficio):", suggestedName);
+                        
+                        if (!deviceLabel) {
+                            this.isSubmitting = false;
+                            return; // Se annulla, ci fermiamo
+                        }
+
+                        // 3. Passiamo il nome attaccandolo all'URL di registrazione
+                        const registerUrl = "/webauthn/register?name=" + encodeURIComponent(deviceLabel);
+                        
+                        const { success, error } = await window.Webpass.attest("/webauthn/register/options", registerUrl);
                         
                         if (success) {
-                            this.showSuccess('Dispositivo registrato con successo! 🎉');
+                            this.showSuccess('Dispositivo "' + deviceLabel + '" registrato con successo! 🎉');
                             setTimeout(() => location.reload(), 2000); 
                         } else {
                             console.error(error);
@@ -252,7 +269,7 @@
                     } finally {
                         this.isSubmitting = false;
                     }
-                }
+                },
 
                 // Aggiungi questa funzione dentro il tuo componente Alpine (es. x-data="profileManager()")
                 async revokePasskey(id) {

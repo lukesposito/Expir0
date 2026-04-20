@@ -17,7 +17,7 @@
         <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h3 class="text-lg font-bold text-blue-900 mb-1">
-                    Dispositivi Registrati: <span x-text="passkeyCount">{{ $passkeys->count() }}</span>
+                    Dispositivi Registrati: <span {{ $passkeys->count() }}</span>
                 </h3>
                 <p class="text-sm text-blue-700">Puoi registrare più dispositivi (es. il tuo smartphone e il PC).</p>
             </div>
@@ -31,11 +31,21 @@
             @forelse($passkeys as $pk)
                 <div id="passkey-{{ $pk->id }}" class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm transition-all hover:shadow-md">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                            <i class="fa-solid fa-key"></i>
+                        
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 flex-shrink-0">
+                            @if(str_contains(strtolower($pk->name ?? ''), 'iphone') || str_contains(strtolower($pk->name ?? ''), 'android') || str_contains(strtolower($pk->name ?? ''), 'mobile'))
+                                <i class="fa-solid fa-mobile-screen text-lg"></i>
+                            @elseif(str_contains(strtolower($pk->name ?? ''), 'mac') || str_contains(strtolower($pk->name ?? ''), 'windows') || str_contains(strtolower($pk->name ?? ''), 'linux'))
+                                <i class="fa-solid fa-laptop text-lg"></i>
+                            @else
+                                <i class="fa-solid fa-fingerprint text-lg"></i>
+                            @endif
                         </div>
+                        
                         <div>
-                            <p class="font-bold text-gray-900">Chiave di Sicurezza</p>
+                            <p class="font-bold text-gray-900 capitalize">
+                                {{ $pk->alias ?? ($pk->name ?? 'Chiave di Sicurezza #' . $loop->iteration) }}
+                            </p>
                             <p class="text-xs text-gray-500">
                                 Aggiunta il: {{ $pk->created_at->format('d/m/Y') }} alle {{ $pk->created_at->format('H:i') }}
                             </p>
@@ -43,6 +53,7 @@
                                 ID: {{ substr($pk->id, 0, 15) }}...
                             </p>
                         </div>
+
                     </div>
                     <button type="button" @click="revokePasskey('{{ $pk->id }}')" class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-bold transition-colors">
                         Revoca

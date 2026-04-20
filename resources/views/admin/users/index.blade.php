@@ -182,6 +182,11 @@
                 // Form aggiornato coi nuovi campi
                 formData: { id: null, name: '', email: '', role: 'user', password: '', data_nascita: '', is_active: true, receives_notifications: true },
 
+                init() {
+                    @if(session('success')) this.showSuccess(@json(session('success')), 'success'); @endif
+                    @if(session('error')) this.showSuccess(@json(session('error')), 'error'); @endif
+                },
+
                 get filteredUsers() {
                     if (!this.searchQuery) return this.users;
                     const q = this.searchQuery.toLowerCase();

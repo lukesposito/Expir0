@@ -116,22 +116,70 @@
                 </button>
             </div>
 
+            <div class="mobile-only bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-20">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" x-model="selectAll" class="w-5 h-5 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500 shadow-sm">
+                        <span class="text-sm font-bold text-gray-700">Seleziona Tutti</span>
+                    </label>
+                    <span class="text-xs font-bold text-gray-400" x-text="filteredBolli.length + ' risultati'"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" @change="sortAsc = true" class="p-2 flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg">
+                        <option value="scadenza">Scadenza</option>
+                        <option value="giorni">Giorni Rimanenti</option>
+                        <option value="importo">Importo</option>
+                        <option value="soggetto">Veicolo</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="desktop-only bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Veicolo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Scadenza</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giorni</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Importo</th>
+                                <th class="px-4 py-3 text-center w-12">
+                                    <input type="checkbox" x-model="selectAll" class="w-4 h-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500 cursor-pointer">
+                                </th>
+                                <th @click="sortBy('soggetto')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Veicolo
+                                        <span x-show="sortCol === 'soggetto'" x-cloak class="text-yellow-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'soggetto'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('scadenza')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Data Scadenza
+                                        <span x-show="sortCol === 'scadenza'" x-cloak class="text-yellow-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'scadenza'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('giorni')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Giorni
+                                        <span x-show="sortCol === 'giorni'" x-cloak class="text-yellow-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'giorni'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('importo')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Importo
+                                        <span x-show="sortCol === 'importo'" x-cloak class="text-yellow-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'importo'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(b, index) in filteredBolli" :key="b.id || index">
-                                <tr class="hover:bg-gray-50 transition" :class="{ 'bg-red-50': b.giorni_rimanenti <= 30 }">
+                                <tr class="hover:bg-gray-50 transition cursor-pointer" :class="{ 'bg-red-50': b.giorni_rimanenti <= 30, 'bg-yellow-50': selectedItems.includes(b.id) }" @click.self="toggleSelection(b.id)">
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox" :value="b.id" x-model="selectedItems" class="w-4 h-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500 transition">
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-semibold text-gray-900 font-mono uppercase" x-text="b.vehicle_targa"></div>
                                         <div class="text-sm text-gray-500 capitalize">
@@ -162,8 +210,13 @@
                                 </tr>
                             </template>
                             
-                            <tr x-show="filteredBolli.length === 0">
-                                <td colspan="6" class="px-6 py-12 text-center">
+                            <tr x-show="filteredBolli.length === 0" x-cloak>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
                                     <p class="text-gray-500 font-medium">Nessun bollo trovato</p>
                                     <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
                                 </td>
@@ -173,15 +226,20 @@
                 </div>
             </div>
 
-            <div class="mobile-only space-y-4 px-4">
+            <div class="mobile-only space-y-4 px-4 pb-28">
                 <template x-for="(b, index) in filteredBolli" :key="b.id || index">
-                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden"
-                         :class="b.giorni_rimanenti <= 30 ? 'border-red-300' : 'border-gray-200'">
+                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden relative"
+                         :class="[b.giorni_rimanenti <= 30 ? 'border-red-300' : 'border-gray-200', selectedItems.includes(b.id) ? 'ring-4 ring-yellow-400 transform scale-[1.02] shadow-2xl' : '']">
+                        
+                        <div class="absolute top-4 right-4 z-10 bg-white/40 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-white">
+                            <input type="checkbox" :value="b.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500 cursor-pointer shadow-sm">
+                        </div>
+
                         <div class="relative bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 px-5 py-6">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                             <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
                             
-                            <div class="relative flex items-center justify-between">
+                            <div class="relative flex items-center pr-12">
                                 <div class="flex-1">
                                     <h3 class="text-2xl font-black text-white tracking-tight mb-1.5 uppercase font-mono" x-text="b.vehicle_targa"></h3>
                                     <p class="text-base text-white opacity-90 capitalize">
@@ -237,7 +295,7 @@
                             
                             <div class="mt-6 pt-5 border-t border-gray-200 flex justify-center gap-3 pb-2">
                                 <button @click="openEditModal(b)"
-                                        class="btn-card-action btn-card-edit btn-card-compact" style="background-color: #eab308 !important;">
+                                        class="btn-card-action btn-card-edit btn-card-compact">
                                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
@@ -256,7 +314,7 @@
                     </div>
                 </template>
                 
-                <div x-show="filteredBolli.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+                <div x-show="filteredBolli.length === 0" x-cloak class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
                     <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -264,6 +322,34 @@
                     </div>
                     <p class="text-gray-500 font-medium">Nessun bollo trovato</p>
                     <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
+                </div>
+            </div>
+
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
+                <div x-show="selectedItems.length > 0" 
+                     style="display: none;"
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+                    
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-yellow-500 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionati</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina Multipla</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -416,6 +502,23 @@
                 </div>
             </div>
 
+            <div x-show="showBulkDeleteModal" style="display: none;" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> bolli in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutti</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showSuccessModal" 
                  x-cloak
                  @keydown.escape.window="closeSuccessModal()"
@@ -468,7 +571,9 @@
         function bolliManager() {
             return {
                 showCreateModal: false, showEditModal: false, showDeleteModal: false, showSuccessModal: false,
+                showBulkDeleteModal: false,
                 isClosingCreate: false, isClosingEdit: false, isClosingDelete: false, isClosingSuccess: false,
+                isClosingBulkDelete: false,
                 successMessage: '', successType: 'success', isSubmitting: false,
                 
                 editBollo: {},
@@ -476,20 +581,88 @@
                 searchQuery: '',
                 
                 bolli: @json($bolli),
+                selectedItems: [],
+
+                sortCol: 'scadenza',
+                sortAsc: true,
 
                 init() {
                     @if(session('success')) this.showSuccess("{{ session('success') }}", 'success'); @endif
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
                 },
 
+                get selectAll() {
+                    const filtered = this.filteredBolli;
+                    return filtered.length > 0 && this.selectedItems.length === filtered.length && 
+                           filtered.every(b => this.selectedItems.includes(b.id));
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = this.filteredBolli.map(b => b.id);
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                toggleSelection(id) {
+                    if (this.selectedItems.includes(id)) {
+                        this.selectedItems = this.selectedItems.filter(i => i !== id);
+                    } else {
+                        this.selectedItems.push(id);
+                    }
+                },
+
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true;
+                    }
+                },
+
                 get filteredBolli() {
-                    if (!this.searchQuery) return this.bolli;
-                    const query = this.searchQuery.toLowerCase();
-                    return this.bolli.filter(bollo => {
-                        const targa = bollo.vehicle_targa ? bollo.vehicle_targa.toLowerCase() : '';
-                        const marca = bollo.vehicle_marca ? bollo.vehicle_marca.toLowerCase() : '';
-                        const modello = bollo.vehicle_modello ? bollo.vehicle_modello.toLowerCase() : '';
-                        return targa.includes(query) || marca.includes(query) || modello.includes(query);
+                    let filtered = Array.isArray(this.bolli) ? this.bolli : [];
+                    
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(bollo => {
+                            const targa = bollo.vehicle_targa ? bollo.vehicle_targa.toLowerCase() : '';
+                            const marca = bollo.vehicle_marca ? bollo.vehicle_marca.toLowerCase() : '';
+                            const modello = bollo.vehicle_modello ? bollo.vehicle_modello.toLowerCase() : '';
+                            return targa.includes(query) || marca.includes(query) || modello.includes(query);
+                        });
+                    }
+
+                    return filtered.sort((a, b) => {
+                        let aVal, bVal;
+                        switch (this.sortCol) {
+                            case 'soggetto':
+                                aVal = a.vehicle_targa || '';
+                                bVal = b.vehicle_targa || '';
+                                break;
+                            case 'scadenza':
+                                aVal = a.data_scadenza ? new Date(a.data_scadenza) : new Date(0);
+                                bVal = b.data_scadenza ? new Date(b.data_scadenza) : new Date(0);
+                                break;
+                            case 'giorni':
+                                aVal = a.giorni_rimanenti || 0;
+                                bVal = b.giorni_rimanenti || 0;
+                                break;
+                            case 'importo':
+                                aVal = parseFloat(a.importo) || 0;
+                                bVal = parseFloat(b.importo) || 0;
+                                break;
+                            default:
+                                return 0;
+                        }
+                        
+                        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+                        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+                        if (aVal < bVal) return this.sortAsc ? -1 : 1;
+                        if (aVal > bVal) return this.sortAsc ? 1 : -1;
+                        return 0;
                     });
                 },
 
@@ -514,6 +687,31 @@
                 showSuccess(message, type = 'success') {
                     this.successMessage = message; this.successType = type; this.showSuccessModal = true;
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
+                },
+
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
+
+                // ESECUZIONE ELIMINA MULTIPLA
+                async executeBulkDelete() {
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/bolli/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess('Bolli eliminati con successo!', 'success');
+                    } catch(e) {
+                        this.showSuccess('Errore durante l\'eliminazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
                 },
 
                 // AGGIORNAMENTO DATI IN BACKGROUND
@@ -662,7 +860,7 @@
         .modal-container { position: relative; width: 90%; max-width: 500px; margin: 0 auto; pointer-events: auto; }
         .modal-container-large { max-width: 600px; max-height: 90vh; overflow-y: auto; }
         
-        .modal-content-wrapper { background: white; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; }
+        .modal-content-wrapper { background: white; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; transform: scale(0); }
         .modal-active .modal-content-wrapper { animation: blowUpModal 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         .modal-out .modal-content-wrapper { animation: blowUpModalTwo 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
 

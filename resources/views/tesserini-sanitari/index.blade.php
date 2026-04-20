@@ -108,14 +108,46 @@
                 </button>
             </div>
 
+            <div class="mobile-only bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-20">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" x-model="selectAll" class="w-5 h-5 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 shadow-sm">
+                        <span class="text-sm font-bold text-gray-700">Seleziona Tutti</span>
+                    </label>
+                    <span class="text-xs font-bold text-gray-400" x-text="filteredDocs.length + ' risultati'"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" class="p-2 flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg">
+                        <option value="data_scadenza">Scadenza</option>
+                        <option value="user">Persona</option>
+                        <option value="codice_fiscale">Codice Fiscale</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-cyan-50 text-cyan-600 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="desktop-only bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persona</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Codice Fiscale</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenza</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" 
+                                           x-model="selectAll" 
+                                           class="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded">
+                                </th>
+                                <th @click="sortBy('user')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group">
+                                    <div class="flex items-center gap-2">Persona <i class="fa-solid fa-sort text-gray-300 group-hover:text-cyan-400"></i></div>
+                                </th>
+                                <th @click="sortBy('codice_fiscale')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group">
+                                    <div class="flex items-center gap-2">Codice Fiscale <i class="fa-solid fa-sort text-gray-300 group-hover:text-cyan-400"></i></div>
+                                </th>
+                                <th @click="sortBy('data_scadenza')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition">
+                                    Scadenza
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giorni</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
@@ -124,6 +156,12 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(doc, index) in filteredDocs" :key="doc.id || index">
                                 <tr class="hover:bg-gray-50 transition" :class="{ 'bg-red-50': calcGiorniRimanenti(doc.data_scadenza) <= 90 }">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" 
+                                               :value="doc.id" 
+                                               x-model="selectedItems" 
+                                               class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-semibold text-gray-900" x-text="doc.user ? doc.user.name : ''"></div>
                                     </td>
@@ -148,7 +186,10 @@
                                 </tr>
                             </template>
                             <tr x-show="filteredDocs.length === 0">
-                                <td colspan="6" class="px-6 py-12 text-center">
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fa-solid fa-notes-medical text-4xl text-gray-400"></i>
+                                    </div>
                                     <p class="text-gray-500 font-medium">Nessun documento trovato</p>
                                     <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
                                 </td>
@@ -158,13 +199,13 @@
                 </div>
             </div>
 
-            <div class="mobile-only space-y-4 px-4">
+            <div class="mobile-only space-y-4 px-4 pb-20">
                 <template x-for="(doc, index) in filteredDocs" :key="doc.id || index">
                     <div class="bg-white rounded-2xl shadow-xl border overflow-hidden" :class="calcGiorniRimanenti(doc.data_scadenza) <= 90 ? 'border-red-300' : 'border-gray-200'">
-                        <div class="relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 px-5 py-6">
+                        <div class="relative bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700 px-5 py-6">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                             <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
-                            <div class="relative flex items-center justify-between">
+                            <div class="relative flex items-center">
                                 <div class="flex-1">
                                     <h3 class="text-2xl font-black text-white tracking-tight mb-1.5" x-text="doc.user ? doc.user.name : ''"></h3>
                                     <p class="text-base text-white opacity-90 uppercase tracking-widest font-mono" x-text="doc.codice_fiscale"></p>
@@ -176,6 +217,9 @@
                                             <span class="text-lg font-bold text-white" x-text="calcGiorniRimanenti(doc.data_scadenza) + ' gg'"></span>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="ml-2">
+                                    <input type="checkbox" :value="doc.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-purple-600">
                                 </div>
                             </div>
                         </div>
@@ -215,9 +259,37 @@
                 </div>
             </div>
 
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none w-full px-4">
+                <div x-show="selectedItems.length > 0" 
+                     style="display: none;"
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+                    
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-purple-900 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionati</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showCreateModal" x-cloak @keydown.escape.window="closeCreateModal()" class="modal-overlay" :class="{ 'modal-active': showCreateModal && !isClosingCreate, 'modal-out': isClosingCreate }">
                 <div @click="closeCreateModal()" class="modal-backdrop"></div>
-                <div class="modal-container modal-container-large">
+                <div class="modal-container">
                     <div @click.stop class="modal-content-wrapper">
                         <div class="modal-header">
                             <h3 class="modal-title">Nuovo Tesserino</h3>
@@ -248,7 +320,7 @@
 
             <div x-show="showEditModal" x-cloak @keydown.escape.window="closeEditModal()" class="modal-overlay" :class="{ 'modal-active': showEditModal && !isClosingEdit, 'modal-out': isClosingEdit }">
                 <div @click="closeEditModal()" class="modal-backdrop"></div>
-                <div class="modal-container modal-container-large">
+                <div class="modal-container">
                     <div @click.stop class="modal-content-wrapper">
                         <div class="modal-header">
                             <h3 class="modal-title">Modifica Tesserino</h3>
@@ -307,6 +379,23 @@
                 </div>
             </div>
 
+            <div x-show="showBulkDeleteModal" style="display: none;" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> tesserini sanitari in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutti</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showSuccessModal" x-cloak @keydown.escape.window="closeSuccessModal()" class="modal-overlay" :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
                 <div @click="closeSuccessModal()" class="modal-backdrop"></div>
                 <div class="modal-container">
@@ -343,6 +432,12 @@
                 deleteDoc: { user: {} },
                 searchQuery: '',
                 
+                selectedItems: [],
+                showBulkDeleteModal: false,
+                isClosingBulkDelete: false,
+                sortCol: 'data_scadenza',
+                sortAsc: true,
+                
                 documenti: @json($documenti),
 
                 init() {
@@ -350,14 +445,24 @@
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
                 },
 
-                get filteredDocs() {
-                    if (!this.searchQuery) return this.documenti;
-                    const query = this.searchQuery.toLowerCase();
-                    return this.documenti.filter(doc => {
-                        const name = (doc.user && doc.user.name) ? doc.user.name.toLowerCase() : '';
-                        const cf = doc.codice_fiscale ? doc.codice_fiscale.toLowerCase() : '';
-                        return name.includes(query) || cf.includes(query);
-                    });
+                get selectAll() {
+                    return this.filteredDocs.length > 0 && this.selectedItems.length === this.filteredDocs.length;
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = [...this.filteredDocs.map(doc => doc.id)];
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true;
+                    }
                 },
 
                 calcGiorniRimanenti(dataScadenza) {
@@ -375,7 +480,26 @@
                     return new Date(data).toLocaleDateString('it-IT', opts);
                 },
 
-                // GESTIONE MODALI
+                get filteredDocs() {
+                    let filtered = Array.isArray(this.documenti) ? this.documenti : [];
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(d => (d.user?.name && d.user.name.toLowerCase().includes(query)) || (d.codice_fiscale && d.codice_fiscale.toLowerCase().includes(query)));
+                    }
+                    return filtered.sort((a, b) => {
+                        let aVal, bVal;
+                        switch (this.sortCol) {
+                            case 'data_scadenza': aVal = a.data_scadenza ? new Date(a.data_scadenza) : new Date(0); bVal = b.data_scadenza ? new Date(b.data_scadenza) : new Date(0); break;
+                            case 'user': aVal = a.user?.name || ''; bVal = b.user?.name || ''; break;
+                            case 'codice_fiscale': aVal = a.codice_fiscale || ''; bVal = b.codice_fiscale || ''; break;
+                            default: return 0;
+                        }
+                        if (aVal < bVal) return this.sortAsc ? -1 : 1;
+                        if (aVal > bVal) return this.sortAsc ? 1 : -1;
+                        return 0;
+                    });
+                },
+
                 openCreateModal() { this.showCreateModal = true; },
                 closeCreateModal() { this.isClosingCreate = true; setTimeout(() => { this.showCreateModal = false; this.isClosingCreate = false; }, 500); },
                 
@@ -397,7 +521,31 @@
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
                 },
 
-                // AGGIORNAMENTO DATI IN BACKGROUND
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
+                
+                async executeBulkDelete() {
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/tesserini-sanitari/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        const count = this.selectedItems.length;
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess(`${count} tesserini sanitari eliminati con successo!`, 'success');
+                    } catch(e) {
+                        this.showSuccess('Errore durante l\'eliminazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
                 async refreshData() {
                     try {
                         const res = await fetch('{{ route("tesserini-sanitari.index") }}', {
@@ -412,7 +560,6 @@
                     }
                 },
 
-                // SUBMIT POST/PUT ASINCRONO
                 async submitForm(event, url, method) {
                     this.isSubmitting = true;
                     const form = event.target;
@@ -434,7 +581,7 @@
                             this.closeEditModal();
                             if(method === 'POST') form.reset();
                             
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Operazione completata con successo!', 'success');
                         } else {
                             this.showSuccess(data.message || 'Errore di validazione dati', 'error');
@@ -446,7 +593,6 @@
                     }
                 },
 
-                // DELETE ASINCRONO
                 async submitDelete(url) {
                     this.isSubmitting = true;
                     try {
@@ -464,7 +610,7 @@
 
                         if (response.ok) {
                             this.closeDeleteModal();
-                            await this.refreshData(); // RICARICA LA TABELLA
+                            await this.refreshData();
                             this.showSuccess(data.message || 'Documento eliminato con successo!', 'success');
                         } else {
                             this.closeDeleteModal();
@@ -484,17 +630,14 @@
     <style>
         [x-cloak] { display: none !important; }
 
-        /* Responsive Visibility */
         .desktop-only { display: block; }
         .mobile-only { display: none; }
         @media (max-width: 1023px) { .desktop-only { display: none; } .mobile-only { display: block; } }
 
-        /* Barra ricerca responsive */
         .mobile-only-search { display: block; }
         .desktop-only-search { display: none; }
         @media (min-width: 1024px) { .mobile-only-search { display: none !important; } .desktop-only-search { display: block !important; } }
 
-        /* Bottone Aggiungi */
         .btn-add-custom {
             background: linear-gradient(135deg, #00e7fc 0%, #06b6d4 100%);
             color: white; font-weight: 600; font-size: 1rem; padding: 0.875rem 1.75rem; border-radius: 0.75rem; border: none; cursor: pointer;
@@ -505,7 +648,6 @@
         .btn-add-custom svg { transition: transform 0.25s ease; }
         .btn-add-custom:hover svg { transform: rotate(90deg); }
 
-        /* Bottoni tabella desktop */
         .btn-table-action { display: inline-flex !important; align-items: center; justify-content: center; font-weight: 600; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
         .btn-table-edit { background-color: #3b82f6 !important; color: white !important; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
         .btn-table-edit:hover { background-color: #2563eb !important; box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3); transform: translateY(-1px); }
@@ -517,7 +659,6 @@
         .btn-table-delete:hover svg { transform: scale(1.1); }
         .btn-table-action:active { transform: translateY(0); }
 
-        /* Bottoni card mobile */
         .btn-card-compact { padding: 0.625rem 1.25rem !important; font-size: 0.875rem; min-width: auto; flex: 0 0 auto; }
         .btn-card-action { font-weight: 600; border-radius: 0.75rem; border: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
         .btn-card-action:active { transform: translateY(0); }
@@ -530,54 +671,37 @@
         .btn-card-delete svg { transition: transform 0.2s ease; stroke: white !important; }
         .btn-card-delete:hover svg { transform: scale(1.1); }
 
-        /* Animazioni Modali */
         @keyframes blowUpModal { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes blowUpModalTwo { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
 
-        /* Modal Overlay */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0); }
         .modal-active .modal-backdrop { animation: fadeIn 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         .modal-out .modal-backdrop { animation: fadeOut 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
 
-        .modal-container { position: relative; width: 90%; max-width: 500px; margin: 0 auto; pointer-events: auto; }
-        .modal-container-large { max-width: 600px; max-height: 90vh; overflow-y: auto; }
-        
-        .modal-content-wrapper { background: white; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; }
-        .modal-active .modal-content-wrapper { animation: blowUpModal 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
-        .modal-out .modal-content-wrapper { animation: blowUpModalTwo 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
+        .modal-container { position: relative; width: 100%; max-width: 28rem; z-index: 1000; }
+        .modal-container-large { max-width: 32rem; }
+        .modal-content-wrapper { background: white; border-radius: 1rem; overflow: hidden; transform: scale(0); }
+        .modal-active .modal-content-wrapper { animation: blowUpModal 0.5s forwards; }
+        .modal-out .modal-content-wrapper { animation: blowUpModalTwo 0.5s forwards; }
 
         @keyframes fadeIn { 0% { background: rgba(0, 0, 0, 0); } 100% { background: rgba(0, 0, 0, 0.7); } }
         @keyframes fadeOut { 0% { background: rgba(0, 0, 0, 0.7); } 100% { background: rgba(0, 0, 0, 0); } }
 
         @keyframes checkmark { 0% { stroke-dashoffset: 50; stroke-dasharray: 50; } 100% { stroke-dashoffset: 0; stroke-dasharray: 50; } }
         .animate-check { stroke-dashoffset: 50; stroke-dasharray: 50; animation: checkmark 0.6s ease-in-out forwards; }
-        @keyframes pulse-success { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .modal-active .modal-content-wrapper svg { animation: pulse-success 0.6s ease-in-out; }
-
+        
         .modal-header { background: linear-gradient(135deg, #00e7fc 0%, #06b6d4 100%); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: white; margin: 0; }
-        .modal-close { color: white; background: transparent; border: none; cursor: pointer; padding: 0.25rem; transition: all 0.15s; border-radius: 0.375rem; }
-        .modal-close:hover { background: rgba(255, 255, 255, 0.1); transform: rotate(90deg); }
-
-        .modal-body { max-height: calc(90vh - 200px); overflow-y: auto; padding: 1.5rem; }
-        @media (max-width: 640px) { .modal-container, .modal-container-large { width: 95%; max-width: none; margin: 1rem auto; } .modal-body { max-height: calc(100vh - 250px); padding: 1rem; } }
-
-        .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.5rem; background-color: #f9fafb; border-top: 1px solid #e5e7eb; }
+        .modal-close { color: white; background: transparent; border: none; cursor: pointer; transition: all 0.15s; }
+        .modal-close:hover { transform: rotate(90deg); }
+        .modal-body { padding: 1.5rem; max-height: calc(100vh - 200px); overflow-y: auto; }
+        .modal-footer { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        
         .form-label { display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
-        .form-input { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; transition: all 0.15s; }
-        .form-input:focus { outline: none; border-color: #3b82f6; ring: 2px; ring-color: rgba(59, 130, 246, 0.3); }
-
-        .btn-primary { padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #00e7fc 0%, #06b6d4 100%); color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
-        .btn-primary:hover { background: linear-gradient(135deg, #06b6d4 0%, #017a8f 100%); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-secondary { padding: 0.625rem 1.25rem; background: white; color: #374151; font-weight: 600; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; }
-        .btn-secondary:hover { background: #f9fafb; border-color: #9ca3af; }
-        .btn-danger { padding: 0.625rem 1.25rem; background: #ef4444; color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
-        .btn-danger:hover { background: #dc2626; box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3); transform: translateY(-1px); }
-        .btn-danger:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        /* Mobile spacing */
-        .space-y-4 > * + * { margin-top: 1rem; }
+        .form-input { display: block; width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; }
+        .btn-primary { padding: 0.625rem 1.5rem; background: linear-gradient(135deg, #00e7fc 0%, #06b6d4 100%); color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer;}
+        .btn-secondary { padding: 0.625rem 1.25rem; background: #f3f4f6; color: #374151; font-weight: 500; border-radius: 0.5rem; border: none; cursor: pointer;}
+        .btn-danger { padding: 0.625rem 1.5rem; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer;}
     </style>
 </x-app-layout>

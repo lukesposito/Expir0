@@ -80,22 +80,70 @@
                 </button>
             </div>
 
+            <div class="mobile-only bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" x-model="selectAll" class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 shadow-sm">
+                        <span class="text-sm font-bold text-gray-700">Seleziona Tutti</span>
+                    </label>
+                    <span class="text-xs font-bold text-gray-400" x-text="filteredSubscriptions.length + ' risultati'"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" @change="sortAsc = true" class="flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg py-2">
+                        <option value="data_scadenza">Scadenza</option>
+                        <option value="nome">Nome Servizio</option>
+                        <option value="importo">Importo</option>
+                        <option value="user_name">Intestatario</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-violet-50 text-violet-600 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="desktop-only bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servizio</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intestatario / Veicolo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenza</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Importo</th>
+                                <th class="px-6 py-3 text-center w-12">
+                                    <input type="checkbox" x-model="selectAll" class="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded cursor-pointer">
+                                </th>
+                                <th @click="sortBy('nome')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Servizio
+                                        <span x-show="sortCol === 'nome'" x-cloak class="text-violet-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'nome'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('user_name')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Intestatario / Veicolo
+                                        <span x-show="sortCol === 'user_name'" x-cloak class="text-violet-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'user_name'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('data_scadenza')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Scadenza
+                                        <span x-show="sortCol === 'data_scadenza'" x-cloak class="text-violet-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'data_scadenza'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('importo')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition group select-none">
+                                    <div class="flex items-center gap-2">Importo
+                                        <span x-show="sortCol === 'importo'" x-cloak class="text-violet-600"><i class="fa-solid fa-sort-up" x-show="sortAsc"></i><i class="fa-solid fa-sort-down" x-show="!sortAsc"></i></span>
+                                        <span x-show="sortCol !== 'importo'" x-cloak class="text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-sort"></i></span>
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rinnovo Auto</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(sub, index) in filteredSubscriptions" :key="sub.id || index">
-                                <tr class="hover:bg-gray-50 transition" :class="{ 'bg-red-50': sub.giorni_rimanenti <= sub.giorni_preavviso }">
+                                <tr class="hover:bg-gray-50 transition cursor-pointer" :class="{ 'bg-red-50': sub.giorni_rimanenti <= sub.giorni_preavviso, 'bg-violet-50': selectedItems.includes(sub.id) }" @click.self="toggleSelection(sub.id)">
+                                    <td class="px-6 py-4 text-center">
+                                        <input type="checkbox" :value="sub.id" x-model="selectedItems" class="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded cursor-pointer transition">
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-bold text-gray-900" x-text="sub.nome"></div>
                                         <div class="text-xs font-semibold text-violet-600 uppercase tracking-wider" x-text="sub.categoria"></div>
@@ -129,8 +177,11 @@
                                     </td>
                                 </tr>
                             </template>
-                            <tr x-show="filteredSubscriptions.length === 0">
-                                <td colspan="6" class="px-6 py-12 text-center">
+                            <tr x-show="filteredSubscriptions.length === 0" x-cloak>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fa-solid fa-file-invoice-dollar text-4xl text-gray-400"></i>
+                                    </div>
                                     <p class="text-gray-500 font-medium">Nessuna spesa trovata</p>
                                     <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
                                 </td>
@@ -140,19 +191,23 @@
                 </div>
             </div>
 
-            <div class="mobile-only space-y-4 px-4">
+            <div class="mobile-only space-y-4 px-4 pb-20">
                 <template x-for="(sub, index) in filteredSubscriptions" :key="sub.id || index">
-                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden" :class="sub.giorni_rimanenti <= sub.giorni_preavviso ? 'border-red-300' : 'border-gray-200'">
+                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden relative" :class="[sub.giorni_rimanenti <= sub.giorni_preavviso ? 'border-red-300' : 'border-gray-200', selectedItems.includes(sub.id) ? 'ring-4 ring-violet-400 transform scale-[1.02] shadow-2xl' : '']">
                         
+                        <div class="absolute top-4 right-4 z-10 bg-white/40 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-white">
+                            <input type="checkbox" :value="sub.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer shadow-sm">
+                        </div>
+
                         <div class="relative bg-gradient-to-br from-violet-500 via-violet-600 to-violet-700 px-5 py-6">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                             <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
                             
-                            <div class="relative flex items-center justify-between">
+                            <div class="relative flex items-center pr-12">
                                 <div class="flex-1">
                                     <p class="text-xs text-violet-200 font-bold uppercase tracking-wider mb-1" x-text="sub.categoria"></p>
-                                    <h3 class="text-2xl font-black text-white tracking-tight mb-1" x-text="sub.nome"></h3>
-                                    <p class="text-base text-white opacity-90" x-text="sub.user_name !== 'N/D' ? sub.user_name : (sub.vehicle_desc || 'Famiglia')"></p>
+                                    <h3 class="text-2xl font-black text-white tracking-tight mb-1 truncate" x-text="sub.nome"></h3>
+                                    <p class="text-base text-white opacity-90 truncate" x-text="sub.user_name !== 'N/D' ? sub.user_name : (sub.vehicle_desc || 'Famiglia')"></p>
                                 </div>
                             </div>
                         </div>
@@ -187,7 +242,7 @@
                                 </div>
                             </template>
                             
-                            <div class="mt-5 pt-4 border-t border-gray-200 flex justify-center gap-3">
+                            <div class="mt-5 pt-4 border-t border-gray-200 flex justify-center gap-3 pb-2">
                                 <button @click="openEditModal(sub)" class="btn-card-action btn-card-compact" style="background-color: #8b5cf6 !important;">
                                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> <span>Modifica</span>
                                 </button>
@@ -198,6 +253,41 @@
                         </div>
                     </div>
                 </template>
+                <div x-show="filteredSubscriptions.length === 0" x-cloak class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-file-invoice-dollar text-4xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500 font-medium">Nessuna spesa trovata</p>
+                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
+                </div>
+            </div>
+
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none w-full px-4">
+                <div x-show="selectedItems.length > 0"
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-violet-900 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionati</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina Multipla</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div x-show="showCreateModal" x-cloak @keydown.escape.window="closeCreateModal()" class="modal-overlay" :class="{ 'modal-active': showCreateModal && !isClosingCreate, 'modal-out': isClosingCreate }">
@@ -370,7 +460,24 @@
                     </div>
                 </div>
             </div>
-
+            
+            <div x-show="showBulkDeleteModal" style="display: none;" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> spese/abbonamenti in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutti</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div x-show="showSuccessModal" x-cloak @keydown.escape.window="closeSuccessModal()" class="modal-overlay" :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
                 <div @click="closeSuccessModal()" class="modal-backdrop"></div>
                 <div class="modal-container">
@@ -408,6 +515,12 @@
                 deleteSub: {},
                 searchQuery: '',
                 
+                selectedItems: [],
+                showBulkDeleteModal: false,
+                isClosingBulkDelete: false,
+                sortCol: 'data_scadenza',
+                sortAsc: true,
+                
                 subscriptions: @json($subscriptions),
 
                 init() {
@@ -416,14 +529,58 @@
                 },
 
                 get filteredSubscriptions() {
-                    if (!this.searchQuery) return this.subscriptions;
-                    const q = this.searchQuery.toLowerCase();
-                    return this.subscriptions.filter(s => {
-                        const name = s.nome ? s.nome.toLowerCase() : '';
-                        const cat = s.categoria ? s.categoria.toLowerCase() : '';
-                        const user = s.user_name ? s.user_name.toLowerCase() : '';
-                        return name.includes(q) || cat.includes(q) || user.includes(q);
+                    let filtered = Array.isArray(this.subscriptions) ? this.subscriptions : [];
+                    if (this.searchQuery) {
+                        const q = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(s => {
+                            const name = s.nome ? s.nome.toLowerCase() : '';
+                            const cat = s.categoria ? s.categoria.toLowerCase() : '';
+                            const user = s.user_name ? s.user_name.toLowerCase() : '';
+                            return name.includes(q) || cat.includes(q) || user.includes(q);
+                        });
+                    }
+
+                    return filtered.sort((a, b) => {
+                        let aVal, bVal;
+                        switch (this.sortCol) {
+                            case 'data_scadenza': aVal = a.data_scadenza ? new Date(a.data_scadenza) : new Date(0); bVal = b.data_scadenza ? new Date(b.data_scadenza) : new Date(0); break;
+                            case 'nome': aVal = a.nome || ''; bVal = b.nome || ''; break;
+                            case 'importo': aVal = a.importo || 0; bVal = b.importo || 0; break;
+                            case 'user_name': aVal = a.user_name || ''; bVal = b.user_name || ''; break;
+                            default: return 0;
+                        }
+                        if (aVal < bVal) return this.sortAsc ? -1 : 1;
+                        if (aVal > bVal) return this.sortAsc ? 1 : -1;
+                        return 0;
                     });
+                },
+
+                get selectAll() {
+                    return this.filteredSubscriptions.length > 0 && this.selectedItems.length === this.filteredSubscriptions.length;
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = [...this.filteredSubscriptions.map(sub => sub.id)];
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                toggleSelection(id) {
+                    if (this.selectedItems.includes(id)) {
+                        this.selectedItems = this.selectedItems.filter(i => i !== id);
+                    } else {
+                        this.selectedItems.push(id);
+                    }
+                },
+
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true;
+                    }
                 },
 
                 openCreateModal() { this.showCreateModal = true; },
@@ -445,6 +602,32 @@
                 showSuccess(message, type = 'success') {
                     this.successMessage = message; this.successType = type; this.showSuccessModal = true;
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
+                },
+
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
+                
+                async executeBulkDelete() {
+                    if (this.selectedItems.length === 0) return;
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/subscriptions/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        const count = this.selectedItems.length;
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess(`Eliminati ${count} abbonamenti con successo!`, 'success');
+                    } catch(e) {
+                        this.showSuccess('Errore durante l\'eliminazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
                 },
 
                 async refreshData() {
@@ -547,6 +730,7 @@
 
         .btn-card-compact { padding: 0.625rem 1.25rem !important; font-size: 0.875rem; min-width: auto; flex: 0 0 auto; color: white; }
         .btn-card-action { font-weight: 600; border-radius: 0.75rem; border: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-card-action:active { transform: translateY(0); }
         .btn-card-delete { background-color: #ef4444 !important; }
         .btn-card-delete:hover { background-color: #dc2626 !important; transform: translateY(-2px); }
 

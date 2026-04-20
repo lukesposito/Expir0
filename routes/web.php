@@ -18,8 +18,12 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Middleware\Check2FA;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Deadline;
 use Carbon\Carbon;
+
 
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Laragear\WebAuthn\Http\Routes as WebAuthnRoutes;
@@ -36,7 +40,11 @@ Route::post('/check-email-passkey', function (Request $request) {
     
     return response()->json([
         'exists' => !!$user,
-        'has_passkey' => $user ? $user->webAuthnCredentials()->exists() : false
+        // Usiamo la stessa logica "antiproiettile" del controller per interrogare il DB
+        'has_passkey' => $user ? DB::table('webauthn_credentials')
+            ->where('authenticatable_id', $user->getAuthIdentifier())
+            ->where('authenticatable_type', get_class($user))
+            ->exists() : false
     ]);
 })->name('check.passkey');
 

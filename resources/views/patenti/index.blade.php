@@ -67,21 +67,93 @@
                 </button>
             </div>
 
+            <div class="mobile-only bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-20">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" x-model="selectAll" class="w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500 shadow-sm">
+                        <span class="text-sm font-bold text-gray-700">Seleziona Tutti</span>
+                    </label>
+                    <span class="text-xs font-bold text-gray-400" x-text="filteredPatenti.length + ' risultati'"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" class="p-2 flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg">
+                        <option value="data_scadenza">Data Scadenza</option>
+                        <option value="numero_patente">Numero Patente</option>
+                        <option value="tipo">Tipo</option>
+                        <option value="user">Persona</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-pink-50 text-pink-600 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="desktop-only bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persona</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Numero Patente</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Scadenza</th>
+                                <th class="px-4 py-3 text-center w-12">
+                                    <input type="checkbox" x-model="selectAll" class="w-4 h-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer">
+                                </th>
+                                <th @click="sortBy('user')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Persona
+                                        <span x-show="sortCol === 'user'" class="text-pink-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'user'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('numero_patente')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Numero Patente
+                                        <span x-show="sortCol === 'numero_patente'" class="text-pink-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'numero_patente'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('tipo')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Tipo
+                                        <span x-show="sortCol === 'tipo'" class="text-pink-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'tipo'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('data_scadenza')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
+                                        Data Scadenza
+                                        <span x-show="sortCol === 'data_scadenza'" class="text-pink-600">
+                                            <i class="fa-solid fa-sort-up" x-show="sortAsc"></i>
+                                            <i class="fa-solid fa-sort-down" x-show="!sortAsc"></i>
+                                        </span>
+                                        <span x-show="sortCol !== 'data_scadenza'" class="text-gray-300 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fa-solid fa-sort"></i>
+                                        </span>
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(p, index) in filteredPatenti" :key="p.id || index">
                                 <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox" :value="p.id" x-model="selectedItems" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    </td>
                                     <td class="px-6 py-4 font-semibold text-gray-900" x-text="p.user?.name"></td>
                                     <td class="px-6 py-4 text-gray-700 font-mono uppercase" x-text="p.numero_patente"></td>
                                     <td class="px-6 py-4 text-gray-700 uppercase" x-text="p.tipo || '—'"></td>
@@ -97,12 +169,44 @@
                                 </tr>
                             </template>
                             <tr x-show="filteredPatenti.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center">
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
                                     <p class="text-gray-500 font-medium">Nessuna patente trovata</p>
+                                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>  
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none w-full px-4">
+                <div x-show="selectedItems.length > 0"
+                     style="display: none;"
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-pink-500 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionate</span>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -117,6 +221,9 @@
                                     <h3 class="text-2xl font-black text-white tracking-tight mb-1.5" x-text="p.user?.name"></h3>
                                     <p class="text-base text-white opacity-90 font-mono uppercase" x-text="p.numero_patente"></p>
                                 </div>
+                            </div>
+                            <div class="px-5 py-5 absolute top-5 right-0">
+                                <input type="checkbox" :value="p.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-pink-600">
                             </div>
                         </div>
                         
@@ -154,7 +261,13 @@
                     </div>
                 </template>
                 <div x-show="filteredPatenti.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
                     <p class="text-gray-500 font-medium">Nessuna patente trovata</p>
+                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>                
                 </div>
             </div>
 
@@ -250,6 +363,23 @@
                 </div>
             </div>
 
+            <div x-show="showBulkDeleteModal" style="display: none;" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> patenti in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutte</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showSuccessModal" x-cloak @keydown.escape.window="closeSuccessModal()" class="modal-overlay" :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
                 <div @click="closeSuccessModal()" class="modal-backdrop"></div>
                 <div class="modal-container">
@@ -283,13 +413,62 @@
             return {
                 showCreateModal: false, showEditModal: false, showDeleteModal: false, showSuccessModal: false,
                 isClosingCreate: false, isClosingEdit: false, isClosingDelete: false, isClosingSuccess: false,
+                isClosingBulkDelete: false,
                 successMessage: '', successType: 'success', isSubmitting: false,
                 
                 editPatente: { user: {} },
                 deletePatente: { user: {} },
                 searchQuery: '',
                 
-                patenti: Array.isArray(@json($patenti)) ? @json($patenti) : Object.values(@json($patenti) || {}),
+                patenti: (() => { const data = @json($patenti); return Array.isArray(data) ? data : []; })(),
+                
+                sortCol: 'data_scadenza',
+                sortAsc: true,
+                selectedItems: [],
+                showBulkDeleteModal: false,
+
+                get selectAll() {
+                    const filtered = this.filteredPatenti;
+                    return filtered.length > 0 && this.selectedItems.length === filtered.length && filtered.every(p => this.selectedItems.includes(p.id));
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = this.filteredPatenti.map(p => p.id);
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                // Funzione di Ordinamento
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true;
+                    }
+                },
+
+                async executeBulkDelete() {
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        const promises = this.selectedItems.map(id =>
+                            fetch(`/patenti/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess('Patenti eliminate con successo!', 'success');
+                    } catch (error) {
+                        this.showSuccess('Errore durante l\'eliminazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
 
                 init() {
                     @if(session('success')) this.showSuccess("{{ session('success') }}", 'success'); @endif
@@ -297,14 +476,46 @@
                 },
 
                 get filteredPatenti() {
-                    if (!this.searchQuery) return this.patenti;
-                    const query = this.searchQuery.toLowerCase();
-                    return this.patenti.filter(p => {
-                        return (
-                            (p.user?.name && p.user.name.toLowerCase().includes(query)) ||
-                            (p.numero_patente && p.numero_patente.toLowerCase().includes(query)) ||
-                            (p.tipo && p.tipo.toLowerCase().includes(query))
-                        );
+                    let filtered = Array.isArray(this.patenti) ? this.patenti : [];
+                    
+                    // 1. Filtro di ricerca
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(p => {
+                            return (
+                                (p.user?.name && p.user.name.toLowerCase().includes(query)) ||
+                                (p.numero_patente && p.numero_patente.toLowerCase().includes(query)) ||
+                                (p.tipo && p.tipo.toLowerCase().includes(query))
+                            );
+                        });
+                    }
+
+                    // 2. Ordinamento dinamico
+                    return filtered.sort((a, b) => {
+                        let aVal, bVal;
+                        switch (this.sortCol) {
+                            case 'user':
+                                aVal = a.user?.name || '';
+                                bVal = b.user?.name || '';
+                                break;
+                            case 'numero_patente':
+                                aVal = a.numero_patente || '';
+                                bVal = b.numero_patente || '';
+                                break;
+                            case 'tipo':
+                                aVal = a.tipo || '';
+                                bVal = b.tipo || '';
+                                break;
+                            case 'data_scadenza':
+                                aVal = a.data_scadenza ? new Date(a.data_scadenza) : new Date(0);
+                                bVal = b.data_scadenza ? new Date(b.data_scadenza) : new Date(0);
+                                break;
+                            default:
+                                return 0;
+                        }
+                        if (aVal < bVal) return this.sortAsc ? -1 : 1;
+                        if (aVal > bVal) return this.sortAsc ? 1 : -1;
+                        return 0;
                     });
                 },
 
@@ -328,6 +539,8 @@
                 
                 openDeleteModal(p) { this.deletePatente = p; this.showDeleteModal = true; },
                 closeDeleteModal() { this.isClosingDelete = true; setTimeout(() => { this.showDeleteModal = false; this.isClosingDelete = false; }, 500); },
+                
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
                 
                 closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; }, 500); },
                 showSuccess(message, type = 'success') {

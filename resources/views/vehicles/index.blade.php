@@ -10,13 +10,13 @@
              x-data="vehiclesManager()" 
              x-init="init()">
 
-            <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm mt-4">
-                <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
+            <details class="bg-blue-50 p-5 rounded-xl mb-8 border-2 border-blue-200 shadow-sm mt-4">
+                <summary class="font-black text-blue-800 cursor-pointer text-xl flex items-center gap-2">
                     <i class="fa-solid fa-circle-info text-2xl"></i>
                     Guida passo-passo: Come gestisco i Veicoli? (Clicca per leggere)
                 </summary>
                 <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-blue-100">
                         🚘 <strong>Benvenuto nel Garage di famiglia!</strong> Qui creiamo il nostro parco macchine e moto. Prima di poter inserire una scadenza (come un Bollo o un'Assicurazione), il veicolo deve essere registrato qui.
                     </p>
 
@@ -91,6 +91,27 @@
                 </div>
             </div>
 
+            <div class="mobile-only bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-20" x-show="activeTab === 'vehicles'">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" x-model="selectAll" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm">
+                        <span class="text-sm font-bold text-gray-700">Seleziona Tutti</span>
+                    </label>
+                    <span class="text-xs font-bold text-gray-400" x-text="filteredVehicles.length + ' risultati'"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500 font-medium">Ordina:</span>
+                    <select x-model="sortCol" class="p-2 flex-1 text-sm font-bold text-slate-700 bg-gray-50 border-gray-200 rounded-lg">
+                        <option value="targa">Targa</option>
+                        <option value="marca">Marca</option>
+                        <option value="modello">Modello</option>
+                    </select>
+                    <button @click="sortAsc = !sortAsc" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <i class="fa-solid" :class="sortAsc ? 'fa-arrow-down-short-wide' : 'fa-arrow-up-wide-short'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="mb-6 flex justify-center lg:justify-start">
                 <button @click="openCreateModal()" class="btn-add-custom">
                     <svg class="inline-block h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,17 +126,52 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Targa</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modello</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intestatario</th>
+                                <th class="px-4 py-3 text-center w-12">
+                                    <input type="checkbox" x-model="selectAll" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                </th>
+                                <th @click="sortBy('targa')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        Targa
+                                        <svg x-show="sortCol === 'targa'" class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('marca')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        Marca
+                                        <svg x-show="sortCol === 'marca'" class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('modello')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        Modello
+                                        <svg x-show="sortCol === 'modello'" class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th @click="sortBy('intestatario')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        Intestatario
+                                        <svg x-show="sortCol === 'intestatario'" class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenze</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                             </tr>
                         </thead>
+
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(v, index) in filteredVehicles" :key="v.id || index">
                                 <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox" :value="v.id" x-model="selectedItems" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    </td>
                                     <td class="px-6 py-4 font-semibold text-gray-900 uppercase font-mono" x-text="v.targa"></td>
                                     <td class="px-6 py-4 text-gray-700 capitalize" x-text="v.marca"></td>
                                     <td class="px-6 py-4 text-gray-700 capitalize" x-text="v.modello"></td>
@@ -139,7 +195,7 @@
                                 </tr>
                             </template>
                             <tr x-show="filteredVehicles.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center">
+                                <td colspan="7" class="px-6 py-12 text-center">
                                     <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -178,6 +234,9 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="ml-2">
+                                    <input type="checkbox" :value="v.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-blue-600">
+                                </div>
                             </div>
                         </div>
                         
@@ -215,7 +274,39 @@
                     </div>
                 </template>
                 <div x-show="filteredVehicles.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
-                    <p class="text-gray-500 font-medium">Nessun veicolo trovato</p>
+                    <svg class="h-10 w-10 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <p class="text-gray-500 font-medium">Nessuna revisione trovata</p>
+                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
+                </div>
+            </div>
+
+            <div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none w-full px-4">
+                <div x-show="selectedItems.length > 0" 
+                     style="display: none;"
+                     x-transition:enter="transition ease-out duration-300 transform origin-bottom"
+                     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200 transform origin-bottom"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-10 scale-95"
+                     class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-6 border border-slate-700/50 w-full sm:w-auto max-w-2xl justify-between">
+                    
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span class="bg-indigo-500 text-white font-black px-3 py-1 rounded-lg text-base sm:text-lg shadow-inner" x-text="selectedItems.length"></span>
+                        <span class="font-semibold text-sm sm:text-base hidden xs:block">Selezionati</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                        <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                            <i class="fa-solid fa-trash-can"></i> <span class="text-sm hidden sm:inline">Elimina</span><span class="text-sm sm:hidden">Elimina</span>
+                        </button>
+                        <div class="w-px h-8 bg-slate-700 mx-1 sm:mx-2"></div>
+                        <button @click="selectedItems = []" class="text-slate-400 hover:text-white p-2 flex-shrink-0 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors" title="Annulla selezione">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -378,15 +469,44 @@
                     </div>
                 </div>
             </div>
+
+            <div x-show="showBulkDeleteModal" style="display: none;" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
+                <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
+                <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
+                    <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="p-6 text-center pt-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4"><i class="fa-solid fa-trash-can text-3xl text-red-500"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">Elimina Multipla</h3>
+                            <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> veicoli in un colpo solo. Confermi?</p>
+                        </div>
+                        <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutti</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         function vehiclesManager() {
             return {
-                showCreateModal: false, showEditModal: false, showDeleteModal: false, showSuccessModal: false,
-                isClosingCreate: false, isClosingEdit: false, isClosingDelete: false, isClosingSuccess: false,
-                successMessage: '', successType: 'success', isSubmitting: false,
+                showCreateModal: false, 
+                showEditModal: false, 
+                showDeleteModal: false, 
+                showSuccessModal: false,
+                showBulkDeleteModal: false,
+
+                isClosingCreate: false, 
+                isClosingEdit: false, 
+                isClosingDelete: false, 
+                isClosingSuccess: false,
+                isClosingBulkDelete: false,
+
+                successMessage: '', 
+                successType: 'success', 
+                isSubmitting: false,
                 
                 editVehicle: {},
                 deleteVehicle: {},
@@ -394,6 +514,67 @@
                 
                 // Array iniziale caricato da Blade
                 vehicles: @json($vehicles),
+
+                sortCol: 'targa',
+                sortAsc: true,
+                selectedItems: [],
+                activeTab: 'vehicles',
+
+                get selectAll() {
+                    const filtered = this.filteredVehicles;
+                    return filtered.length > 0 && this.selectedItems.length === filtered.length && 
+                           filtered.every(v => this.selectedItems.includes(v.id));
+                },
+                set selectAll(value) {
+                    if (value) {
+                        this.selectedItems = this.filteredVehicles.map(v => v.id);
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+
+                toggleSelection(id) {
+                    if (this.selectedItems.includes(id)) {
+                        this.selectedItems = this.selectedItems.filter(i => i !== id);
+                    } else {
+                        this.selectedItems.push(id);
+                    }
+                },
+
+                // Funzione di Ordinamento
+                sortBy(col) {
+                    if (this.sortCol === col) {
+                        this.sortAsc = !this.sortAsc;
+                    } else {
+                        this.sortCol = col;
+                        this.sortAsc = true; // Default crescente quando cambi colonna
+                    }
+                },
+
+
+                // ESECUZIONE ELIMINA MULTIPLA (Fa chiamate asincrone senza toccare il backend!)
+                async executeBulkDelete() {
+                    this.isSubmitting = true;
+                    this.showBulkDeleteModal = false;
+                    try {
+                        // Lancia le richieste di delete in parallelo
+                        const promises = this.selectedItems.map(id => 
+                            fetch(`/vehicles/${id}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                            })
+                        );
+                        await Promise.all(promises);
+
+                        this.selectedItems = [];
+                        await this.refreshData();
+                        this.showSuccess('Veicoli eliminati con successo!', 'success');
+                    } catch(e) {
+                        this.showSuccess('Errore durante l\'eliminazione', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
 
                 init() {
                     // Controlla eventuali Flash session classiche
@@ -431,6 +612,8 @@
                     this.successMessage = message; this.successType = type; this.showSuccessModal = true;
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
                 },
+
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
 
                 // SCARICA I DATI AGGIORNATI (API)
                 async refreshData() {

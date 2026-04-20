@@ -6,8 +6,7 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Response;
 use Laragear\WebAuthn\Http\Requests\AttestationRequest;
 use Laragear\WebAuthn\Http\Requests\AttestedRequest;
-
-use function response;
+use Illuminate\Support\Facades\DB;
 
 class WebAuthnRegisterController
 {
@@ -28,7 +27,24 @@ class WebAuthnRegisterController
      */
     public function register(AttestedRequest $request): Response
     {
+        // 1. Lasciamo salvare la chiave alla libreria standard
         $request->save();
+
+        // 2. Troviamo la chiave appena creata usando i nomi corretti delle colonne (polimorfiche)
+        $credential = DB::table('webauthn_credentials')
+            ->where('authenticatable_id', $request->user()->getAuthIdentifier())
+            ->where('authenticatable_type', get_class($request->user()))
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // 3. Aggiorniamo il nome (alias) con quello che hai scritto nel popup Javascript
+        if ($credential) {
+            DB::table('webauthn_credentials')
+                ->where('id', $credential->id)
+                ->update([
+                    'alias' => $request->query('name', 'Chiave di Sicurezza')
+                ]);
+        }
 
         return response()->noContent();
     }

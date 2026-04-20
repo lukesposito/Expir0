@@ -10,56 +10,56 @@
              x-data="deadlinesManager()"
              x-init="init()">
 
-                <details class="bg-indigo-50 p-5 rounded-xl mb-8 border-2 border-indigo-200 shadow-sm mt-4">
-                    <summary class="font-black text-indigo-800 cursor-pointer text-xl flex items-center gap-2">
-                        <i class="fa-solid fa-circle-info text-2xl"></i>
-                        Guida passo-passo: Come si usa questa lista? (Clicca per leggere)
-                    </summary>
-                    <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
-                        
-                        <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
-                            📅 <strong>Questa è la tua Agenda Elettronica.</strong> Qui dentro c'è l'elenco completo di <strong>TUTTE</strong> le tue scadenze, ordinate in automatico da quella più vicina a quella più lontana. 
-                        </p>
+            <details class="bg-red-50 p-5 rounded-xl mb-8 border-2 border-red-200 shadow-sm mt-4">
+                <summary class="font-black text-red-800 cursor-pointer text-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                    Guida passo-passo: Come si usa questa lista? (Clicca per leggere)
+                </summary>
+                <div class="mt-5 text-slate-700 leading-relaxed space-y-6 text-base">
+                    
+                    <p class="font-medium text-lg bg-white p-3 rounded-lg border border-indigo-100">
+                        📅 <strong>Questa è la tua Agenda Elettronica.</strong> Qui dentro c'è l'elenco completo di <strong>TUTTE</strong> le tue scadenze, ordinate in automatico da quella più vicina a quella più lontana. 
+                    </p>
 
-                        <div>
-                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 1. La barra di ricerca (in alto)</h4>
-                            <p>È la casella bianca dove c'è scritto "Cerca per tipo, targa...". Ti serve se vuoi trovare subito qualcosa senza scorrere tutta la lista. Prova a scriverci dentro "Bollo" oppure la targa della tua auto (es. "AB123CD") o il nome di tuo figlio: la lista sotto si aggiornerà all'istante facendoti vedere solo quello che hai cercato!</p>
-                        </div>
-
-                        <div>
-                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">📋 2. Come leggere la lista</h4>
-                            <p class="mb-2">A seconda che tu stia usando il telefono o il computer, l'elenco si adatta per essere sempre leggibile:</p>
-                            <ul class="space-y-3 ml-2">
-                                <li class="flex items-start gap-2">
-                                    <span class="text-indigo-500 mt-1"><i class="fa-solid fa-desktop"></i></span>
-                                    <div><strong>Se sei al computer:</strong> Vedrai una tabella classica. Ogni riga è una scadenza. Leggendo da sinistra verso destra troverai: il veicolo o la persona, che cos'è, quando scade, quanto costa, e quanti giorni mancano.</div>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-indigo-500 mt-1"><i class="fa-solid fa-mobile-screen"></i></span>
-                                    <div><strong>Se sei col telefono:</strong> Vedrai dei "riquadri" colorati uno sopra l'altro. Il colore cambia in base al tipo di documento (es. giallo per i bolli, verde per le revisioni).</div>
-                                </li>
-                            </ul>
-                            <p class="mt-3 bg-red-50 p-2 rounded text-red-800 text-sm font-semibold border border-red-200">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Attenzione al colore dei giorni! Se i giorni mancanti sono scritti in ROSSO, significa che manca meno di un mese (o che è già scaduto!).
-                            </p>
-                        </div>
-
-                        <div>
-                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Il tasto magico: L'interruttore "Stato"</h4>
-                            <p>Hai appena pagato il bollo in posta o rinnovato la carta d'identità in comune? Bravissimo!</p>
-                            <p class="mt-1">Cerca quella voce nella lista e <strong>clicca sull'interruttore a scorrimento</strong>. Il sistema ti chiederà se vuoi archiviarla e generare automaticamente il rinnovo per l'anno prossimo!</p>
-                        </div>
-
-                        <div>
-                            <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante rosso "Elimina"</h4>
-                            <p>Serve <strong>SOLO</strong> se hai fatto un errore. Ad esempio, se hai inserito una scadenza doppia o sbagliata per sbaglio.</p>
-                            <p class="mt-1 bg-amber-50 p-2 rounded text-amber-800 text-sm border border-amber-200">
-                                <strong>Importante:</strong> Se elimini una scadenza da qui, cancellerai per sempre anche il documento a cui è collegata (se non ha altri rinnovi futuri)!
-                            </p>
-                        </div>
-
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🔍 1. La barra di ricerca (in alto)</h4>
+                        <p>È la casella bianca dove c'è scritto "Cerca per tipo, targa...". Ti serve se vuoi trovare subito qualcosa senza scorrere tutta la lista. Prova a scriverci dentro "Bollo" oppure la targa della tua auto (es. "AB123CD") o il nome di tuo figlio: la lista sotto si aggiornerà all'istante facendoti vedere solo quello che hai cercato!</p>
                     </div>
-                </details>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">📋 2. Come leggere la lista</h4>
+                        <p class="mb-2">A seconda che tu stia usando il telefono o il computer, l'elenco si adatta per essere sempre leggibile:</p>
+                        <ul class="space-y-3 ml-2">
+                            <li class="flex items-start gap-2">
+                                <span class="text-indigo-500 mt-1"><i class="fa-solid fa-desktop"></i></span>
+                                <div><strong>Se sei al computer:</strong> Vedrai una tabella classica. Ogni riga è una scadenza. Leggendo da sinistra verso destra troverai: il veicolo o la persona, che cos'è, quando scade, quanto costa, e quanti giorni mancano.</div>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-indigo-500 mt-1"><i class="fa-solid fa-mobile-screen"></i></span>
+                                <div><strong>Se sei col telefono:</strong> Vedrai dei "riquadri" colorati uno sopra l'altro. Il colore cambia in base al tipo di documento (es. giallo per i bolli, verde per le revisioni).</div>
+                            </li>
+                        </ul>
+                        <p class="mt-3 bg-red-50 p-2 rounded text-red-800 text-sm font-semibold border border-red-200">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Attenzione al colore dei giorni! Se i giorni mancanti sono scritti in ROSSO, significa che manca meno di un mese (o che è già scaduto!).
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">✅ 3. Il tasto magico: L'interruttore "Stato"</h4>
+                        <p>Hai appena pagato il bollo in posta o rinnovato la carta d'identità in comune? Bravissimo!</p>
+                        <p class="mt-1">Cerca quella voce nella lista e <strong>clicca sull'interruttore a scorrimento</strong>. Il sistema ti chiederà se vuoi archiviarla e generare automaticamente il rinnovo per l'anno prossimo!</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-slate-800 border-b-2 border-slate-200 pb-1 mb-2">🗑️ 4. Il pulsante rosso "Elimina"</h4>
+                        <p>Serve <strong>SOLO</strong> se hai fatto un errore. Ad esempio, se hai inserito una scadenza doppia o sbagliata per sbaglio.</p>
+                        <p class="mt-1 bg-amber-50 p-2 rounded text-amber-800 text-sm border border-amber-200">
+                            <strong>Importante:</strong> Se elimini una scadenza da qui, cancellerai per sempre anche il documento a cui è collegata (se non ha altri rinnovi futuri)!
+                        </p>
+                    </div>
+
+                </div>
+            </details>
 
             <div class="mb-6">
                 <div class="mobile-only-search">
@@ -245,7 +245,15 @@
                                 </tr>
                             </template>
                             <tr x-show="filteredDaPagare.length === 0">
-                                <td colspan="7" class="px-6 py-12 text-center text-gray-500 font-medium">Nessuna scadenza da pagare trovata.</td>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500 font-medium">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">Nessuna scadenza da pagare trovata</p>
+                                    <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>    
+                                </td>
                             </tr>
                         </tbody>
 
@@ -366,7 +374,13 @@
                         </div>
                     </template>
                     <div x-show="filteredDaPagare.length === 0" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
                         <p class="text-gray-500 font-medium">Nessuna scadenza da pagare trovata</p>
+                        <p class="text-sm text-gray-400 mt-1">Prova con una ricerca diversa</p>
                     </div>
                 </div>
 
@@ -513,7 +527,7 @@
                 </div>
             </div>
 
-            <div x-show="showBulkDeleteModal" style="display: none;" class="modal-overlay">
+            <div x-show="showBulkDeleteModal" style="display: none;" x-cloak @keydown.escape="closeBulkDeleteModal()" class="modal-overlay" :class="{ 'modal-active': showBulkDeleteModal && !isClosingBulkDelete, 'modal-out': isClosingBulkDelete }">
                 <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
                 <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
                     <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
@@ -523,14 +537,14 @@
                             <p class="text-sm text-slate-500 mb-6">Stai per eliminare definitivamente <strong class="text-slate-800" x-text="selectedItems.length"></strong> scadenze in un colpo solo. Confermi?</p>
                         </div>
                         <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3 border-t border-slate-50 pt-4">
-                            <button @click="showBulkDeleteModal = false" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
+                            <button @click="closeBulkDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Annulla</button>
                             <button @click="executeBulkDelete()" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">Sì, Elimina Tutti</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div x-show="showBulkRenewModal" style="display: none;" class="modal-overlay">
+            <div x-show="showBulkRenewModal" style="display: none;" x-cloak @keydown.escape="closeBulkRenewModal()" class="modal-overlay" :class="{ 'modal-active': showBulkRenewModal && !isClosingBulkRenew, 'modal-out': isClosingBulkRenew }">
                 <div class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
                 <div class="modal-container w-[90%] sm:w-full max-w-md pointer-events-auto mx-auto" @click.stop>
                     <div class="modal-content-wrapper bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
@@ -542,7 +556,7 @@
                         <div class="px-6 pb-6 bg-slate-50 pt-4 border-t border-slate-100 flex flex-col gap-3">
                             <button @click="executeBulkPay(true)" class="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-rotate-right"></i> Archivia e Rinnova Tutti</button>
                             <button @click="executeBulkPay(false)" class="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50">Solo Archivia</button>
-                            <button @click="showBulkRenewModal = false" class="w-full py-2 text-slate-400 font-semibold hover:text-slate-600 mt-1">Annulla</button>
+                            <button @click="closeBulkRenewModal()" class="w-full py-2 text-slate-400 font-semibold hover:text-slate-600 mt-1">Annulla</button>
                         </div>
                     </div>
                 </div>
@@ -584,6 +598,9 @@
                 isClosingSuccess: false,
                 isClosingRenew: false,
                 isClosingUnpay: false,
+                isClosingBulkDelete: false,
+                isClosingBulkRenew: false,
+
                 successMessage: '', 
                 successType: 'success', 
                 isSubmitting: false,
@@ -766,7 +783,9 @@
                 closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; }, 500); },
                 closeRenewModal() { this.isClosingRenew = true; setTimeout(() => { this.showRenewModal = false; this.isClosingRenew = false; }, 500); },
                 closeUnpayModal() { this.isClosingUnpay = true; setTimeout(() => { this.showUnpayModal = false; this.isClosingUnpay = false; }, 500); },
-                
+                closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
+                closeBulkRenewModal() { this.isClosingBulkRenew = true; setTimeout(() => { this.showBulkRenewModal = false; this.isClosingBulkRenew = false; }, 500); },
+
                 showSuccess(message, type = 'success') {
                     this.successMessage = message; this.successType = type; this.showSuccessModal = true;
                     setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 3000);
