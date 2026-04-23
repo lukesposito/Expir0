@@ -114,7 +114,7 @@
                 </button>
 
                 {{-- Divider e Bottone Passkey Immediato --}}
-                <div id="manual-passkey-section">
+                <!-- <div id="manual-passkey-section">
                     <div class="mt-6 flex items-center justify-between">
                         <span class="border-b w-1/5 lg:w-1/4"></span>
                         <span class="text-xs text-center text-gray-500 uppercase">Oppure</span>
@@ -125,7 +125,7 @@
                             <i class="fa-solid fa-fingerprint text-lg"></i> Accedi con FaceID / Impronta
                         </button>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             {{-- STEP 2: SCELTA METODO (Stile Microsoft) --}}

@@ -63,6 +63,72 @@
                 </div>
             </div>
 
+            <div x-show="showPasskeyModal" 
+                x-cloak
+                class="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6"
+                aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                
+                <div x-show="showPasskeyModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    @click="closePasskeyModal()" 
+                    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+                
+                <div x-show="showPasskeyModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    @click.stop
+                    class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+                    
+                    <div class="px-6 py-4 bg-gradient-to-br from-blue-500 to-blue-700 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-white m-0" id="modal-title">Registra Dispositivo</h3>
+                        <button @click="closePasskeyModal()" class="text-white/80 hover:text-white hover:rotate-90 transition-transform p-1 rounded-lg">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="mb-5 text-center">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-3 border border-blue-100 shadow-inner">
+                                <i class="fa-solid fa-fingerprint text-3xl text-blue-600"></i>
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                Scegli un nome per riconoscere facilmente questo dispositivo nella tua lista di sicurezza.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Nome Dispositivo</label>
+                            <input type="text" 
+                                x-model="newPasskeyName" 
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800 font-medium" 
+                                placeholder="es. iPhone di Marco, PC Ufficio..."
+                                @keyup.enter="confirmPasskeyRegistration()">
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                        <button type="button" @click="closePasskeyModal()" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                            Annulla
+                        </button>
+                        <button type="button" 
+                                @click="confirmPasskeyRegistration()" 
+                                class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                :disabled="!newPasskeyName || isSubmitting">
+                            <span x-text="isSubmitting ? 'Attendi...' : 'Procedi'"></span>
+                            <i class="fa-solid fa-arrow-right" x-show="!isSubmitting"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -80,6 +146,9 @@
                 qrCodeSvg: '',
                 secretKey: '',
                 otp: '',
+                showPasskeyModal: false,
+                isClosingPasskey: false,
+                newPasskeyName: '',
 
                 closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; }, 300); },
                 closeErrorModal() { this.isClosingError = true; setTimeout(() => { this.showErrorModal = false; this.isClosingError = false; }, 300); },
@@ -234,8 +303,8 @@
 
                 // --- FUNZIONI PASSKEY ---
                 async registerPasskey() {
-                    this.isSubmitting = true;
-                    try {
+                    this.isSubmitting = false;
+                    // try {
                         // 1. Suggeriamo un nome basato sul browser in uso
                         const ua = window.navigator.userAgent;
                         let suggestedName = "Mio PC";
@@ -243,32 +312,40 @@
                         else if (/Android/i.test(ua)) suggestedName = "Mio Android";
                         else if (/Macintosh/i.test(ua)) suggestedName = "Mio Mac";
 
-                        // 2. Chiediamo conferma all'utente
-                        const deviceLabel = prompt("Dai un nome a questo dispositivo (es: PC Casa, iPhone Ufficio):", suggestedName);
-                        
-                        if (!deviceLabel) {
-                            this.isSubmitting = false;
-                            return; // Se annulla, ci fermiamo
-                        }
+                        this.newPasskeyName = suggestedName;
+                        this.showPasskeyModal = true;
+                },
 
-                        // 3. Passiamo il nome attaccandolo all'URL di registrazione
-                        const registerUrl = "/webauthn/register?name=" + encodeURIComponent(deviceLabel);
-                        
+                // 2. Questa funzione viene chiamata dal tasto "Conferma" della modale
+                async confirmPasskeyRegistration() {
+                    if (!this.newPasskeyName) return;
+                    
+                    this.isSubmitting = true;
+                    this.showPasskeyModal = false; // Chiudiamo la modale
+
+                    try {
+                        const registerUrl = "/webauthn/register?name=" + encodeURIComponent(this.newPasskeyName);
                         const { success, error } = await window.Webpass.attest("/webauthn/register/options", registerUrl);
                         
                         if (success) {
-                            this.showSuccess('Dispositivo "' + deviceLabel + '" registrato con successo! 🎉');
+                            this.showSuccess('Dispositivo "' + this.newPasskeyName + '" registrato! 🎉');
                             setTimeout(() => location.reload(), 2000); 
                         } else {
-                            console.error(error);
-                            this.showError('Registrazione annullata o fallita.');
+                            this.showError('Registrazione fallita o annullata.');
                         }
                     } catch (e) {
-                        console.error(e);
                         this.showError('Errore di connessione al server.');
                     } finally {
                         this.isSubmitting = false;
                     }
+                },
+
+                // Aggiungiamo anche la chiusura fluida
+                closePasskeyModal() {
+                    this.isClosingPasskey = true;
+                    this.isSubmitting = false;
+                    this.showPasskeyModal = false; 
+                    this.isClosingPasskey = false; 
                 },
 
                 // Aggiungi questa funzione dentro il tuo componente Alpine (es. x-data="profileManager()")
