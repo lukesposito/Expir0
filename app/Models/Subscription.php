@@ -12,8 +12,8 @@ class Subscription extends Model
 
     protected $fillable = [
         'user_id', 'vehicle_id', 'nome', 'categoria', 
-        'data_scadenza', 'importo', 'rinnovo_automatico', 
-        'giorni_preavviso', 'url_gestione', 'note', 'notification_override',
+        'data_scadenza', 'importo', 'rinnovo_automatico', 'notification_override',
+        'giorni_preavviso', 'url_gestione', 'note', 
     ];
 
     protected $casts = [

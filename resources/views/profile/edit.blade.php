@@ -215,14 +215,24 @@
                 async subscribePush() {
                     this.isPushLoading = true;
                     try {
+                        alert("1. Chiedo il permesso a iOS...");
                         const permission = await Notification.requestPermission();
+                        
+                        alert("2. iOS ha risposto: " + permission);
                         if (permission !== 'granted') {
                             this.showError('Devi consentire le notifiche nel browser per poterle attivare.');
                             this.isPushLoading = false;
                             return;
                         }
 
-                        const registration = await navigator.serviceWorker.ready;
+                        alert("3. Registro forzatamente sw.js...");
+                        // Invece di usare .ready, forziamo la registrazione in tempo reale!
+                        const registration = await navigator.serviceWorker.register('/sw.js');
+                        
+                        // Per sicurezza su iOS, aggiorniamo il worker se c'è una versione vecchia incastrata
+                        await registration.update();
+
+                        alert("4. sw.js è PRONTO! Genero il token con la chiave VAPID...");
                         const convertedVapidKey = urlBase64ToUint8Array(this.vapidPublicKey);
 
                         const subscription = await registration.pushManager.subscribe({
@@ -230,6 +240,7 @@
                             applicationServerKey: convertedVapidKey
                         });
 
+                        alert("5. Token generato! Lo invio a Laravel...");
                         const response = await fetch('{{ route('push.subscribe') }}', {
                             method: 'POST',
                             headers: {
@@ -240,14 +251,15 @@
                             body: JSON.stringify(subscription)
                         });
 
+                        alert("6. Laravel ha risposto: " + response.status);
                         if (response.ok) {
                             this.isPushSubscribed = true;
-                            this.showSuccess('Notifiche attivate con successo sul tuo dispositivo! ðŸŽ‰');
+                            this.showSuccess('Notifiche attivate con successo sul tuo dispositivo! ??');
                         } else {
                             this.showError('Errore di comunicazione col server.');
                         }
                     } catch (e) {
-                        console.error('Errore Iscrizione:', e);
+                        alert("ERRORE BLOCCANTE: " + e.message + " | Nome: " + e.name);
                         this.showError('Errore durante l\'attivazione. Controlla che il sito sia sicuro (HTTPS).');
                     } finally {
                         this.isPushLoading = false;

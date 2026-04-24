@@ -682,21 +682,60 @@
                 
                 openEditModal(sub) { 
                     this.editSub = JSON.parse(JSON.stringify(sub)); 
-                    if(this.editSub.data_scadenza && this.editSub.data_scadenza.includes('T')) {
+                    if(this.editSub.data_scadenza && typeof this.editSub.data_scadenza === 'string' && this.editSub.data_scadenza.includes('T')) {
                         this.editSub.data_scadenza = this.editSub.data_scadenza.split('T')[0];
                     }
 
-                    // Carica il JSON delle notifiche o imposta il default
-                    if(this.editSub.notification_override && this.editSub.notification_override.length > 0) {
-                        this.editNotifCustom = true;
-                        this.editNotifRules = this.editSub.notification_override;
+                    // --- STAMPIAMO I DATI GREZZI NELLA CONSOLE PER SICUREZZA ---
+                    // console.log("🔍 Dati grezzi dal DB per questa spesa:", this.editSub.notification_override);
+
+                    let rawRules = this.editSub.notification_override;
+                    let parsedRules = [];
+
+                    try {
+                        // 1. Se è una stringa, la trasformiamo (continuando a sbucciarla se serve)
+                        while (typeof rawRules === 'string') {
+                            if (rawRules === 'null' || rawRules.trim() === '' || rawRules === '[]') {
+                                rawRules = null;
+                                break;
+                            }
+                            rawRules = JSON.parse(rawRules);
+                        }
+
+                        // 2. Se è diventato un Array, perfetto!
+                        if (Array.isArray(rawRules)) {
+                            parsedRules = rawRules;
+                        } 
+                        // 3. Se Laravel lo ha trasformato in un "Oggetto" (es. {"0": {days_before: 1}})
+                        else if (rawRules !== null && typeof rawRules === 'object') {
+                            parsedRules = Object.values(rawRules);
+                        }
+                    } catch (e) {
+                        // console.error("❌ Errore durante l'estrazione delle regole:", e);
+                    }
+
+                    // --- ACCENDIAMO L'INTERRUTTORE ---
+                    if (parsedRules.length > 0) {
+                        this.editNotifCustom = true; // ACCESO!
+                        
+                        this.editNotifRules = parsedRules.map((rule, index) => {
+                            return { 
+                                id: rule.id || (Date.now() + index), 
+                                days_before: parseInt(rule.days_before) || 0, 
+                                channel: rule.channel || 'email' 
+                            };
+                        });
+                        // console.log("✅ Regole caricate con successo:", this.editNotifRules);
                     } else {
+                        // SPENTO
                         this.editNotifCustom = false;
                         this.editNotifRules = [{ id: Date.now(), days_before: 15, channel: 'email' }];
+                        // console.log("⚠️ Nessuna regola trovata, uso i valori di default.");
                     }
 
                     this.showEditModal = true; 
                 },
+
                 closeEditModal() { this.isClosingEdit = true; setTimeout(() => { this.showEditModal = false; this.isClosingEdit = false; }, 500); },
                 
                 openDeleteModal(sub) { this.deleteSub = sub; this.showDeleteModal = true; },

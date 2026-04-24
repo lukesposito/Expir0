@@ -14,8 +14,8 @@ class PushController extends Controller
     {
         $user = Auth::user();
 
-        // Validazione dei dati inviati dal browser
-        $this->validate($request, [
+        // FIX: Usiamo $request->validate() al posto di $this->validate()
+        $request->validate([
             'endpoint'    => 'required|string',
             'keys.auth'   => 'required|string',
             'keys.p256dh' => 'required|string'
@@ -25,7 +25,7 @@ class PushController extends Controller
         $token = $request->keys['auth'];
         $key = $request->keys['p256dh'];
 
-        // Il pacchetto fa tutto il lavoro sporco per noi!
+        // Il pacchetto fa il lavoro sporco per noi
         $user->updatePushSubscription($endpoint, $key, $token);
 
         return response()->json(['success' => true, 'message' => 'Notifiche attivate con successo!'], 200);
@@ -38,7 +38,8 @@ class PushController extends Controller
     {
         $user = Auth::user();
         
-        $this->validate($request, [
+        // FIX: Usiamo $request->validate()
+        $request->validate([
             'endpoint' => 'required|string'
         ]);
 
