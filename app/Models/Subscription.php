@@ -13,13 +13,14 @@ class Subscription extends Model
     protected $fillable = [
         'user_id', 'vehicle_id', 'nome', 'categoria', 
         'data_scadenza', 'importo', 'rinnovo_automatico', 
-        'giorni_preavviso', 'url_gestione', 'note'
+        'giorni_preavviso', 'url_gestione', 'note', 'notification_override',
     ];
 
     protected $casts = [
         'data_scadenza' => 'date',
         'rinnovo_automatico' => 'boolean',
         'importo' => 'decimal:2',
+        'notification_override' => 'array',
     ];
 
     public function user()

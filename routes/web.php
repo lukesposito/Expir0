@@ -16,6 +16,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\PushController;
 use App\Http\Middleware\Check2FA;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -108,6 +109,9 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
     Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::patch('/admin/users/{user}/toggle', [UserController::class, 'toggleStatus'])->name('admin.users.toggle');
+
+    Route::post('/push/subscribe', [PushController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
 });
 
 

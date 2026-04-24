@@ -3,7 +3,16 @@
     $color = '#4f46e5'; // Colore base (Indigo)
     $icon = 'ℹ️';
     $title = 'Promemoria Scadenza';
-    $message = '';
+    
+    // 1. Capiamo quale regola ha generato l'email
+    $tipoRegolaTesto = 'alle impostazioni di sistema';
+    if(isset($rule_type)) {
+        if($rule_type === 'personalizzata') $tipoRegolaTesto = 'a una regola specifica per questa scadenza';
+        elseif($rule_type === 'globale') $tipoRegolaTesto = 'alle tue impostazioni di notifica globali';
+        elseif($rule_type === 'sollecito') $tipoRegolaTesto = 'a un sollecito per scadenza superata';
+    }
+
+    $message = "Gentile Utente,<br><br>ricevi questo avviso in base <strong>{$tipoRegolaTesto}</strong>. Ti ricordiamo che la seguente scadenza si sta avvicinando. Ti consigliamo di preparare la documentazione necessaria o procedere al pagamento.";
     $isUrgent = false;
 
     if ($step === 'year') {
@@ -14,17 +23,17 @@
         $color = '#f59e0b'; // Ambra
         $icon = '🔔';
         $title = 'Scadenza a 30 giorni';
-        $message = 'Gentile Utente,<br><br>Ti ricordiamo che manca circa un mese alla scadenza indicata di seguito. Ti consigliamo di preparare la documentazione necessaria o procedere al pagamento nei prossimi giorni.';
+        $message = "Gentile Utente,<br><br>ricevi questo avviso in base <strong>{$tipoRegolaTesto}</strong>. Ti ricordiamo che manca circa un mese alla scadenza indicata di seguito. Ti consigliamo di preparare la documentazione necessaria o procedere al pagamento nei prossimi giorni.";
     } elseif ($step === '15') {
         $color = '#ea580c'; // Arancione
         $icon = '⚠️';
         $title = 'Scadenza a 15 giorni';
-        $message = 'Gentile Utente,<br><br>Attenzione: mancano solo 15 giorni alla scadenza. Ti invitiamo a regolarizzare la tua posizione al più presto per evitare sanzioni o interruzioni del servizio.';
-    } elseif ($step === '7') {
+        $message = "Gentile Utente,<br><br>ricevi questo avviso in base <strong>{$tipoRegolaTesto}</strong>. Attenzione: mancano solo 15 giorni alla scadenza. Ti invitiamo a regolarizzare la tua posizione al più presto per evitare sanzioni o interruzioni del servizio.";
+    } elseif ($step === '7' || $step === 'urgente') {
         $color = '#dc2626'; // Rosso intenso
         $icon = '🚨';
-        $title = 'AVVISO URGENTE: Scadenza a 7 giorni';
-        $message = 'Gentile Utente,<br><br><strong>La scadenza indicata è imminente.</strong> È richiesto un intervento immediato per evitare la decadenza dei termini legali o contrattuali. Si prega di provvedere il prima possibile.';
+        $title = 'AVVISO URGENTE: Scadenza Imminente';
+        $message = "Gentile Utente,<br><br>ricevi questo avviso in base <strong>{$tipoRegolaTesto}</strong>.<br><br><strong>La scadenza indicata è imminente.</strong> È richiesto un intervento immediato per evitare la decadenza dei termini legali o contrattuali. Si prega di provvedere il prima possibile.";
         $isUrgent = true;
     }
 
@@ -145,7 +154,6 @@
                     <a href="{{ config('app.url') }}">Vai al sito</a> | <a href="{{ config('app.url') }}/profile">Gestisci Notifiche</a>
                 </div>
             </div>
-
         </div>
     </div>
 </body>

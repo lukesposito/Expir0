@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="profileManager()">
+    <div class="py-12" x-data="profileManager()" x-init="init()">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8">
             
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -32,6 +32,34 @@
                 </div>
             </div>
 
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="p-6 sm:p-8 bg-gradient-to-b from-gray-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-mobile-screen-button text-blue-500"></i> Notifiche su questo dispositivo
+                            </h3>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Ricevi avvisi di scadenza direttamente sullo schermo del telefono o del PC.
+                            </p>
+                        </div>
+                        
+                        <button @click="togglePush()" 
+                                class="px-5 py-2.5 font-bold rounded-xl text-white transition-all shadow-md flex items-center gap-2"
+                                :class="isPushSubscribed ? 'bg-red-500 hover:bg-red-600' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'"
+                                :disabled="isPushLoading || !isPushSupported">
+                            <span x-show="isPushLoading"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                            <span x-show="!isPushLoading && isPushSubscribed" x-cloak><i class="fa-solid fa-bell-slash"></i> Disattiva</span>
+                            <span x-show="!isPushLoading && !isPushSubscribed" x-cloak><i class="fa-solid fa-bell"></i> Attiva</span>
+                        </button>
+                    </div>
+                    
+                    <div x-show="!isPushSupported" x-cloak class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 font-medium flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Il tuo browser o sistema operativo non supporta le notifiche web push.
+                    </div>
+                </div>
+            </div>
+
             <div x-show="showSuccessModal" x-cloak class="modal-overlay" :class="{ 'modal-active': showSuccessModal && !isClosingSuccess, 'modal-out': isClosingSuccess }">
                 <div @click="closeSuccessModal()" class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
                 <div class="modal-container w-full max-w-md">
@@ -41,7 +69,7 @@
                                 <i class="fa-solid fa-check text-3xl text-emerald-500"></i>
                             </div>
                             <h3 class="text-2xl font-black text-slate-800 mb-2">Perfetto!</h3>
-                            <p class="text-sm text-slate-600" x-text="successMessage"></p>
+                            <p class="text-sm text-slate-600" x-html="successMessage"></p>
                         </div>
                     </div>
                 </div>
@@ -63,30 +91,10 @@
                 </div>
             </div>
 
-            <div x-show="showPasskeyModal" 
-                x-cloak
-                class="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6"
-                aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div x-show="showPasskeyModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div x-show="showPasskeyModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closePasskeyModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
                 
-                <div x-show="showPasskeyModal"
-                    x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    @click="closePasskeyModal()" 
-                    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
-                
-                <div x-show="showPasskeyModal"
-                    x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    @click.stop
-                    class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+                <div x-show="showPasskeyModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" @click.stop class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all">
                     
                     <div class="px-6 py-4 bg-gradient-to-br from-blue-500 to-blue-700 flex justify-between items-center">
                         <h3 class="text-xl font-bold text-white m-0" id="modal-title">Registra Dispositivo</h3>
@@ -107,11 +115,7 @@
                         
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-2">Nome Dispositivo</label>
-                            <input type="text" 
-                                x-model="newPasskeyName" 
-                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800 font-medium" 
-                                placeholder="es. iPhone di Marco, PC Ufficio..."
-                                @keyup.enter="confirmPasskeyRegistration()">
+                            <input type="text" x-model="newPasskeyName" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800 font-medium" placeholder="es. iPhone di Marco, PC Ufficio..." @keyup.enter="confirmPasskeyRegistration()">
                         </div>
                     </div>
 
@@ -119,10 +123,7 @@
                         <button type="button" @click="closePasskeyModal()" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">
                             Annulla
                         </button>
-                        <button type="button" 
-                                @click="confirmPasskeyRegistration()" 
-                                class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                :disabled="!newPasskeyName || isSubmitting">
+                        <button type="button" @click="confirmPasskeyRegistration()" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" :disabled="!newPasskeyName || isSubmitting">
                             <span x-text="isSubmitting ? 'Attendi...' : 'Procedi'"></span>
                             <i class="fa-solid fa-arrow-right" x-show="!isSubmitting"></i>
                         </button>
@@ -133,6 +134,18 @@
     </div>
 
     <script>
+        // Funzione helper per le Push Notifications
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
         function profileManager() {
             return {
                 showSuccessModal: false, showErrorModal: false,
@@ -150,6 +163,17 @@
                 isClosingPasskey: false,
                 newPasskeyName: '',
 
+                // --- VARIABILI PUSH NOTIFICATIONS ---
+                isPushSubscribed: false,
+                isPushLoading: true,
+                isPushSupported: ('serviceWorker' in navigator) && ('PushManager' in window),
+                vapidPublicKey: '{{ config('webpush.vapid.public_key') }}',
+
+                // Inizializzazione chiamata da x-init nel div principale
+                init() {
+                    this.initPush();
+                },
+
                 closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; }, 300); },
                 closeErrorModal() { this.isClosingError = true; setTimeout(() => { this.showErrorModal = false; this.isClosingError = false; }, 300); },
                 
@@ -163,6 +187,103 @@
                     this.showErrorModal = true; 
                 },
 
+                // --- FUNZIONI PUSH NOTIFICATIONS ---
+                async initPush() {
+                    if (!this.isPushSupported) {
+                        this.isPushLoading = false;
+                        return;
+                    }
+                    try {
+                        const registration = await navigator.serviceWorker.register('/sw.js');
+                        const subscription = await registration.pushManager.getSubscription();
+                        this.isPushSubscribed = !(subscription === null);
+                    } catch (e) {
+                        console.error('Errore Service Worker:', e);
+                    } finally {
+                        this.isPushLoading = false;
+                    }
+                },
+
+                async togglePush() {
+                    if (this.isPushSubscribed) {
+                        await this.unsubscribePush();
+                    } else {
+                        await this.subscribePush();
+                    }
+                },
+
+                async subscribePush() {
+                    this.isPushLoading = true;
+                    try {
+                        const permission = await Notification.requestPermission();
+                        if (permission !== 'granted') {
+                            this.showError('Devi consentire le notifiche nel browser per poterle attivare.');
+                            this.isPushLoading = false;
+                            return;
+                        }
+
+                        const registration = await navigator.serviceWorker.ready;
+                        const convertedVapidKey = urlBase64ToUint8Array(this.vapidPublicKey);
+
+                        const subscription = await registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: convertedVapidKey
+                        });
+
+                        const response = await fetch('{{ route('push.subscribe') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(subscription)
+                        });
+
+                        if (response.ok) {
+                            this.isPushSubscribed = true;
+                            this.showSuccess('Notifiche attivate con successo sul tuo dispositivo! 🎉');
+                        } else {
+                            this.showError('Errore di comunicazione col server.');
+                        }
+                    } catch (e) {
+                        console.error('Errore Iscrizione:', e);
+                        this.showError('Errore durante l\'attivazione. Controlla che il sito sia sicuro (HTTPS).');
+                    } finally {
+                        this.isPushLoading = false;
+                    }
+                },
+
+                async unsubscribePush() {
+                    this.isPushLoading = true;
+                    try {
+                        const registration = await navigator.serviceWorker.ready;
+                        const subscription = await registration.pushManager.getSubscription();
+                        
+                        if (subscription) {
+                            await fetch('{{ route('push.unsubscribe') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ endpoint: subscription.endpoint })
+                            });
+                            
+                            await subscription.unsubscribe();
+                            this.isPushSubscribed = false;
+                            this.showSuccess('Notifiche disattivate per questo dispositivo.');
+                        }
+                    } catch (e) {
+                        console.error('Errore Disiscrizione:', e);
+                        this.showError('Impossibile disattivare le notifiche.');
+                    } finally {
+                        this.isPushLoading = false;
+                    }
+                },
+
+                // --- FUNZIONI PROFILO E PASSWORD ---
                 async updateProfile(event) {
                     this.isSubmitting = true;
                     const form = event.target;
@@ -304,24 +425,21 @@
                 // --- FUNZIONI PASSKEY ---
                 async registerPasskey() {
                     this.isSubmitting = false;
-                    // try {
-                        // 1. Suggeriamo un nome basato sul browser in uso
-                        const ua = window.navigator.userAgent;
-                        let suggestedName = "Mio PC";
-                        if (/iPhone|iPad|iPod/i.test(ua)) suggestedName = "Mio iPhone";
-                        else if (/Android/i.test(ua)) suggestedName = "Mio Android";
-                        else if (/Macintosh/i.test(ua)) suggestedName = "Mio Mac";
+                    const ua = window.navigator.userAgent;
+                    let suggestedName = "Mio PC";
+                    if (/iPhone|iPad|iPod/i.test(ua)) suggestedName = "Mio iPhone";
+                    else if (/Android/i.test(ua)) suggestedName = "Mio Android";
+                    else if (/Macintosh/i.test(ua)) suggestedName = "Mio Mac";
 
-                        this.newPasskeyName = suggestedName;
-                        this.showPasskeyModal = true;
+                    this.newPasskeyName = suggestedName;
+                    this.showPasskeyModal = true;
                 },
 
-                // 2. Questa funzione viene chiamata dal tasto "Conferma" della modale
                 async confirmPasskeyRegistration() {
                     if (!this.newPasskeyName) return;
                     
                     this.isSubmitting = true;
-                    this.showPasskeyModal = false; // Chiudiamo la modale
+                    this.showPasskeyModal = false;
 
                     try {
                         const registerUrl = "/webauthn/register?name=" + encodeURIComponent(this.newPasskeyName);
@@ -340,7 +458,6 @@
                     }
                 },
 
-                // Aggiungiamo anche la chiusura fluida
                 closePasskeyModal() {
                     this.isClosingPasskey = true;
                     this.isSubmitting = false;
@@ -348,38 +465,29 @@
                     this.isClosingPasskey = false; 
                 },
 
-                // Aggiungi questa funzione dentro il tuo componente Alpine (es. x-data="profileManager()")
                 async revokePasskey(id) {
-                    if (!confirm('Sei sicuro di voler revocare l\'accesso a questo dispositivo? Non potrai più usarlo per fare il login.')) {
-                        return;
-                    }
+                    if (!confirm('Sei sicuro di voler revocare l\'accesso a questo dispositivo? Non potrai più usarlo per fare il login.')) return;
 
                     try {
                         const response = await fetch(`/profile/passkey/${id}`, {
                             method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            }
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/json' }
                         });
 
                         const data = await response.json();
 
                         if (response.ok) {
-                            // Rimuove l'elemento dalla vista con una transizione fluida
                             const element = document.getElementById(`passkey-${id}`);
                             if (element) {
                                 element.style.opacity = '0';
                                 setTimeout(() => element.remove(), 300);
                             }
-                            alert('Dispositivo revocato!'); // Sostituisci con il tuo Toast di successo se ne hai uno
+                            this.showSuccess('Dispositivo revocato!');
                         } else {
-                            alert(data.message || 'Errore durante la revoca.');
+                            this.showError(data.message || 'Errore durante la revoca.');
                         }
                     } catch (error) {
-                        console.error('Errore:', error);
-                        alert('Errore di connessione al server.');
+                        this.showError('Errore di connessione al server.');
                     }
                 }
             }

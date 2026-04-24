@@ -10,10 +10,12 @@ use Illuminate\Notifications\Notifiable;
 use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
 use Laragear\WebAuthn\WebAuthnAuthentication;
 
+use NotificationChannels\WebPush\HasPushSubscriptions; 
+
 class User extends Authenticatable implements WebAuthnAuthenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, WebAuthnAuthentication;
+    use HasFactory, Notifiable, WebAuthnAuthentication, HasPushSubscriptions;
 
     /**
      * The attributes that are mass assignable.
@@ -55,6 +57,7 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',              
             'receives_notifications' => 'boolean', 
+            'default_notification_rules' => 'array',
         ];
     }
 }

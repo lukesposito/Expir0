@@ -140,7 +140,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(sub, index) in filteredSubscriptions" :key="sub.id || index">
-                                <tr class="hover:bg-gray-50 transition cursor-pointer" :class="{ 'bg-red-50': sub.giorni_rimanenti <= sub.giorni_preavviso, 'bg-violet-50': selectedItems.includes(sub.id) }" @click.self="toggleSelection(sub.id)">
+                                <tr class="hover:bg-gray-50 transition cursor-pointer" :class="{ 'bg-red-50': sub.giorni_rimanenti <= 7, 'bg-violet-50': selectedItems.includes(sub.id) }" @click.self="toggleSelection(sub.id)">
                                     <td class="px-6 py-4 text-center">
                                         <input type="checkbox" :value="sub.id" x-model="selectedItems" class="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded cursor-pointer transition">
                                     </td>
@@ -153,7 +153,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm text-gray-900 font-semibold" x-text="sub.data_scadenza_formatted"></div>
-                                        <div class="text-xs font-bold" :class="sub.giorni_rimanenti <= sub.giorni_preavviso ? 'text-red-600' : 'text-green-600'">
+                                        <div class="text-xs font-bold" :class="sub.giorni_rimanenti <= 7 ? 'text-red-600' : 'text-green-600'">
                                             <span x-text="sub.giorni_rimanenti"></span> gg
                                         </div>
                                     </td>
@@ -193,7 +193,7 @@
 
             <div class="mobile-only space-y-4 px-4 pb-20">
                 <template x-for="(sub, index) in filteredSubscriptions" :key="sub.id || index">
-                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden relative" :class="[sub.giorni_rimanenti <= sub.giorni_preavviso ? 'border-red-300' : 'border-gray-200', selectedItems.includes(sub.id) ? 'ring-4 ring-violet-400 transform scale-[1.02] shadow-2xl' : '']">
+                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden relative" :class="[sub.giorni_rimanenti <= 7 ? 'border-red-300' : 'border-gray-200', selectedItems.includes(sub.id) ? 'ring-4 ring-violet-400 transform scale-[1.02] shadow-2xl' : '']">
                         
                         <div class="absolute top-4 right-4 z-10 bg-white/40 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-white">
                             <input type="checkbox" :value="sub.id" x-model="selectedItems" class="w-6 h-6 rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer shadow-sm">
@@ -217,7 +217,7 @@
                                 <div class="bg-gray-100 rounded-lg p-3">
                                     <p class="text-xs font-medium text-gray-500">Scadenza</p>
                                     <p class="text-lg font-bold text-gray-900" x-text="sub.data_scadenza_formatted"></p>
-                                    <p class="text-sm font-bold mt-1" :class="sub.giorni_rimanenti <= sub.giorni_preavviso ? 'text-red-600' : 'text-green-600'" x-text="sub.giorni_rimanenti + ' gg'"></p>
+                                    <p class="text-sm font-bold mt-1" :class="sub.giorni_rimanenti <= 7 ? 'text-red-600' : 'text-green-600'" x-text="sub.giorni_rimanenti + ' gg'"></p>
                                 </div>
                                 <div class="bg-gray-100 rounded-lg p-3">
                                     <p class="text-xs font-medium text-gray-500">Importo</p>
@@ -319,7 +319,7 @@
                                 </div>
                                 
                                 <div class="bg-violet-50 p-4 rounded-lg border border-violet-100">
-                                    <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center justify-between">
                                         <div>
                                             <p class="font-bold text-violet-900 text-sm">Rinnovo Automatico?</p>
                                             <p class="text-xs text-violet-700">I soldi vengono scalati da soli?</p>
@@ -329,10 +329,41 @@
                                             <span class="slider"></span>
                                         </label>
                                     </div>
-                                    <div class="mt-3">
-                                        <label class="font-bold text-violet-900 text-sm block mb-1">Preavviso (Giorni)</label>
-                                        <p class="text-xs text-violet-700 mb-2">Quanti giorni prima vuoi essere avvisato?</p>
-                                        <input type="number" name="giorni_preavviso" min="0" value="3" class="form-input w-full" placeholder="Es. 3">
+                                    
+                                    <div class="mt-5 pt-4 border-t border-violet-200">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div>
+                                                <p class="font-bold text-violet-900 text-sm">Regole di Notifica</p>
+                                                <p class="text-xs text-violet-700 mt-0.5">Scegli quando essere avvisato</p>
+                                            </div>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" x-model="createNotifCustom" class="sr-only peer">
+                                                <div class="w-9 h-5 bg-violet-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
+                                            </label>
+                                        </div>
+                                        
+                                        <input type="hidden" name="notification_override" :value="JSON.stringify(createNotifCustom ? createNotifRules : null)">
+
+                                        <div x-show="!createNotifCustom" class="text-xs text-violet-800 bg-white p-2.5 rounded-lg border border-violet-200 font-medium flex items-center gap-2">
+                                            <i class="fa-solid fa-globe text-violet-500"></i> Usa le impostazioni globali
+                                        </div>
+
+                                        <div x-show="createNotifCustom" x-cloak class="space-y-2 mt-3">
+                                            <template x-for="(rule, index) in createNotifRules" :key="rule.id">
+                                                <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-violet-200 shadow-sm">
+                                                    <input type="number" x-model.number="rule.days_before" min="0" class="w-16 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-bold text-center">
+                                                    <span class="text-xs font-medium text-gray-600">gg prima via</span>
+                                                    <select x-model="rule.channel" class="flex-1 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-medium">
+                                                        <option value="email">Email</option>
+                                                        <option value="push">Push (App)</option>
+                                                    </select>
+                                                    <button type="button" @click="removeCreateRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </template>
+                                            <button type="button" @click="addCreateRule()" class="text-xs font-bold text-violet-700 hover:text-violet-900 mt-2 flex items-center gap-1.5 px-1">
+                                                <i class="fa-solid fa-circle-plus"></i> Aggiungi un'altra regola
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -394,7 +425,7 @@
                                 </div>
                                 
                                 <div class="bg-violet-50 p-4 rounded-lg border border-violet-100">
-                                    <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center justify-between">
                                         <div>
                                             <p class="font-bold text-violet-900 text-sm">Rinnovo Automatico?</p>
                                         </div>
@@ -403,9 +434,41 @@
                                             <span class="slider"></span>
                                         </label>
                                     </div>
-                                    <div class="mt-3">
-                                        <label class="font-bold text-violet-900 text-sm block mb-1">Preavviso (Giorni prima)</label>
-                                        <input type="number" name="giorni_preavviso" x-model="editSub.giorni_preavviso" min="0" class="form-input w-full">
+                                    
+                                    <div class="mt-5 pt-4 border-t border-violet-200">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div>
+                                                <p class="font-bold text-violet-900 text-sm">Regole di Notifica</p>
+                                                <p class="text-xs text-violet-700 mt-0.5">Scegli quando essere avvisato</p>
+                                            </div>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" x-model="editNotifCustom" class="sr-only peer">
+                                                <div class="w-9 h-5 bg-violet-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
+                                            </label>
+                                        </div>
+                                        
+                                        <input type="hidden" name="notification_override" :value="JSON.stringify(editNotifCustom ? editNotifRules : null)">
+
+                                        <div x-show="!editNotifCustom" class="text-xs text-violet-800 bg-white p-2.5 rounded-lg border border-violet-200 font-medium flex items-center gap-2">
+                                            <i class="fa-solid fa-globe text-violet-500"></i> Usa le impostazioni globali
+                                        </div>
+
+                                        <div x-show="editNotifCustom" x-cloak class="space-y-2 mt-3">
+                                            <template x-for="(rule, index) in editNotifRules" :key="rule.id">
+                                                <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-violet-200 shadow-sm">
+                                                    <input type="number" x-model.number="rule.days_before" min="0" class="w-16 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-bold text-center">
+                                                    <span class="text-xs font-medium text-gray-600">gg prima via</span>
+                                                    <select x-model="rule.channel" class="flex-1 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-medium">
+                                                        <option value="email">Email</option>
+                                                        <option value="push">Push (App)</option>
+                                                    </select>
+                                                    <button type="button" @click="removeEditRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </template>
+                                            <button type="button" @click="addEditRule()" class="text-xs font-bold text-violet-700 hover:text-violet-900 mt-2 flex items-center gap-1.5 px-1">
+                                                <i class="fa-solid fa-circle-plus"></i> Aggiungi un'altra regola
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -523,9 +586,35 @@
                 
                 subscriptions: @json($subscriptions),
 
+                // -- STATO NOTIFICHE MODALE CREATE --
+                createNotifCustom: false,
+                createNotifRules: [{ id: Date.now(), days_before: 15, channel: 'email' }],
+
+                // -- STATO NOTIFICHE MODALE EDIT --
+                editNotifCustom: false,
+                editNotifRules: [],
+
                 init() {
                     @if(session('success')) this.showSuccess("{{ session('success') }}", 'success'); @endif
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
+                },
+
+                // GESTIONE REGOLE CREATE
+                addCreateRule() {
+                    this.createNotifRules.push({ id: Date.now(), days_before: 7, channel: 'email' });
+                },
+                removeCreateRule(id) {
+                    this.createNotifRules = this.createNotifRules.filter(r => r.id !== id);
+                    if(this.createNotifRules.length === 0) this.addCreateRule();
+                },
+
+                // GESTIONE REGOLE EDIT
+                addEditRule() {
+                    this.editNotifRules.push({ id: Date.now(), days_before: 7, channel: 'email' });
+                },
+                removeEditRule(id) {
+                    this.editNotifRules = this.editNotifRules.filter(r => r.id !== id);
+                    if(this.editNotifRules.length === 0) this.addEditRule();
                 },
 
                 get filteredSubscriptions() {
@@ -583,7 +672,12 @@
                     }
                 },
 
-                openCreateModal() { this.showCreateModal = true; },
+                openCreateModal() { 
+                    // Resetta le regole di default ogni volta che apri la finestra
+                    this.createNotifCustom = false;
+                    this.createNotifRules = [{ id: Date.now(), days_before: 15, channel: 'email' }];
+                    this.showCreateModal = true; 
+                },
                 closeCreateModal() { this.isClosingCreate = true; setTimeout(() => { this.showCreateModal = false; this.isClosingCreate = false; }, 500); },
                 
                 openEditModal(sub) { 
@@ -591,6 +685,16 @@
                     if(this.editSub.data_scadenza && this.editSub.data_scadenza.includes('T')) {
                         this.editSub.data_scadenza = this.editSub.data_scadenza.split('T')[0];
                     }
+
+                    // Carica il JSON delle notifiche o imposta il default
+                    if(this.editSub.notification_override && this.editSub.notification_override.length > 0) {
+                        this.editNotifCustom = true;
+                        this.editNotifRules = this.editSub.notification_override;
+                    } else {
+                        this.editNotifCustom = false;
+                        this.editNotifRules = [{ id: Date.now(), days_before: 15, channel: 'email' }];
+                    }
+
                     this.showEditModal = true; 
                 },
                 closeEditModal() { this.isClosingEdit = true; setTimeout(() => { this.showEditModal = false; this.isClosingEdit = false; }, 500); },
@@ -706,6 +810,7 @@
     </script>
 
     <style>
+        /* ... IL TUO BLOCCO CSS INVARIATO ... */
         [x-cloak] { display: none !important; }
         .desktop-only { display: block; }
         .mobile-only { display: none; }
@@ -714,11 +819,7 @@
         .desktop-only-search { display: none; }
         @media (min-width: 1024px) { .mobile-only-search { display: none !important; } .desktop-only-search { display: block !important; } }
 
-        .btn-add-custom {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: white; font-weight: 600; font-size: 1rem; padding: 0.875rem 1.75rem; border-radius: 0.75rem; border: none; cursor: pointer;
-            box-shadow: 0 4px 14px -2px rgba(109, 40, 217, 0.4); transition: all 0.25s ease; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
-        }
+        .btn-add-custom { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; font-weight: 600; font-size: 1rem; padding: 0.875rem 1.75rem; border-radius: 0.75rem; border: none; cursor: pointer; box-shadow: 0 4px 14px -2px rgba(109, 40, 217, 0.4); transition: all 0.25s ease; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
         .btn-add-custom:hover { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); box-shadow: 0 8px 20px -2px rgba(109, 40, 217, 0.5); transform: translateY(-2px); }
         .btn-add-custom:active { transform: translateY(0); box-shadow: 0 2px 8px -2px rgba(109, 40, 217, 0.4); }
 

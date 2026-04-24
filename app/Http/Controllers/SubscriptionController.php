@@ -59,15 +59,25 @@ class SubscriptionController extends Controller
             'categoria' => 'required|string|max:255',
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
-            'giorni_preavviso' => 'required|integer|min:0',
+            'giorni_preavviso' => 'nullable|integer|min:0',
             'url_gestione' => 'nullable|url',
             'note' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
+            'notification_override' => 'nullable|string',
         ]);
 
         // Cattura sicura del booleano da AJAX FormData
         $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+
+        // GESTIONE JSON NOTIFICHE
+        // Se Alpine invia la stringa "null" (Impostazioni Globali), salviamo null vero nel DB.
+        // Se invia un JSON (Regole Custom), lo decodifichiamo in un array PHP.
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         Subscription::create($validated);
 
@@ -84,15 +94,25 @@ class SubscriptionController extends Controller
             'categoria' => 'required|string|max:255',
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
-            'giorni_preavviso' => 'required|integer|min:0',
+            'giorni_preavviso' => 'nullable|integer|min:0',
             'url_gestione' => 'nullable|url',
             'note' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
+            'notification_override' => 'nullable|string',
         ]);
 
         // Cattura sicura del booleano da AJAX FormData
         $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+
+        // GESTIONE JSON NOTIFICHE
+        // Se Alpine invia la stringa "null" (Impostazioni Globali), salviamo null vero nel DB.
+        // Se invia un JSON (Regole Custom), lo decodifichiamo in un array PHP.
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $subscription->update($validated);
 
