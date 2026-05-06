@@ -17,6 +17,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\PushController;
+use App\Http\Controllers\AiAgentController;
 use App\Http\Middleware\Check2FA;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -109,9 +110,17 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
     Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::patch('/admin/users/{user}/toggle', [UserController::class, 'toggleStatus'])->name('admin.users.toggle');
-
+    // ROTTE PER LA GESTIONE DELLE NOTIFICHE PUSH
     Route::post('/push/subscribe', [PushController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
+
+    // LA ROTTA DELL'ASSISTENTE AI (Chatbot)
+    // Protetta da un middleware di rate limiting per evitare abusi e per garantire che l'AI venga usata in modo responsabile. Il limite è definito in AppServiceProvider.
+    // Protetta dal throttle "ai-agent" (Max 5 al giorno)
+    Route::post('/ai-assistant/ask', [AiAgentController::class, 'ask'])->middleware('throttle:ai-agent')->name('ai.ask');
+
+    // Nuova rotta per l'analisi avanzata (con prompt più complesso e dati reali)
+    Route::post('/ai-assistant/analyze', [AiAgentController::class, 'analyze'])->name('ai.analyze');
 });
 
 

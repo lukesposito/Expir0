@@ -7,6 +7,14 @@
                 </h2>
                 <p class="text-sm text-slate-500 mt-1">Monitoraggio veicoli e scadenze famiglia</p>
             </div>
+
+            <button 
+                x-data
+                @click="$dispatch('open-ai-analyst')" 
+                class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 group">
+                <span class="group-hover:animate-bounce">🪄</span>
+                Analista AI
+            </button>
             
             <div class="flex items-center gap-3">
                 <div class="bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 text-sm text-slate-600 font-medium hidden md:flex items-center gap-2">
@@ -388,6 +396,76 @@
                         </div>
                     </div>
                     <div class="px-7 pb-7"><button @click="closeEventModal()" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-transform active:scale-95 shadow-md">Chiudi Dettagli</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-data="{ 
+        open: false, 
+        loading: false, 
+        report: '',
+        fetchAnalysis() {
+            this.loading = true;
+            this.open = true;
+            this.report = '';
+            
+            // Prendo l'anno selezionato dalla dashboard
+            let year = document.querySelector('select')?.value || new Date().getFullYear();
+
+            fetch('{{ route('ai.analyze') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ year: year })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.loading = false;
+                // Formattazione markdown semplice per la visualizzazione
+                this.report = data.analysis.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            })
+            .catch(() => {
+                this.loading = false;
+                this.report = 'Errore durante l\'analisi. Riprova tra poco.';
+            });
+        }
+    }" 
+        @open-ai-analyst.window="fetchAnalysis()"
+        x-show="open" 
+        class="fixed inset-0 z-[10000] overflow-y-auto" 
+        style="display: none;">
+        
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-slate-900/75 backdrop-blur-sm" @click="open = false"></div>
+
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-200">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="text-2xl">📊</span> Analisi Strategica AI
+                    </h3>
+                    <button @click="open = false" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                </div>
+
+                <div class="px-8 py-6 max-h-[70vh] overflow-y-auto">
+                    <template x-if="loading">
+                        <div class="flex flex-col items-center py-12">
+                            <dotlottie-wc src="{{ asset('images/robot.lottie') }}" autoplay loop style="width: 150px; height: 150px;"></dotlottie-wc>
+                            <p class="mt-4 text-slate-500 animate-pulse font-medium">L'Analista sta studiando i tuoi dati...</p>
+                        </div>
+                    </template>
+
+                    <template x-if="!loading">
+                        <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed" x-html="report"></div>
+                    </template>
+                </div>
+
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-right">
+                    <button @click="open = false" class="px-6 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 transition-colors">
+                        Chiudi Report
+                    </button>
                 </div>
             </div>
         </div>

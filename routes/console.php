@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:send-deadline-reminders')->dailyAt('06:00');
+Schedule::command('app:ai-legal-watcher')->mondays()->at('06:30');
