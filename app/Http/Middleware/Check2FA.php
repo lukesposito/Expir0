@@ -23,7 +23,7 @@ class Check2FA
             return $next($request);
         }
 
-        // 2. Altrimenti, dobbiamo bloccarllo. Per evitare loop infiniti, controlliamo che non sia già sulla pagina del codice o stia facendo il logout
+        // 2. Altrimenti, dobbiamo bloccarlo. Per evitare loop infiniti, controlliamo che non sia già sulla pagina del codice o stia facendo il logout
         if ($request->routeIs('2fa.index', '2fa.verify', 'logout')) {
             return $next($request);
         }

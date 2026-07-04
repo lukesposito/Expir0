@@ -16,6 +16,8 @@ class DeadlineReminder extends Mailable
 
     public $deadlines;
     public $user;
+    public $step;
+    public $deadline;
 
     /**
      * Passiamo la lista delle scadenze e l'utente
@@ -24,6 +26,8 @@ class DeadlineReminder extends Mailable
     {
         $this->deadlines = $deadlines;
         $this->user = $user;
+        $this->step = $deadlines->first()->step ?? 'default';
+        $this->deadline = $deadlines->first() ?? null;
     }
 
     public function envelope(): Envelope

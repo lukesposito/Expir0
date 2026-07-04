@@ -1,58 +1,90 @@
-version: '3.8'
-
 services:
-  # Il server web (Nginx)
+  # Server web Nginx
   web:
+    # Immagine ufficiale Nginx leggera
     image: nginx:alpine
+    # Nome fisso del container per comodità operativa
     container_name: scadenze_web
+    # Riavvio automatico salvo stop manuale
     restart: unless-stopped
+    # Espone il sito sulla porta 8000 del PC
     ports:
-      - "8000:80" # Sul tuo PC lo vedrai sulla porta 8000
+      - "8000:80"
     volumes:
+      # Monta il progetto per permettere a Nginx di servire i file pubblici
       - ./:/var/www
+      # Monta la configurazione personalizzata di Nginx
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    # Nginx dipende dal container applicativo PHP
     depends_on:
       - app
 
-  # Scheduler per invio email notifiche scadenze
-  scheduler:
-    build:
-      context: .
-    volumes:
-      - ./:/var/www
-    command: php artisan schedule:work
-    depends_on:
-      - db
-
-  # L'applicazione Laravel (PHP)
+  # Container applicativo Laravel con PHP-FPM
   app:
     build:
+      # Cartella corrente come contesto di build
       context: .
+      # Usa esplicitamente il Dockerfile corretto
       dockerfile: Dockerfile
+    # Nome fisso del container applicativo
     container_name: scadenze_app
+    # Riavvio automatico salvo stop manuale
     restart: unless-stopped
     volumes:
+      # Monta il codice del progetto
       - ./:/var/www
+      # Monta configurazione PHP personalizzata
       - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    # L'app dipende dal DB
     depends_on:
       - db
 
-  # Il Database (MariaDB)
+  # Scheduler Laravel separato
+  scheduler:
+    build:
+      # Usa lo stesso contesto dell'app
+      context: .
+      # Usa lo stesso Dockerfile dell'app
+      dockerfile: Dockerfile
+    # Nome fisso del container scheduler
+    container_name: scadenze_scheduler
+    # Riavvio automatico salvo stop manuale
+    restart: unless-stopped
+    # Esegue il loop dello scheduler Laravel
+    command: php artisan schedule:work
+    volumes:
+      # Monta il codice del progetto
+      - ./:/var/www
+    # Lo scheduler dipende dal DB
+    depends_on:
+      - db
+
+  # Database MariaDB
   db:
+    # Immagine ufficiale MariaDB
     image: mariadb:10.11
+    # Nome fisso del container database
     container_name: scadenze_db
+    # Riavvio automatico salvo stop manuale
     restart: unless-stopped
     environment:
+      # Nome database applicativo
       MYSQL_DATABASE: ${DB_DATABASE:-scadenze_db}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      # Password root del database
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-secret}
+      # Nome utente applicativo
       MYSQL_USER: ${DB_USERNAME:-scadenze_user}
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      # Password utente applicativo
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+
     volumes:
+      # Volume persistente per non perdere i dati del database
       - db_data:/var/lib/mysql
     ports:
-      - "3307:3306"
-
-# Volume persistente per salvare il database anche se si spegne il container
+      # Espone MariaDB solo in locale sul tuo PC.
+      # HeidiSQL può collegarsi a 127.0.0.1:3307
+      # senza rendere il DB accessibile all'esterno.
+      - "127.0.0.1:3307:3306"
+# Volume persistente del database
 volumes:
   db_data:

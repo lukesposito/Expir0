@@ -36,7 +36,7 @@ class DeadlineDigestMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.deadline_digest',
+            view: 'emails.deadline-digest',
             with: [
                 'notifiche' => $this->notifiche, 
             ]

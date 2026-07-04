@@ -9,7 +9,13 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" sizes="192x192" href="/images/logo/logo_email_push.png?v=2">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <meta name="theme-color" content="#0d2348">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Expir0">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -9,7 +9,12 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" sizes="192x192" href="/images/logo/logo_email_push.png?v=2">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <meta name="theme-color" content="#0d2348">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Expir0">
         
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -50,97 +55,21 @@
 
         <!-- WIDGET AGENTE AI  -->
         <style>
-            /* Dimensioni del Lottie Grande (con !important per forzare le dimensioni esatte) */
-            #robot-box {
-                width: 250px !important;
-                height: 250px !important;
-                min-height: 250px !important; /* Blocca l'altezza */
-                flex-shrink: 0; /* Vieta lo schiacciamento */
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            /* Animazioni Chat */
-            @keyframes slideInUp 
-            { 
-                from { 
-                    opacity: 0; 
-                    transform: translateY(10px); 
-                } to { 
-                    opacity: 1; 
-                    transform: translateY(0); 
-                } 
-            }
-            .msg-animate { 
-                animation: slideInUp 0.3s ease-out forwards; 
-            }
-            
-            /* Pallini che pensano */
-            .typing-dot { 
-                width: 6px; 
-                height: 6px; 
-                background: #6B7280; 
-                border-radius: 50%; 
-                display: inline-block; 
-                animation: typingBounce 1.4s infinite ease-in-out both; 
-            }
-            .typing-dot:nth-child(1) { 
-                animation-delay: -0.32s; 
-            }
-            .typing-dot:nth-child(2) { 
-                animation-delay: -0.16s; 
-            }
-            @keyframes typingBounce {
-                0%, 80%, 100% { 
-                    transform: scale(0); 
-                } 
-                40% { 
-                    transform: scale(1); 
-                } 
-            }
-
-            /* Finestra Elastica */
-            #ai-chat-window {
-                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                transform: translateY(60px); 
-                opacity: 0; 
-                pointer-events: none;
-                visibility: hidden;
-            }
-            #ai-chat-window.chat-open { 
-                transform: translateY(0); 
-                opacity: 1; 
-                pointer-events: auto; 
-                visibility: visible;
-            }
-
-            /* Cursore Macchina da scrivere */
-            .cursor-blink { 
-                animation: blink 1s step-end infinite; 
-                border-right: 2px solid #4F46E5; 
-                padding-right: 4px; }
-            @keyframes blink { 
-                50% { 
-                    border-color: transparent; 
-                } 
-            }
-
-            /* Scrollbar */
+            #robot-box { width: 250px !important; height: 250px !important; min-height: 250px !important; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+            @keyframes slideInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .msg-animate { animation: slideInUp 0.3s ease-out forwards; }
+            .typing-dot { width: 6px; height: 6px; background: #6B7280; border-radius: 50%; display: inline-block; animation: typingBounce 1.4s infinite ease-in-out both; }
+            .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+            .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+            @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+            #ai-chat-window { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(60px); opacity: 0; pointer-events: none; visibility: hidden; }
+            #ai-chat-window.chat-open { transform: translateY(0); opacity: 1; pointer-events: auto; visibility: visible; }
+            .cursor-blink { animation: blink 1s step-end infinite; border-right: 2px solid #4F46E5; padding-right: 4px; }
+            @keyframes blink { 50% { border-color: transparent; } }
             #chat-messages-view::-webkit-scrollbar { width: 5px; }
             #chat-messages-view::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+            @media (max-width: 640px) { #typewriter-text { font-size: 13px !important; } #robot-box { width: 250px !important; height: 250px !important; } }
 
-            /* MEDIA QUERY MOBILE (Responsive) */
-            @media (max-width: 640px) {
-                #typewriter-text {
-                    font-size: 13px !important;
-                }
-                /* Questo assicura che su mobile sia 200x200 */
-                #robot-box {
-                    width: 250px !important; 
-                    height: 250px !important;
-                }
-            }
         </style>
 
         <!-- Bottone FAB (La GIF piccola classica) -->

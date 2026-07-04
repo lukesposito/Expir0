@@ -1,7 +1,13 @@
-# Usa l'immagine ufficiale di PHP 8.2 (o 8.3)
+# Usa l'immagine ufficiale PHP 8.3 con PHP-FPM
+# PHP-FPM esegue Laravel dietro Nginx.
 FROM php:8.3-fpm
 
-# Installa le dipendenze di sistema
+# Installa le dipendenze di sistema necessarie al progetto:
+# - git, curl: utili per Composer e operazioni generali
+# - libpng-dev: necessaria per GD
+# - libonig-dev: necessaria per mbstring
+# - libxml2-dev: supporto XML
+# - zip, unzip: gestione archivi
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -10,43 +16,50 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    cron
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Pulisce la cache apt
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Installa le estensioni PHP necessarie per Laravel
+# Installa le estensioni PHP necessarie per Laravel e il progetto:
+# - pdo_mysql: connessione a MariaDB/MySQL
+# - mbstring: gestione stringhe UTF-8
+# - exif: metadata immagini
+# - pcntl: utile per processi e worker
+# - bcmath: calcoli numerici precisi
+# - gd: gestione immagini
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Ottieni Composer dall'immagine ufficiale
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copia Composer dall'immagine ufficiale stabile.
+# Composer v2 è più prevedibile rispetto a latest.
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Imposta la directory di lavoro
+# Imposta la directory di lavoro principale del container.
 WORKDIR /var/www
 
-# Crea l'utente per far girare i comandi (per sicurezza)
+# Crea gruppo e utente non-root per far girare l'applicazione.
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
-# Copia i file dell'applicazione
+# Copia tutti i file del progetto dentro il container.
 COPY . /var/www
 
-# Imposta i permessi corretti per le cartelle di Laravel
+# Assegna ownership del progetto all'utente applicativo.
 RUN chown -R www:www /var/www
+
+# Imposta i permessi corretti per le directory usate da Laravel
+# per cache, log, sessioni e file runtime.
 RUN chmod -R 775 /var/www/storage
 RUN chmod -R 775 /var/www/bootstrap/cache
 
-# Copia e imposta il Cron Job per le notifiche delle email!
-RUN echo "* * * * * cd /var/www && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/laravel-cron
-RUN chmod 0644 /etc/cron.d/laravel-cron
-RUN crontab /etc/cron.d/laravel-cron
-
-# Cambia utente corrente in 'www' (tranne per il cron che gira da root)
+# Passa all'utente non privilegiato per eseguire i comandi applicativi.
 USER www
 
-# Per vedere le immagini e pdf pubblici
-RUN php artisan storage:link
+# Crea automaticamente il link simbolico Laravel per rendere pubblici
+# file presenti in storage/app/public.
+# "|| true" evita che la build fallisca se il link esiste già.
+RUN php artisan storage:link || true
 
-# Esponi la porta 9000 e avvia il server PHP-FPM
+# Espone la porta interna usata da PHP-FPM.
 EXPOSE 9000
+
+# Avvia PHP-FPM come processo principale del container.
 CMD ["php-fpm"]

@@ -17,16 +17,20 @@ class SendDeadlineReminders extends Command
 
     public function handle()
     {
+        // Impostiamo la data di oggi per il confronto
         $oggi = Carbon::now()->startOfDay();
         
+        // Recuperiamo tutte le scadenze non pagate e gli utenti validi
         $scadenze = Deadline::with(['user', 'vehicle', 'subscription.user'])
                             ->where('pagato', false)
                             ->get();
-                            
+        
+        // Recuperiamo tutti gli utenti attivi che ricevono notifiche
         $utentiValidi = User::where('is_active', true)
                             ->where('receives_notifications', true)
                             ->get();
 
+        // Prepariamo un array per raccogliere le notifiche per ogni utente
         $digestPerUtente = []; 
 
         // $this->info("=======================================");
@@ -34,6 +38,10 @@ class SendDeadlineReminders extends Command
         // $this->info("Data di oggi considerata: " . $oggi->format('d/m/Y'));
         // $this->info("=======================================\n");
 
+        // Inizializziamo l'array per ogni utente valido 
+        // Questo garantisce che anche gli utenti senza scadenze ricevano un digest vuoto
+        // In questo modo possiamo inviare un'email di riepilogo anche se non ci sono scadenze imminenti
+        // Inoltre, questo approccio evita errori di chiave non trovata quando aggiungiamo notifiche
         foreach ($utentiValidi as $user) {
             if (!empty($user->email)) {
                 $digestPerUtente[$user->email] = [
@@ -45,8 +53,11 @@ class SendDeadlineReminders extends Command
             }
         }
 
+        // Array per tenere traccia delle scadenze che necessitano di aggiornamento
         $daAggiornare = []; 
 
+        // Iteriamo su ogni scadenza per determinare se inviare notifiche
+        // La logica di invio è basata su regole dinamiche che possono essere personalizzate per ogni tipo di scadenza
         foreach ($scadenze as $deadline) {
             $dataScadenza = Carbon::parse($deadline->data_scadenza)->startOfDay();
             $giorniRimanenti = (int) $oggi->diffInDays($dataScadenza, false);
@@ -77,17 +88,22 @@ class SendDeadlineReminders extends Command
             }
 
             // 1. PREPARAZIONE TITOLO
+            // QUANDO SCADENZA TESSERINO SANITARIO
             if ($isTesserino) {
                 $nomeProprietario = $utenteAssociato ? $utenteAssociato->name : 'Membro Famiglia';
                 $titolo = 'Tesserino Sanitario - ' . $nomeProprietario;
                 $sottotitolo = 'Il nuovo documento verrà spedito automaticamente a casa dall\'Agenzia delle Entrate.';
             } else {
+                // Per gli altri tipi di scadenze, costruiamo il titolo e il sottotitolo in base al tipo
                 $titolo = ucwords(str_replace('_', ' ', $deadline->tipo));
                 $sottotitolo = 'Spesa di Famiglia';
 
+                // QUANDO SCADENZA ABBONAMENTO
                 if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription) {
                     $titolo = $deadline->subscription->nome;
                     
+                    // Costruiamo il sottotitolo in base alla presenza di note o categoria
+                    // Se l'abbonamento ha una nota, la usiamo; altrimenti, usiamo la categoria
                     $parti = [];
                     if (!empty($deadline->subscription->note)) {
                         $parti[] = $deadline->subscription->note;
@@ -95,12 +111,14 @@ class SendDeadlineReminders extends Command
                         $parti[] = $deadline->subscription->categoria;
                     }
 
+                    // Se la scadenza è personale, aggiungiamo il nome dell'intestatario
                     if ($isPersonal && $utenteAssociato) {
                          $parti[] = 'Intestatario: ' . $utenteAssociato->name;
                     }
 
                     $sottotitolo = implode(' • ', $parti);
 
+                // QUANDO SCADENZA REVISIONE O ALTRO
                 } else {
                     if ($deadline->tipo === 'revisione') {
                         $titolo = 'Revisione Ministeriale';
@@ -213,6 +231,7 @@ class SendDeadlineReminders extends Command
 
                 // --- INVIO PUSH IMMEDIATO ---
                 if ($inviaPush) {
+                    // Se la scadenza è personale, inviamo la notifica solo all'utente associato
                     if (isset($isPersonal) && $isPersonal && $utenteAssociato) {
                         // $this->line("   -> 📱 Tento l'invio PUSH a: {$utenteAssociato->name}");
                         try {
@@ -221,6 +240,20 @@ class SendDeadlineReminders extends Command
                         } catch (\Exception $e) {
                             $this->error("      ❌ Errore invio Push: " . $e->getMessage());
                         }
+                    // Altrimenti, inviamo la notifica a tutti gli utenti validi
+                    } elseif (isset($isPersonal) && !$isPersonal && !empty($utentiValidi)) {
+                        foreach ($utentiValidi as $user) {
+                            // $this->line("   -> 📱 Tento l'invio PUSH di Famiglia a: {$user->name}");
+                            try {
+                                $user->notify(new DeadlinePushNotification($itemData));
+                                // $this->info("      ✅ PUSH INVIATA CON SUCCESSO!");
+                            } catch (\Exception $e) {
+                                $this->error("      ❌ Errore invio Push: " . $e->getMessage());
+                            }
+                        }
+                    // In caso non ci siano utenti validi, logghiamo un messaggio di avviso
+                    } elseif (isset($isPersonal) && !$isPersonal && empty($utentiValidi)) {
+                        $this->warn("   ⚠️ Nessun utente valido trovato per invio PUSH di Famiglia.");
                     } elseif (!empty($utentiValidi)) {
                         foreach ($utentiValidi as $user) {
                             // $this->line("   -> 📱 Tento l'invio PUSH di Famiglia a: {$user->name}");

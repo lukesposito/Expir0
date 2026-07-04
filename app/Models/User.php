@@ -10,7 +10,8 @@ use Illuminate\Notifications\Notifiable;
 use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
 use Laragear\WebAuthn\WebAuthnAuthentication;
 
-use NotificationChannels\WebPush\HasPushSubscriptions; 
+use NotificationChannels\WebPush\HasPushSubscriptions;
+use App\Notifications\ResetPasswordNotification; 
 
 class User extends Authenticatable implements WebAuthnAuthenticatable
 {
@@ -59,5 +60,10 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
             'receives_notifications' => 'boolean', 
             'default_notification_rules' => 'array',
         ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

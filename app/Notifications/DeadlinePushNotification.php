@@ -39,7 +39,7 @@ class DeadlinePushNotification extends Notification
 
         return (new WebPushMessage)
             ->title('Scadenza: ' . $this->itemData['tipo'])
-            ->icon('/images/logo.png')
+            ->icon('/images/logo/logo_email_push.png')
             ->body($this->itemData['soggetto'] . ' - ' . $testoGiorni)
             ->action('Vedi Dettagli', 'open_app');
     }
