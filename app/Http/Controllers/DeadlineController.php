@@ -242,6 +242,7 @@ class DeadlineController extends Controller
             if ($deadline->tipo === 'assicurazione') $nuovaScadenza->assicurazione_id = null;
             if ($deadline->tipo === 'carta_identita') $nuovaScadenza->carta_identita_id = null;
             if ($deadline->tipo === 'tesserino_sanitario') $nuovaScadenza->tesserino_sanitario_id = null;
+            if ($deadline->tipo === 'spesa_abbonamento') $nuovaScadenza->subscription_id = null;
 
 
             // --- 3. CLONAZIONE (E AGGIORNAMENTO) NELLE TABELLE MADRI ---
@@ -319,6 +320,16 @@ class DeadlineController extends Controller
                         ]);
                     
                     $nuovaScadenza->patente_id = $patente->id; // Riagganciamo
+                }
+            }
+
+            elseif ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription_id) {
+                $vecchio = Subscription::find($deadline->subscription_id);
+                if ($vecchio) {
+                    $nuovo = $vecchio->replicate();
+                    $nuovo->data_scadenza = $nuovaScadenza->data_scadenza;
+                    $nuovo->saveQuietly();
+                    $nuovaScadenza->subscription_id = $nuovo->id;
                 }
             }
 

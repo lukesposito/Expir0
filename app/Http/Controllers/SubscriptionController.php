@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\Deadline;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -125,6 +126,10 @@ class SubscriptionController extends Controller
 
     public function destroy(Request $request, Subscription $subscription)
     {
+        Deadline::where('subscription_id', $subscription->id)
+            ->where('tipo', 'spesa_abbonamento')
+            ->delete();
+
         $subscription->delete();
         
         if ($request->wantsJson() || $request->ajax()) {
