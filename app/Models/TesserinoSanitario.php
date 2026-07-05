@@ -10,8 +10,8 @@ class TesserinoSanitario extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'codice_fiscale', 'data_scadenza', 'note'];
-    protected $casts = ['data_scadenza' => 'date'];
+    protected $fillable = ['user_id', 'codice_fiscale', 'data_scadenza', 'note', 'notification_override',];
+    protected $casts = ['data_scadenza' => 'date', 'notification_override' => 'array'];
 
     public function user() 
     { 

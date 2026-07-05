@@ -26,6 +26,7 @@ class CartaIdentitaController extends Controller
                     'data_rilascio' => $doc->data_rilascio ? $doc->data_rilascio->format('Y-m-d') : null,
                     'data_scadenza' => $doc->data_scadenza ? $doc->data_scadenza->format('Y-m-d') : null,
                     'note' => $doc->note,
+                    'notification_override' => $doc->notification_override,
                     'user' => [
                         'id' => $doc->user->id,
                         'name' => $doc->user->name,
@@ -53,8 +54,15 @@ class CartaIdentitaController extends Controller
             'comune_rilascio' => 'nullable|string|max:100',
             'data_rilascio' => 'nullable|date',
             'data_scadenza' => 'required|date',
-            'note' => 'nullable|string'
+            'note' => 'nullable|string',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         CartaIdentita::create($validated);
 
@@ -73,8 +81,15 @@ class CartaIdentitaController extends Controller
             'comune_rilascio' => 'nullable|string|max:100',
             'data_rilascio' => 'nullable|date',
             'data_scadenza' => 'required|date',
-            'note' => 'nullable|string'
+            'note' => 'nullable|string',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $cartaIdentita->update($validated);
 

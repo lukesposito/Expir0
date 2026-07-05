@@ -33,7 +33,7 @@ class SubscriptionController extends Controller
                     'importo_formatted' => $sub->importo ? number_format($sub->importo, 2, ',', '.') : '0,00',
                     'rinnovo_automatico' => (bool) $sub->rinnovo_automatico,
                     'giorni_preavviso' => (int) $sub->giorni_preavviso,
-		    'notification_override' => $sub->notification_override,
+		            'notification_override' => $sub->notification_override,
                     'url_gestione' => $sub->url_gestione,
                     'note' => $sub->note,
                     'user_id' => $sub->user_id,

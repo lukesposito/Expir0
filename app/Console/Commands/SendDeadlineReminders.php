@@ -64,6 +64,8 @@ class SendDeadlineReminders extends Command
             $scadeQuestAnno = $dataScadenza->year === $oggi->year;
             $isTesserino = strtolower($deadline->tipo) === 'tesserino_sanitario';
             
+            // Queste sono di deafult per le scadenze "famiglia", quindi NON forziamo un owner personale
+            // e verranno gestite nel digest generale di tutti gli utenti validi.
             $isPersonal = false;
             $ownerEmail = null;
             $utenteAssociato = null;
@@ -155,21 +157,45 @@ class SendDeadlineReminders extends Command
             if (!$isTesserino) {
                 $rules = null;
 
-                // A. Override specifico sulla spesa
+                // A. Override specifico sul record collegato
                 if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription && !empty($deadline->subscription->notification_override)) {
                     $rules = $deadline->subscription->notification_override;
-                    
-                    // ANTI CRASH - Sbucciamo la doppia stringa come nel frontend!
-                    while(is_string($rules)) {
+
+                } elseif ($deadline->tipo === 'revisione' && $deadline->revisione && !empty($deadline->revisione->notification_override)) {
+                    $rules = $deadline->revisione->notification_override;
+
+                } elseif ($deadline->tipo === 'bollo' && $deadline->bollo && !empty($deadline->bollo->notification_override)) {
+                    $rules = $deadline->bollo->notification_override;
+
+                } elseif ($deadline->tipo === 'assicurazione' && $deadline->assicurazione && !empty($deadline->assicurazione->notification_override)) {
+                    $rules = $deadline->assicurazione->notification_override;
+
+                } elseif ($deadline->tipo === 'patente' && $deadline->patente && !empty($deadline->patente->notification_override)) {
+                    $rules = $deadline->patente->notification_override;
+
+                } elseif ($deadline->tipo === 'carta_identita' && $deadline->cartaIdentita && !empty($deadline->cartaIdentita->notification_override)) {
+                    $rules = $deadline->cartaIdentita->notification_override;
+
+                } elseif ($deadline->tipo === 'tesserino_sanitario' && $deadline->tesserinoSanitario && !empty($deadline->tesserinoSanitario->notification_override)) {
+                    $rules = $deadline->tesserinoSanitario->notification_override;
+                }
+
+                if (!empty($rules)) {
+                    // ANTI CRASH - Sbucciamo la doppia stringa come nel frontend
+                    while (is_string($rules)) {
                         $rules = json_decode($rules, true);
                     }
 
                     $tipoRegola = 'personalizzata';
-                    // $this->line("   -> Trovate REGOLE PERSONALIZZATE.");
-                } elseif (empty($rules) && $utenteAssociato && !empty($utenteAssociato->default_notification_rules)) {
+
+                } elseif ($utenteAssociato && !empty($utenteAssociato->default_notification_rules)) {
                     $rules = $utenteAssociato->default_notification_rules;
+
+                    while (is_string($rules)) {
+                        $rules = json_decode($rules, true);
+                    }
+
                     $tipoRegola = 'globale';
-                    //$this->line("   -> Trovate REGOLE GLOBALI dell'utente.");
                 }
 
                 // B. Fallback di sistema
@@ -189,18 +215,23 @@ class SendDeadlineReminders extends Command
 
                         if ($giorniRimanenti === $daysBefore) {
                             $haTriggerato = true;
-                            if ($daysBefore <= 7) $urgenza = 'urgente';
-                            elseif ($daysBefore <= 15) $urgenza = 'breve';
-                            else $urgenza = 'avviso';
-                            
-                            if (in_array($channel, ['email', 'both'])) $inviaEmail = true;
-                            if (in_array($channel, ['push', 'both'])) $inviaPush = true;
-                            
-                            // $this->info("   [!] MATCH PERFETTO: Regola per {$daysBefore} gg (Canale: " . strtoupper($channel) . ")!");
+
+                            if ($daysBefore <= 7) {
+                                $urgenza = 'urgente';
+                            } elseif ($daysBefore <= 15) {
+                                $urgenza = 'breve';
+                            } else {
+                                $urgenza = 'avviso';
+                            }
+
+                            if (in_array($channel, ['email', 'both'])) {
+                                $inviaEmail = true;
+                            }
+
+                            if (in_array($channel, ['push', 'both'])) {
+                                $inviaPush = true;
+                            }
                         }
-                    }
-                    if (!$haTriggerato) {
-                        // $this->line("   [x] Nessun match. I giorni rimanenti non coincidono con le regole.");
                     }
                 } elseif ($giorniRimanenti < 0 && $giorniRimanenti >= -30) {
                     if (abs($giorniRimanenti) % 7 === 0) {

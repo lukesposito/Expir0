@@ -39,6 +39,7 @@ class AssicurazioneController extends Controller
                     'importo_formatted' => number_format($assicurazione->importo ?? 0, 2, ',', '.'),
                     'note' => $assicurazione->note,
                     'giorni_rimanenti' => (int) $giorniRimanenti,
+                    'notification_override' => $assicurazione->notification_override,
                 ];
             });
         
@@ -60,7 +61,14 @@ class AssicurazioneController extends Controller
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         Assicurazione::create($validated);
 
@@ -81,7 +89,14 @@ class AssicurazioneController extends Controller
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $assicurazione->update($validated);
 

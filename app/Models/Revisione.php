@@ -21,12 +21,14 @@ class Revisione extends Model
         'centro_revisione',
         'esito',
         'note',
+        'notification_override',
     ];
 
     protected $casts = [
         'data_ultima_revisione' => 'date',
         'data_prossima_revisione' => 'date',
         'importo' => 'decimal:2',
+        'notification_override' => 'array',
     ];
 
     // Relazione con Vehicle

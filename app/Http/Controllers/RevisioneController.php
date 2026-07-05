@@ -44,6 +44,7 @@ class RevisioneController extends Controller
                     'esito' => $revisione->esito,
                     'note' => $revisione->note,
                     'giorni_rimanenti' => (int) $giorniRimanenti,
+                    'notification_override' => $revisione->notification_override,
                 ];
             });
         
@@ -67,7 +68,14 @@ class RevisioneController extends Controller
             'centro_revisione' => 'nullable|string|max:255',
             'esito' => 'required|in:positivo,negativo,da_fare',
             'note' => 'nullable|string|max:500',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         // Salva la scadenza all'ULTIMO giorno del mese selezionato
         $validated['data_prossima_revisione'] = Carbon::createFromFormat('Y-m', $request->data_prossima_revisione)->endOfMonth()->toDateString();
@@ -97,7 +105,14 @@ class RevisioneController extends Controller
             'centro_revisione' => 'nullable|string|max:255',
             'esito' => 'required|in:positivo,negativo,da_fare',
             'note' => 'nullable|string|max:500',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         // Salva la scadenza all'ULTIMO giorno del mese selezionato
         $validated['data_prossima_revisione'] = Carbon::createFromFormat('Y-m', $request->data_prossima_revisione)->endOfMonth()->toDateString();

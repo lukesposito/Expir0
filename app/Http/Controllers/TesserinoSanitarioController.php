@@ -24,6 +24,7 @@ class TesserinoSanitarioController extends Controller
                     'codice_fiscale' => $doc->codice_fiscale,
                     'data_scadenza' => $doc->data_scadenza ? $doc->data_scadenza->format('Y-m-d') : null,
                     'note' => $doc->note,
+                    'notification_override' => $doc->notification_override,
                     'user' => [
                         'id' => $doc->user->id,
                         'name' => $doc->user->name,
@@ -48,8 +49,15 @@ class TesserinoSanitarioController extends Controller
             'user_id' => 'required|exists:users,id',
             'codice_fiscale' => 'required|string|size:16', // Il CF italiano è di 16 caratteri
             'data_scadenza' => 'required|date',
-            'note' => 'nullable|string'
+            'note' => 'nullable|string',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         // Assicuriamoci che il CF sia sempre maiuscolo
         $validated['codice_fiscale'] = strtoupper($validated['codice_fiscale']);
@@ -69,8 +77,15 @@ class TesserinoSanitarioController extends Controller
             'user_id' => 'required|exists:users,id',
             'codice_fiscale' => 'required|string|size:16',
             'data_scadenza' => 'required|date',
-            'note' => 'nullable|string'
+            'note' => 'nullable|string',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $validated['codice_fiscale'] = strtoupper($validated['codice_fiscale']);
 

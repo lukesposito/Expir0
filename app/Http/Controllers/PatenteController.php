@@ -27,6 +27,7 @@ class PatenteController extends Controller
                     'data_scadenza' => $patente->data_scadenza ? $patente->data_scadenza->format('Y-m-d') : null,
                     'data_scadenza_formatted' => $patente->data_scadenza ? $patente->data_scadenza->format('d/m/Y') : null,
                     'importo' => $patente->importo,
+                    'notification_override' => $patente->notification_override,
                     'user' => [
                         'id' => $patente->user->id,
                         'name' => $patente->user->name,
@@ -51,8 +52,15 @@ class PatenteController extends Controller
             'tipo' => 'nullable|string|max:10',
             'data_rilascio' => 'nullable|date',
             'data_scadenza' => 'nullable|date',
-            'importo' => 'nullable|numeric|min:0'
+            'importo' => 'nullable|numeric|min:0',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $validated['numero_patente'] = strtoupper($validated['numero_patente']);
         if (!empty($validated['tipo'])) {
@@ -80,8 +88,15 @@ class PatenteController extends Controller
             'tipo' => 'nullable|string|max:10',
             'data_rilascio' => 'nullable|date',
             'data_scadenza' => 'nullable|date',
-            'importo' => 'nullable|numeric|min:0'
+            'importo' => 'nullable|numeric|min:0',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $validated['numero_patente'] = strtoupper($validated['numero_patente']);
         if (!empty($validated['tipo'])) {

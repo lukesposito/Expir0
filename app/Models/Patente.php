@@ -18,12 +18,14 @@ class Patente extends Model
         'data_rilascio',
         'data_scadenza',
         'importo',
+        'notification_override',
     ];
 
     protected $casts = [
         'data_rilascio' => 'date',
         'data_scadenza' => 'date',
         'importo' => 'decimal:2',
+        'notification_override' => 'array',
     ];
 
     // Blocco per gli eventi automatici (MANTENUTO INALTERATO COME DA RICHIESTA)

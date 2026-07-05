@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Assicurazione extends Model
 {
     protected $table = 'assicurazioni';
-    protected $fillable = ['vehicle_id', 'compagnia', 'polizza', 'data_inizio', 'data_scadenza', 'importo', 'note'];
-    protected $casts = ['data_inizio' => 'date', 'data_scadenza' => 'date'];
+    protected $fillable = ['vehicle_id', 'compagnia', 'polizza', 'data_inizio', 'data_scadenza', 'importo', 'note', 'notification_override'];
+    protected $casts = ['data_inizio' => 'date', 'data_scadenza' => 'date', 'notification_override' => 'array'];
 
     protected static function booted()
     {

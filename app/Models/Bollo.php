@@ -8,8 +8,8 @@ use App\Models\Vehicle;
 class Bollo extends Model
 {
     protected $table = 'bolli';
-    protected $fillable = ['vehicle_id', 'data_scadenza', 'importo', 'note'];
-    protected $casts = ['data_scadenza' => 'date'];
+    protected $fillable = ['vehicle_id', 'data_scadenza', 'importo', 'note', 'notification_override'];
+    protected $casts = ['data_scadenza' => 'date', 'notification_override' => 'array'];
 
     protected static function booted()
     {

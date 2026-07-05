@@ -34,6 +34,7 @@ class BolloController extends Controller
                     'importo_formatted' => number_format($bollo->importo ?? 0, 2, ',', '.'),
                     'note' => $bollo->note,
                     'giorni_rimanenti' => (int) $giorniRimanenti,
+                    'notification_override' => $bollo->notification_override,
                 ];
             });
         
@@ -54,7 +55,14 @@ class BolloController extends Controller
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         Bollo::create($validated);
 
@@ -73,7 +81,14 @@ class BolloController extends Controller
             'data_scadenza' => 'required|date',
             'importo' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
+            'notification_override' => 'nullable|string'
         ]);
+
+        if ($request->notification_override && $request->notification_override !== 'null') {
+            $validated['notification_override'] = json_decode($request->notification_override, true);
+        } else {
+            $validated['notification_override'] = null;
+        }
 
         $bollo->update($validated);
 

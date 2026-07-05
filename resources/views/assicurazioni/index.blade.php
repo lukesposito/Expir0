@@ -386,6 +386,41 @@
                                     <textarea name="note" rows="2" class="form-input" placeholder="Eventuali note..."></textarea>
                                 </div>
                             </div>
+                            <div class="mt-5 pt-4 border-t border-violet-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <p class="font-bold text-violet-900 text-sm">Regole di Notifica</p>
+                                        <p class="text-xs text-violet-700 mt-0.5">Scegli quando essere avvisato</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" x-model="createNotifCustom" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-violet-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
+                                    </label>
+                                </div>
+                                
+                                <input type="hidden" name="notification_override" :value="JSON.stringify(createNotifCustom ? createNotifRules : null)">
+
+                                <div x-show="!createNotifCustom" class="text-xs text-violet-800 bg-white p-2.5 rounded-lg border border-violet-200 font-medium flex items-center gap-2">
+                                    <i class="fa-solid fa-globe text-violet-500"></i> Usa le impostazioni globali
+                                </div>
+
+                                <div x-show="createNotifCustom" x-cloak class="space-y-2 mt-3">
+                                    <template x-for="(rule, index) in createNotifRules" :key="rule.id">
+                                        <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-violet-200 shadow-sm">
+                                            <input type="number" x-model.number="rule.days_before" min="0" class="w-16 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-bold text-center">
+                                            <span class="text-xs font-medium text-gray-600">gg prima via</span>
+                                            <select x-model="rule.channel" class="flex-1 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-medium">
+                                                <option value="email">Email</option>
+                                                <option value="push">Push (App)</option>
+                                            </select>
+                                            <button type="button" @click="removeCreateRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="addCreateRule()" class="text-xs font-bold text-violet-700 hover:text-violet-900 mt-2 flex items-center gap-1.5 px-1">
+                                        <i class="fa-solid fa-circle-plus"></i> Aggiungi un'altra regola
+                                    </button>
+                                </div>
+                            </div>
                             
                             <div class="modal-footer">
                                 <button type="button" @click="closeCreateModal()" class="btn-secondary">Annulla</button>
@@ -451,6 +486,41 @@
                                 <div>
                                     <label class="form-label">Note</label>
                                     <textarea name="note" x-model="editAssicurazione.note" rows="2" class="form-input"></textarea>
+                                </div>
+                            </div>
+                            <div class="mt-5 pt-4 border-t border-violet-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <p class="font-bold text-violet-900 text-sm">Regole di Notifica</p>
+                                        <p class="text-xs text-violet-700 mt-0.5">Scegli quando essere avvisato</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" x-model="editNotifCustom" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-violet-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
+                                    </label>
+                                </div>
+                                
+                                <input type="hidden" name="notification_override" :value="JSON.stringify(editNotifCustom ? editNotifRules : null)">
+
+                                <div x-show="!editNotifCustom" class="text-xs text-violet-800 bg-white p-2.5 rounded-lg border border-violet-200 font-medium flex items-center gap-2">
+                                    <i class="fa-solid fa-globe text-violet-500"></i> Usa le impostazioni globali
+                                </div>
+
+                                <div x-show="editNotifCustom" x-cloak class="space-y-2 mt-3">
+                                    <template x-for="(rule, index) in editNotifRules" :key="rule.id">
+                                        <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-violet-200 shadow-sm">
+                                            <input type="number" x-model.number="rule.days_before" min="0" class="w-16 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-bold text-center">
+                                            <span class="text-xs font-medium text-gray-600">gg prima via</span>
+                                            <select x-model="rule.channel" class="flex-1 px-2 py-1.5 text-sm border-gray-300 rounded focus:ring-violet-500 focus:border-violet-500 font-medium">
+                                                <option value="email">Email</option>
+                                                <option value="push">Push (App)</option>
+                                            </select>
+                                            <button type="button" @click="removeEditRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="addEditRule()" class="text-xs font-bold text-violet-700 hover:text-violet-900 mt-2 flex items-center gap-1.5 px-1">
+                                        <i class="fa-solid fa-circle-plus"></i> Aggiungi un'altra regola
+                                    </button>
                                 </div>
                             </div>
                             
@@ -576,12 +646,38 @@
                 assicurazioni: @json($assicurazioni),
                 selectedItems: [],
 
+                // -- STATO NOTIFICHE MODALE CREATE --
+                createNotifCustom: false,
+                createNotifRules: [{ id: Date.now(), days_before: 15, channel: 'email' }],
+
+                // -- STATO NOTIFICHE MODALE EDIT --
+                editNotifCustom: false,
+                editNotifRules: [],
+
                 sortCol: 'scadenza',
                 sortAsc: true,
 
                 init() {
                     @if(session('success')) this.showSuccess("{{ session('success') }}", 'success'); @endif
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
+                },
+
+                // GESTIONE REGOLE CREATE
+                addCreateRule() {
+                    this.createNotifRules.push({ id: Date.now(), days_before: 7, channel: 'email' });
+                },
+                removeCreateRule(id) {
+                    this.createNotifRules = this.createNotifRules.filter(r => r.id !== id);
+                    if(this.createNotifRules.length === 0) this.addCreateRule();
+                },
+
+                // GESTIONE REGOLE EDIT
+                addEditRule() {
+                    this.editNotifRules.push({ id: Date.now(), days_before: 7, channel: 'email' });
+                },
+                removeEditRule(id) {
+                    this.editNotifRules = this.editNotifRules.filter(r => r.id !== id);
+                    if(this.editNotifRules.length === 0) this.addEditRule();
                 },
 
                 sortBy(col) {
@@ -665,7 +761,12 @@
                     }
                 },
 
-                openCreateModal() { this.showCreateModal = true; },
+                openCreateModal() { 
+                    // Resetta le regole di default ogni volta che apri la finestra
+                    this.createNotifCustom = false;
+                    this.createNotifRules = [{ id: Date.now(), days_before: 15, channel: 'email' }];
+                    this.showCreateModal = true; 
+                },
                 closeCreateModal() { this.isClosingCreate = true; setTimeout(() => { this.showCreateModal = false; this.isClosingCreate = false; }, 500); },
                 
                 openEditModal(a) { 
@@ -676,6 +777,50 @@
                     }
                     if(this.editAssicurazione.data_scadenza && this.editAssicurazione.data_scadenza.includes('T')) {
                         this.editAssicurazione.data_scadenza = this.editAssicurazione.data_scadenza.split('T')[0];
+                    }
+
+                    let rawRules = this.editAssicurazione.notification_override || a.notification_override || null;
+                    let parsedRules = [];
+
+                    try {
+                        // 1. Se è una stringa, la trasformiamo (continuando a sbucciarla se serve)
+                        while (typeof rawRules === 'string') {
+                            if (rawRules === 'null' || rawRules.trim() === '' || rawRules === '[]') {
+                                rawRules = null;
+                                break;
+                            }
+                            rawRules = JSON.parse(rawRules);
+                        }
+
+                        // 2. Se è diventato un Array, perfetto!
+                        if (Array.isArray(rawRules)) {
+                            parsedRules = rawRules;
+                        } 
+                        // 3. Se Laravel lo ha trasformato in un "Oggetto" (es. {"0": {days_before: 1}})
+                        else if (rawRules !== null && typeof rawRules === 'object') {
+                            parsedRules = Object.values(rawRules);
+                        }
+                    } catch (e) {
+                        // console.error("❌ Errore durante l'estrazione delle regole:", e);
+                    }
+
+                    // --- ACCENDIAMO L'INTERRUTTORE ---
+                    if (parsedRules.length > 0) {
+                        this.editNotifCustom = true; // ACCESO!
+                        
+                        this.editNotifRules = parsedRules.map((rule, index) => {
+                            return { 
+                                id: rule.id || (Date.now() + index), 
+                                days_before: parseInt(rule.days_before) || 0, 
+                                channel: rule.channel || 'email' 
+                            };
+                        });
+                        // console.log("✅ Regole caricate con successo:", this.editNotifRules);
+                    } else {
+                        // SPENTO
+                        this.editNotifCustom = false;
+                        this.editNotifRules = [{ id: Date.now(), days_before: 15, channel: 'email' }];
+                        // console.log("⚠️ Nessuna regola trovata, uso i valori di default.");
                     }
                     
                     this.showEditModal = true; 

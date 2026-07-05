@@ -10,8 +10,8 @@ class CartaIdentita extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'numero', 'comune_rilascio', 'data_rilascio', 'data_scadenza', 'note'];
-    protected $casts = ['data_rilascio' => 'date', 'data_scadenza' => 'date'];
+    protected $fillable = ['user_id', 'numero', 'comune_rilascio', 'data_rilascio', 'data_scadenza', 'note', 'notification_override'];
+    protected $casts = ['data_rilascio' => 'date', 'data_scadenza' => 'date', 'notification_override' => 'array'];
 
     public function user() 
     { 
