@@ -22,14 +22,82 @@
                     {{ now()->locale('it')->isoFormat('dddd, D MMMM YYYY') }}
                 </div>
                 
-                <div class="relative" x-data>
-                    <select @change="$dispatch('change-dashboard-year', $event.target.value)" class="appearance-none bg-indigo-600 text-white font-bold rounded-lg shadow-md border-0 focus:ring-indigo-500 py-2.5 pl-4 pr-10 cursor-pointer hover:bg-indigo-700 transition-colors">
+            <div
+                class="relative"
+                x-data="{
+                    open: false,
+                    selected: '{{ $selectedYear }}'
+                }"
+                @click.outside="open = false"
+                @keydown.escape.window="open = false"
+            >
+                <button
+                    type="button"
+                    @click="open = !open"
+                    :aria-expanded="open.toString()"
+                    class="group relative inline-flex items-center gap-3 rounded-[1.15rem] bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 px-4 py-2.5 text-white shadow-[0_14px_30px_-14px_rgba(79,70,229,0.65)] transition duration-300 hover:-translate-y-[1px] hover:shadow-[0_18px_34px_-14px_rgba(79,70,229,0.78)] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                >
+                    <span class="text-sm font-black tracking-[-0.02em]">
+                        Anno <span x-text="selected"></span>
+                    </span>
+
+                    <span
+                        class="flex h-7 w-7 items-center justify-center rounded-full bg-white/14 transition duration-300"
+                        :class="open ? 'rotate-180 bg-white/20' : ''"
+                    >
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </span>
+
+                    <span class="pointer-events-none absolute inset-0 rounded-[1.15rem] ring-1 ring-white/10 ring-inset"></span>
+                </button>
+
+                <div
+                    x-cloak
+                    x-show="open"
+                    x-transition:enter="transition ease-[cubic-bezier(.22,1,.36,1)] duration-250"
+                    x-transition:enter-start="opacity-0 -translate-y-2 scale-[.98]"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-180"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 -translate-y-2 scale-[.98]"
+                    class="absolute right-0 z-50 mt-3 w-56 overflow-hidden rounded-[1.3rem] border border-indigo-200/70 bg-white/92 p-2 shadow-[0_22px_44px_-18px_rgba(79,70,229,0.35)] backdrop-blur-xl"
+                >
+                    <div class="mb-1 px-3 pt-2 pb-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-indigo-400">
+                        Seleziona anno
+                    </div>
+
+                    <div class="space-y-1">
                         @foreach($availableYears ?? [now()->year] as $year)
-                            <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>Anno {{ $year }}</option>
+                            <button
+                                type="button"
+                                @click="
+                                    selected = '{{ $year }}';
+                                    open = false;
+                                    $dispatch('change-dashboard-year', '{{ $year }}');
+                                "
+                                :class="selected == '{{ $year }}'
+                                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_10px_24px_-16px_rgba(79,70,229,0.55)]'
+                                    : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'"
+                                class="flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-left text-sm font-bold transition duration-200"
+                            >
+                                <span>Anno {{ $year }}</span>
+
+                                <span
+                                    x-show="selected == '{{ $year }}'"
+                                    x-cloak
+                                    class="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[11px]"
+                                >
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+
+                                <span
+                                    x-show="selected != '{{ $year }}'"
+                                    class="text-slate-300"
+                                >
+                                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </span>
+                            </button>
                         @endforeach
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-white">
-                        <i class="fa-solid fa-chevron-down text-sm"></i>
                     </div>
                 </div>
             </div>
