@@ -314,20 +314,100 @@
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="form-label">Prossima Scadenza *</label><input type="date" name="data_scadenza" required class="form-input"></div>
-                                    <div><label class="form-label">Importo (€)</label><input type="number" name="importo" step="0.01" min="0" class="form-input" placeholder="0.00"></div>
+                                    <div x-show="!createForm.rinnovo_automatico" x-cloak>
+                                        <label class="form-label">Prossima Scadenza</label>
+                                        <input type="date" name="data_scadenza" :required="!createForm.rinnovo_automatico" class="form-input">
+                                    </div>
+
+                                    <div :class="createForm.rinnovo_automatico ? 'col-span-2' : ''">
+                                        <label class="form-label">Importo (€)</label>
+                                        <input type="number" name="importo" step="0.01" min="0" class="form-input" placeholder="0.00">
+                                    </div>
                                 </div>
                                 
                                 <div class="bg-violet-50 p-4 rounded-lg border border-violet-100">
                                     <div class="flex items-center justify-between">
-                                        <div>
+                                        <!-- <div>
                                             <p class="font-bold text-violet-900 text-sm">Rinnovo Automatico?</p>
                                             <p class="text-xs text-violet-700">I soldi vengono scalati da soli?</p>
                                         </div>
                                         <label class="switch">
                                             <input type="checkbox" name="rinnovo_automatico" value="1">
                                             <span class="slider"></span>
-                                        </label>
+                                        </label> -->
+                                        <div class="space-y-3 rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
+                                            <label class="flex items-center justify-between gap-4 cursor-pointer">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">Rinnovo automatico periodico</p>
+                                                    <p class="text-xs text-slate-500">Se attivo, la spesa si rinnova automaticamente ogni N mesi.</p>
+                                                </div>
+
+                                                <div>
+                                                    <input type="checkbox"
+                                                        name="rinnovo_automatico"
+                                                        x-model="createForm.rinnovo_automatico"
+                                                        value="1"
+                                                        class="sr-only peer">
+                                                    <div class="relative h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-violet-600">
+                                                        <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5"></span>
+                                                    </div>
+                                                </div>
+                                            </label>
+
+                                            <div x-show="createForm.rinnovo_automatico" x-cloak x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="form-label">Frequenza rinnovo</label>
+                                                    <select name="renewal_interval_months"
+                                                            x-model.number="createForm.renewal_interval_months"
+                                                            class="form-input">
+                                                        <option value="1">Ogni mese</option>
+                                                        <option value="2">Ogni 2 mesi</option>
+                                                        <option value="3">Ogni 3 mesi</option>
+                                                        <option value="4">Ogni 4 mesi</option>
+                                                        <option value="6">Ogni 6 mesi</option>
+                                                        <option value="12">Ogni 12 mesi</option>
+                                                    </select>
+                                                </div>
+
+                                                <div>
+                                                    <label class="form-label">Canali notifica rinnovo</label>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-white">
+                                                            <input type="checkbox" value="mail" x-model="createForm.renewal_notification_channels">
+                                                            <span class="text-sm font-medium">Mail</span>
+                                                        </label>
+
+                                                        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-white">
+                                                            <input type="checkbox" value="push" x-model="createForm.renewal_notification_channels">
+                                                            <span class="text-sm font-medium">Push</span>
+                                                        </label>
+                                                    </div>
+
+                                                    <input type="hidden"
+                                                        name="renewal_notification_channels"
+                                                        :value="JSON.stringify(createForm.renewal_notification_channels)">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- <div x-show="form.rinnovo_automatico" x-cloak class="mt-3">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                Frequenza rinnovo
+                                            </label>
+
+                                            <select x-model="form.renewal_interval_months" class="w-full rounded-lg border-gray-300">
+                                                <option value="1">Ogni mese</option>
+                                                <option value="2">Ogni 2 mesi</option>
+                                                <option value="3">Ogni 3 mesi</option>
+                                                <option value="4">Ogni 4 mesi</option>
+                                                <option value="6">Ogni 6 mesi</option>
+                                                <option value="12">Ogni 12 mesi</option>
+                                            </select>
+
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Alla scadenza, l’abbonamento verrà segnato come pagato automaticamente e sarà generata la prossima scadenza.
+                                            </p>
+                                        </div> -->
                                     </div>
                                     
                                     <div class="mt-5 pt-4 border-t border-violet-200">
@@ -420,7 +500,10 @@
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="form-label">Prossima Scadenza *</label><input type="date" name="data_scadenza" x-model="editSub.data_scadenza" required class="form-input"></div>
+                                    <div x-show="!editSub.rinnovo_automatico" x-cloak>
+                                        <label class="form-label">Prossima Scadenza</label>
+                                        <input type="date" name="data_scadenza" x-model="editSub.data_scadenza" :required="!editSub.rinnovo_automatico" class="form-input">
+                                    </div>
                                     <div><label class="form-label">Importo (€)</label><input type="number" name="importo" x-model="editSub.importo" step="0.01" min="0" class="form-input"></div>
                                 </div>
                                 
@@ -431,8 +514,62 @@
                                         </div>
                                         <label class="switch">
                                             <input type="checkbox" name="rinnovo_automatico" x-model="editSub.rinnovo_automatico" value="1">
-                                            <span class="slider"></span>
+                                            <!-- span class="slider"></span> -->
                                         </label>
+                                        <div class="space-y-3 rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
+                                            <label class="flex items-center justify-between gap-4 cursor-pointer">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">Rinnovo automatico periodico</p>
+                                                    <p class="text-xs text-slate-500">Se attivo, la spesa si rinnova automaticamente ogni N mesi.</p>
+                                                </div>
+
+                                                <div>
+                                                    <input type="checkbox"
+                                                        name="rinnovo_automatico"
+                                                        x-model="editSub.rinnovo_automatico"
+                                                        value="1"
+                                                        class="sr-only peer">
+                                                    <div class="relative h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-violet-600">
+                                                        <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5"></span>
+                                                    </div>
+                                                </div>
+                                            </label>
+
+                                            <div x-show="editSub.rinnovo_automatico" x-cloak x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="form-label">Frequenza rinnovo</label>
+                                                    <select name="renewal_interval_months"
+                                                            x-model.number="editSub.renewal_interval_months"
+                                                            class="form-input">
+                                                        <option value="1">Ogni mese</option>
+                                                        <option value="2">Ogni 2 mesi</option>
+                                                        <option value="3">Ogni 3 mesi</option>
+                                                        <option value="4">Ogni 4 mesi</option>
+                                                        <option value="6">Ogni 6 mesi</option>
+                                                        <option value="12">Ogni 12 mesi</option>
+                                                    </select>
+                                                </div>
+
+                                                <div>
+                                                    <label class="form-label">Canali notifica rinnovo</label>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-white">
+                                                            <input type="checkbox" value="mail" x-model="editSub.renewal_notification_channels">
+                                                            <span class="text-sm font-medium">Mail</span>
+                                                        </label>
+
+                                                        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-white">
+                                                            <input type="checkbox" value="push" x-model="editSub.renewal_notification_channels">
+                                                            <span class="text-sm font-medium">Push</span>
+                                                        </label>
+                                                    </div>
+
+                                                    <input type="hidden"
+                                                        name="renewal_notification_channels"
+                                                        :value="JSON.stringify(editSub.renewal_notification_channels)">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="mt-5 pt-4 border-t border-violet-200">
@@ -471,6 +608,25 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- <div x-show="form.rinnovo_automatico" x-cloak class="mt-3">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Frequenza rinnovo
+                                    </label>
+
+                                    <select x-model="form.renewal_interval_months" class="w-full rounded-lg border-gray-300">
+                                        <option value="1">Ogni mese</option>
+                                        <option value="2">Ogni 2 mesi</option>
+                                        <option value="3">Ogni 3 mesi</option>
+                                        <option value="4">Ogni 4 mesi</option>
+                                        <option value="6">Ogni 6 mesi</option>
+                                        <option value="12">Ogni 12 mesi</option>
+                                    </select>
+
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Alla scadenza, l’abbonamento verrà segnato come pagato automaticamente e sarà generata la prossima scadenza.
+                                    </p>
+                                </div> -->
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
@@ -594,6 +750,13 @@
                 editNotifCustom: false,
                 editNotifRules: [],
 
+                // RINNOVO AUTOMATICO
+                createForm: {
+                    rinnovo_automatico: false,
+                    renewal_interval_months: 1,
+                    renewal_notification_channels: []
+                },
+
                 init() {
                     @if(session('success')) this.showSuccess("{{ session('success') }}", 'success'); @endif
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
@@ -676,6 +839,12 @@
                     // Resetta le regole di default ogni volta che apri la finestra
                     this.createNotifCustom = false;
                     this.createNotifRules = [{ id: Date.now(), days_before: 15, channel: 'email' }];
+                    // PER IL RINNOVO AUTOMATICO
+                    this.createForm = {
+                        rinnovo_automatico: false,
+                        renewal_interval_months: 1,
+                        renewal_notification_channels: []
+                    };
                     this.showCreateModal = true; 
                 },
                 closeCreateModal() { this.isClosingCreate = true; setTimeout(() => { this.showCreateModal = false; this.isClosingCreate = false; }, 500); },
@@ -685,6 +854,13 @@
                     if(this.editSub.data_scadenza && typeof this.editSub.data_scadenza === 'string' && this.editSub.data_scadenza.includes('T')) {
                         this.editSub.data_scadenza = this.editSub.data_scadenza.split('T')[0];
                     }
+
+                    // PER IL RINNOVO AUTOMATICO
+                    this.editSub.rinnovo_automatico = !!this.editSub.rinnovo_automatico;
+                    this.editSub.renewal_interval_months = this.editSub.renewal_interval_months || 1;
+                    this.editSub.renewal_notification_channels = Array.isArray(this.editSub.renewal_notification_channels)
+                        ? this.editSub.renewal_notification_channels
+                        : [];
 
                     // --- STAMPIAMO I DATI GREZZI NELLA CONSOLE PER SICUREZZA ---
                     // console.log("🔍 Dati grezzi dal DB per questa spesa:", this.editSub.notification_override);

@@ -227,13 +227,32 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-center gap-3">
-                                            <label class="switch switch-lg">
-                                                <input type="checkbox" :checked="d.pagato" @click.prevent="promptPagamento(d)">
-                                                <span class="slider"></span>
-                                            </label>
+                                            <template x-if="!(d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico)">
+                                                <label class="switch switch-lg">
+                                                    <input type="checkbox" :checked="d.pagato" @click.prevent="promptPagamento(d)">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </template>
+
+                                            <template x-if="d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-700 border border-violet-200">
+                                                    ↻ RINNOVO AUTO
+                                                </span>
+                                            </template>
+
                                             <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold shadow-sm"
-                                                :class="d.pagato ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 text-white'">
-                                                <span x-text="['carta_identita', 'tesserino_sanitario'].includes(d.tipo) ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA') : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO')"></span>
+                                                :class="d.pagato
+                                                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
+                                                    : ((d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico)
+                                                        ? 'bg-gradient-to-r from-violet-500 to-violet-600 text-white'
+                                                        : 'bg-gradient-to-r from-red-500 to-red-600 text-white')">
+                                                <span x-text="
+                                                    d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico
+                                                        ? '↻ RINNOVO AUTOMATICO'
+                                                        : (['carta_identita', 'tesserino_sanitario'].includes(d.tipo)
+                                                            ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA')
+                                                            : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO'))
+                                                "></span>
                                             </span>
                                         </div>
                                     </td>
@@ -358,10 +377,32 @@
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Stato</p>
-                                                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-gradient-to-r from-red-500 to-red-600 text-white">✗ NON PAGATO</span>
+                                                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold shadow-md"
+                                                    :class="d.pagato
+                                                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
+                                                        : ((d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico)
+                                                            ? 'bg-gradient-to-r from-violet-500 to-violet-600 text-white'
+                                                            : 'bg-gradient-to-r from-red-500 to-red-600 text-white')">
+                                                    <span x-text="
+                                                        d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico
+                                                            ? '↻ RINNOVO AUTOMATICO'
+                                                            : (['carta_identita', 'tesserino_sanitario'].includes(d.tipo)
+                                                                ? (d.pagato ? '✓ RINNOVATA' : '✗ NON RINNOVATA')
+                                                                : (d.pagato ? '✓ PAGATO' : '✗ NON PAGATO'))
+                                                    "></span>
+                                                </span>
                                             </div>
-                                            <div>
-                                                <label class="switch switch-lg"><input type="checkbox" :checked="d.pagato" @click.prevent="promptPagamento(d)"><span class="slider"></span></label>
+
+                                            <div x-show="!(d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico)" x-cloak>
+                                                <label class="switch switch-lg">
+                                                    <input type="checkbox" :checked="d.pagato" @click.prevent="promptPagamento(d)">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+
+                                            <div x-show="d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico"
+                                                class="text-[11px] font-bold uppercase tracking-wide text-violet-700 bg-violet-100 border border-violet-200 px-3 py-2 rounded-lg">
+                                                Auto
                                             </div>
                                         </div>
                                     </div>
@@ -444,7 +485,7 @@
                     </div>
 
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
-                        <button @click="showBulkRenewModal = true" class="bg-emerald-500 hover:bg-emerald-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
+                        <button @click="handleBulkPayClick()" class="bg-emerald-500 hover:bg-emerald-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
                             <i class="fa-solid fa-check"></i> <span class="text-sm hidden sm:inline">Segna Pagati</span><span class="text-sm sm:hidden">Pagati</span>
                         </button>
                         <button @click="showBulkDeleteModal = true" class="bg-red-500 hover:bg-red-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg flex-1 sm:flex-none" :disabled="isSubmitting">
@@ -647,6 +688,30 @@
                     }
                 },
 
+                getSelectedDeadlines() {
+                    return this.deadlines.filter(d =>
+                        this.selectedItems.some(id => String(id) === String(d.id))
+                    );
+                },
+
+                hasAutoRenewableSelected() {
+                    return this.getSelectedDeadlines().some(d =>
+                        d.tipo === 'spesa_abbonamento' && d.subscription_rinnovo_automatico
+                    );
+                },
+
+                handleBulkPayClick() {
+                    if (this.hasAutoRenewableSelected()) {
+                        this.showSuccess(
+                            'Non puoi segnare come pagati abbonamenti o spese con rinnovo automatico. Deselezionali prima di procedere.',
+                            'error'
+                        );
+                        return;
+                    }
+
+                    this.showBulkRenewModal = true;
+                },
+
 
                 // Questo Getter ora filtra E ordina i risultati!
                 get filteredDaPagare() {
@@ -718,23 +783,47 @@
 
                 // ESECUZIONE PAGAMENTO MULTIPLO
                 async executeBulkPay(rinnova) {
+                    if (this.hasAutoRenewableSelected()) {
+                        this.showBulkRenewModal = false;
+                        this.showSuccess(
+                            'Non puoi archiviare manualmente abbonamenti o spese con rinnovo automatico.',
+                            'error'
+                        );
+                        return;
+                    }
+
                     this.isSubmitting = true;
                     this.showBulkRenewModal = false;
+
                     try {
-                        const promises = this.selectedItems.map(id => 
+                        const promises = this.selectedItems.map(id =>
                             fetch(`/deadlines/${id}/toggle-pagato`, {
                                 method: 'PATCH',
                                 body: JSON.stringify({ rinnova: rinnova }),
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
                             })
                         );
-                        await Promise.all(promises);
+
+                        const responses = await Promise.all(promises);
+
+                        for (const response of responses) {
+                            if (!response.ok) {
+                                let data = {};
+                                try { data = await response.json(); } catch (e) {}
+                                throw new Error(data.message || 'Errore durante l\'archiviazione');
+                            }
+                        }
 
                         this.selectedItems = [];
                         await this.refreshData();
                         this.showSuccess('Scadenze archiviate con successo!', 'success');
-                    } catch(e) {
-                        this.showSuccess('Errore durante l\'archiviazione', 'error');
+                    } catch (e) {
+                        this.showSuccess(e.message || 'Errore durante l\'archiviazione', 'error');
                     } finally {
                         this.isSubmitting = false;
                     }
@@ -815,6 +904,14 @@
                 },
 
                 promptPagamento(deadline) {
+                    if (deadline.tipo === 'spesa_abbonamento' && deadline.subscription_rinnovo_automatico) {
+                        this.showSuccess(
+                            'Questo abbonamento/spesa ha il rinnovo automatico attivo, quindi non può essere segnato manualmente come pagato.',
+                            'error'
+                        );
+                        return;
+                    }
+
                     if (!deadline.pagato) {
                         this.deadlineToRenew = deadline;
                         this.showRenewModal = true;

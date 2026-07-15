@@ -13,7 +13,7 @@ class Subscription extends Model
     protected $fillable = [
         'user_id', 'vehicle_id', 'nome', 'categoria', 
         'data_scadenza', 'importo', 'rinnovo_automatico', 'notification_override',
-        'giorni_preavviso', 'url_gestione', 'note', 
+        'giorni_preavviso', 'url_gestione', 'note', 'renewal_interval_months', 'renewal_notification_channels'
     ];
 
     protected $casts = [
@@ -21,6 +21,8 @@ class Subscription extends Model
         'rinnovo_automatico' => 'boolean',
         'importo' => 'decimal:2',
         'notification_override' => 'array',
+        'renewal_interval_months' => 'integer',
+        'renewal_notification_channels' => 'array',
     ];
 
     public function user()
@@ -57,7 +59,10 @@ class Subscription extends Model
 
         // 2. QUANDO MODIFICHI UNA SPESA -> AGGIORNA LA SCADENZA
         static::updated(function ($subscription) {
-            $deadline = Deadline::where('subscription_id', $subscription->id)->first();
+            $deadline = Deadline::where('subscription_id', $subscription->id)
+                ->where('pagato', false)
+                ->orderBy('data_scadenza')
+                ->first();
             
             if ($deadline) {
                 $deadline->update([
@@ -66,8 +71,6 @@ class Subscription extends Model
                     'note' => $subscription->nome . ' (' . $subscription->categoria . ')' . ($subscription->note ? ' - ' . $subscription->note : ''),
                     'user_id' => $subscription->user_id,
                     'vehicle_id' => $subscription->vehicle_id,
-                    // Se imposti il rinnovo automatico, forse vuoi che segni 'pagato' in automatico? 
-                    // Per ora lo lasciamo intatto.
                 ]);
             }
         });

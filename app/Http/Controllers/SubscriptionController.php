@@ -41,6 +41,8 @@ class SubscriptionController extends Controller
                     'vehicle_id' => $sub->vehicle_id,
                     'vehicle_desc' => $sub->vehicle ? $sub->vehicle->marca . ' ' . $sub->vehicle->modello . ' (' . $sub->vehicle->targa . ')' : null,
                     'giorni_rimanenti' => (int) $oggi->diffInDays($scadenza, false),
+                    'renewal_interval_months' => (int) ($sub->renewal_interval_months ?? 1),
+                    'renewal_notification_channels' => $sub->renewal_notification_channels ?? [],
                 ];
             });
 
@@ -67,10 +69,21 @@ class SubscriptionController extends Controller
             'user_id' => 'nullable|exists:users,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'notification_override' => 'nullable|string',
+            'renewal_interval_months' => 'nullable|integer|min:1|max:12',
+            'renewal_notification_channels' => 'nullable|string',
         ]);
 
         // Cattura sicura del booleano da AJAX FormData
         $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+
+        $validated['renewal_interval_months'] = $validated['rinnovo_automatico']
+            ? (int) $request->input('renewal_interval_months', 1)
+            : null;
+
+        $validated['renewal_notification_channels'] =
+            $request->filled('renewal_notification_channels')
+                ? json_decode($request->input('renewal_notification_channels'), true)
+                : [];
 
         // GESTIONE JSON NOTIFICHE
         // Se Alpine invia la stringa "null" (Impostazioni Globali), salviamo null vero nel DB.
@@ -94,7 +107,7 @@ class SubscriptionController extends Controller
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'categoria' => 'required|string|max:255',
-            'data_scadenza' => 'required|date',
+            'data_scadenza' => 'nullable|date',
             'importo' => 'nullable|numeric|min:0',
             'giorni_preavviso' => 'nullable|integer|min:0',
             'url_gestione' => 'nullable|url',
@@ -102,10 +115,28 @@ class SubscriptionController extends Controller
             'user_id' => 'nullable|exists:users,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'notification_override' => 'nullable|string',
+            'renewal_interval_months' => 'nullable|integer|min:1|max:12',
+            'renewal_notification_channels' => 'nullable|string',
         ]);
 
         // Cattura sicura del booleano da AJAX FormData
         $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+
+        $validated['renewal_interval_months'] = $validated['rinnovo_automatico']
+            ? (int) $request->input('renewal_interval_months', 1)
+            : null;
+
+        if ($validated['rinnovo_automatico']) {
+            $validated['data_scadenza'] = now()->addMonthsNoOverflow($validated['renewal_interval_months'])->startOfDay();
+        } else {
+            $validated['data_scadenza'] = $request->input('data_scadenza');
+        }
+
+        $validated['renewal_notification_channels'] =
+            $request->filled('renewal_notification_channels')
+                ? json_decode($request->input('renewal_notification_channels'), true)
+                : [];
+
 
         // GESTIONE JSON NOTIFICHE
         // Se Alpine invia la stringa "null" (Impostazioni Globali), salviamo null vero nel DB.

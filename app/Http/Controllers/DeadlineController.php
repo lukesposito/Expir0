@@ -28,6 +28,12 @@ class DeadlineController extends Controller
                 $oggi = Carbon::now();
                 $scadenza = Carbon::parse($deadline->data_scadenza);
                 $giorniRimanenti = $oggi->diffInDays($scadenza, false);
+
+                $notificationRules = [];
+
+                if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription) {
+                    $notificationRules = $this->getSubscriptionNotificationRules($deadline->subscription);
+                }
                 
                 return [
                     'id' => $deadline->id,
@@ -47,6 +53,10 @@ class DeadlineController extends Controller
                     'user_name' => $deadline->user ? $deadline->user->name : null,
                     'subscription_nome' => $deadline->subscription ? $deadline->subscription->nome : null,
                     'subscription_categoria' => $deadline->subscription ? $deadline->subscription->categoria : null,
+
+                    'notification_rules' => $notificationRules,
+                    'subscription_rinnovo_automatico' => (bool) optional($deadline->subscription)->rinnovo_automatico,
+                    'subscription_renewal_interval_months' => optional($deadline->subscription)->renewal_interval_months,
                 ];
             });
         
@@ -200,6 +210,13 @@ class DeadlineController extends Controller
     public function togglePagato(Request $request, Deadline $deadline)
     {
         $rinnova = $request->input('rinnova', false);
+
+        if ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription && $deadline->subscription->rinnovo_automatico) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Questo abbonamento si rinnova automaticamente e non può essere marcato manualmente come pagato.'
+            ], 422);
+        }
         
         $deadline->pagato = ($deadline->pagato == 1) ? 0 : 1;
         $deadline->save();
@@ -230,8 +247,12 @@ class DeadlineController extends Controller
                 $anniRinnovo = $this->getAnniRinnovoPatente($deadline->user_id, $vecchiaData, $tipoPatente);
                 $nuovaScadenza->data_scadenza = $vecchiaData->copy()->addYears($anniRinnovo);
             }
-            else {
-                $nuovaScadenza->data_scadenza = $vecchiaData->copy()->addYear(); // Bolli e Assicurazioni (1 anno)
+            elseif ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription_id) {
+                $subscription = Subscription::find($deadline->subscription_id);
+                $mesiRinnovo = max(1, (int) ($subscription->renewal_interval_months ?? 1));
+                $nuovaScadenza->data_scadenza = $vecchiaData->copy()->addMonthsNoOverflow($mesiRinnovo);
+            } else {
+                $nuovaScadenza->data_scadenza = $vecchiaData->copy()->addYear();
             }
 
             // --- 2. SGANCIAMO GLI ID ---
@@ -324,19 +345,24 @@ class DeadlineController extends Controller
             }
 
             elseif ($deadline->tipo === 'spesa_abbonamento' && $deadline->subscription_id) {
-                $vecchio = Subscription::find($deadline->subscription_id);
-                if ($vecchio) {
-                    $nuovo = $vecchio->replicate();
-                    $nuovo->data_scadenza = $nuovaScadenza->data_scadenza;
-                    $nuovo->saveQuietly();
-                    $nuovaScadenza->subscription_id = $nuovo->id;
+                $subscription = Subscription::find($deadline->subscription_id);
+
+                if ($subscription) {
+                    $mesiRinnovo = max(1, (int) ($subscription->renewal_interval_months ?? 1));
+
+                    $nuovaScadenza->data_scadenza = $vecchiaData->copy()->addMonthsNoOverflow($mesiRinnovo);
+
+                    $subscription->data_scadenza = $nuovaScadenza->data_scadenza;
+                    $subscription->saveQuietly();
+
+                    $nuovaScadenza->subscription_id = $subscription->id;
                 }
             }
 
             // 4. Salviamo la nuova scadenza
             $nuovaScadenza->save();
             
-            $messaggio = 'Archiviato! Nuovo rinnovo generato per il ' . $nuovaScadenza->data_scadenza->format('Y') . '!';
+            $messaggio = 'Archiviato! Nuovo rinnovo generato per il ' . $nuovaScadenza->data_scadenza->format('d/m/Y') . '!';
         }
         
         return response()->json([
@@ -359,5 +385,23 @@ class DeadlineController extends Controller
         if ($eta < 70) return 5;
         if ($eta < 80) return 3;
         return 2;
+    }
+
+    private function getSubscriptionNotificationRules(?Subscription $subscription): array
+    {
+        if (!$subscription) {
+            return [];
+        }
+
+        return !empty($subscription->notification_override)
+            ? $subscription->notification_override
+            : [
+                [
+                    'days_before' => max(0, (int) ($subscription->giorni_preavviso ?? 0)),
+                    'channels' => !empty($subscription->renewal_notification_channels)
+                        ? $subscription->renewal_notification_channels
+                        : ['email'],
+                ]
+            ];
     }
 }

@@ -33,6 +33,54 @@ class SendDeadlineReminders extends Command
         // Prepariamo un array per raccogliere le notifiche per ogni utente
         $digestPerUtente = []; 
 
+        // Rinnovo automatico subscribtion appena scadute
+        $subscriptionDeadlinesDaRinnovare = Deadline::with('subscription')
+            ->where('tipo', 'spesa_abbonamento')
+            ->where('pagato', false)
+            ->whereDate('data_scadenza', '<=', $oggi)
+            ->get();
+
+        foreach ($subscriptionDeadlinesDaRinnovare as $deadline) {
+            $subscription = $deadline->subscription;
+
+            if (!$subscription || !$subscription->rinnovo_automatico) {
+                continue;
+            }
+
+            $interval = max(1, (int) ($subscription->renewal_interval_months ?? 1));
+            $vecchiaData = Carbon::parse($deadline->data_scadenza)->startOfDay();
+            $nuovaData = $vecchiaData->copy()->addMonthsNoOverflow($interval);
+
+            // 1. Chiudiamo la deadline corrente come pagata
+            $deadline->pagato = true;
+            $deadline->data_pagamento = $oggi;
+            $deadline->save();
+
+            // 2. Evitiamo duplicati: se esiste già una futura deadline aperta, non la ricreiamo
+            $esisteGia = Deadline::where('tipo', 'spesa_abbonamento')
+                ->where('subscription_id', $subscription->id)
+                ->where('pagato', false)
+                ->whereDate('data_scadenza', $nuovaData->format('Y-m-d'))
+                ->exists();
+
+            if (!$esisteGia) {
+                Deadline::create([
+                    'tipo' => 'spesa_abbonamento',
+                    'data_scadenza' => $nuovaData,
+                    'importo' => $subscription->importo,
+                    'note' => $subscription->nome . ' (' . $subscription->categoria . ')' . ($subscription->note ? ' - ' . $subscription->note : ''),
+                    'user_id' => $subscription->user_id,
+                    'vehicle_id' => $subscription->vehicle_id,
+                    'subscription_id' => $subscription->id,
+                    'pagato' => false,
+                ]);
+            }
+
+            // 3. Aggiorniamo la subscription madre alla nuova prossima scadenza
+            $subscription->data_scadenza = $nuovaData;
+            $subscription->saveQuietly();
+        }
+
         // $this->info("=======================================");
         // $this->info("Inizio controllo di " . $scadenze->count() . " scadenze non pagate...");
         // $this->info("Data di oggi considerata: " . $oggi->format('d/m/Y'));
@@ -211,7 +259,18 @@ class SendDeadlineReminders extends Command
                 if ($giorniRimanenti >= 0) {
                     foreach ($rules as $rule) {
                         $daysBefore = (int) ($rule['days_before'] ?? 0);
-                        $channel = $rule['channel'] ?? 'email';
+
+                        $channels = [];
+                        if (!empty($rule['channels']) && is_array($rule['channels'])) {
+                            $channels = $rule['channels'];
+                        } else {
+                            $singleChannel = $rule['channel'] ?? 'email';
+                            $channels = match ($singleChannel) {
+                                'both' => ['email', 'push'],
+                                'push' => ['push'],
+                                default => ['email'],
+                            };
+                        }
 
                         if ($giorniRimanenti === $daysBefore) {
                             $haTriggerato = true;
@@ -224,13 +283,9 @@ class SendDeadlineReminders extends Command
                                 $urgenza = 'avviso';
                             }
 
-                            if (in_array($channel, ['email', 'both'])) {
-                                $inviaEmail = true;
-                            }
-
-                            if (in_array($channel, ['push', 'both'])) {
-                                $inviaPush = true;
-                            }
+                            $inviaEmail = in_array('email', $channels, true);
+                            $inviaPush = in_array('push', $channels, true);
+                            break;
                         }
                     }
                 } elseif ($giorniRimanenti < 0 && $giorniRimanenti >= -30) {
@@ -313,6 +368,29 @@ class SendDeadlineReminders extends Command
                         }
                         // $this->line("   -> 📧 Aggiunto al digest email di Famiglia.");
                     }
+                }
+
+                if ($deadline->tipo === 'spesa_abbonamento' && $giorniRimanenti === 0 && !$deadline->pagato && $deadline->subscription->rinnovo_automatico) {
+                    $subscription = $deadline->subscription;
+                    $interval = max(1, (int) ($subscription->renewal_interval_months ?? 1));
+
+                    $nuovaData = Carbon::parse($deadline->data_scadenza)
+                        ->copy()
+                        ->addMonthsNoOverflow($interval)
+                        ->startOfDay();
+
+                    $deadline->update([
+                        'data_scadenza' => $nuovaData,
+                        'pagato' => false,
+                        'notified_year' => false,
+                        'notified_30' => false,
+                        'notified_15' => false,
+                        'notified_7' => false,
+                    ]);
+
+                    $subscription->update([
+                        'data_scadenza' => $nuovaData,
+                    ]);
                 }
             }
         }
