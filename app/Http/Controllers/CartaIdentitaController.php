@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CartaIdentita;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class CartaIdentitaController extends Controller
 {
@@ -52,11 +53,18 @@ class CartaIdentitaController extends Controller
             'user_id' => 'required|exists:users,id',
             'numero' => 'required|string|max:50',
             'comune_rilascio' => 'nullable|string|max:100',
-            'data_rilascio' => 'nullable|date',
-            'data_scadenza' => 'required|date',
+            'data_rilascio' => 'required|date',
+            'data_scadenza' => 'nullable|date',
             'note' => 'nullable|string',
-            'notification_override' => 'nullable|string'
+            'notification_override' => 'nullable|string',
         ]);
+
+        if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
+            $validated['data_scadenza'] = $this->calcolaScadenzaCartaIdentita(
+                $validated['user_id'],
+                $validated['data_rilascio']
+            )->format('Y-m-d');
+        }
 
         if ($request->notification_override && $request->notification_override !== 'null') {
             $validated['notification_override'] = json_decode($request->notification_override, true);
@@ -79,11 +87,18 @@ class CartaIdentitaController extends Controller
             'user_id' => 'required|exists:users,id',
             'numero' => 'required|string|max:50',
             'comune_rilascio' => 'nullable|string|max:100',
-            'data_rilascio' => 'nullable|date',
-            'data_scadenza' => 'required|date',
+            'data_rilascio' => 'required|date',
+            'data_scadenza' => 'nullable|date',
             'note' => 'nullable|string',
             'notification_override' => 'nullable|string'
         ]);
+
+        if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
+            $validated['data_scadenza'] = $this->calcolaScadenzaCartaIdentita(
+                $validated['user_id'],
+                $validated['data_rilascio']
+            )->format('Y-m-d');
+        }
 
         if ($request->notification_override && $request->notification_override !== 'null') {
             $validated['notification_override'] = json_decode($request->notification_override, true);
@@ -109,5 +124,34 @@ class CartaIdentitaController extends Controller
         }
 
         return redirect()->route('carte-identita.index')->with('success', 'Carta d\'Identità eliminata!');
+    }
+
+    private function calcolaScadenzaCartaIdentita($userId, $dataRichiestaStr)
+    {
+        $user = User::find($userId);
+        $dataRichiesta = Carbon::parse($dataRichiestaStr);
+
+        if (!$user || !$user->data_nascita) {
+            return $dataRichiesta->copy()->addYears(10);
+        }
+
+        $dataNascita = Carbon::parse($user->data_nascita);
+        $eta = $dataNascita->diffInYears($dataRichiesta);
+
+        if ($eta < 3) {
+            $base = $dataRichiesta->copy()->addYears(3);
+        } elseif ($eta < 18) {
+            $base = $dataRichiesta->copy()->addYears(5);
+        } else {
+            $base = $dataRichiesta->copy()->addYears(9);
+        }
+
+        $scadenza = $dataNascita->copy()->year($base->year);
+
+        if ($scadenza->lt($base)) {
+            $scadenza->addYear();
+        }
+
+        return $scadenza;
     }
 }

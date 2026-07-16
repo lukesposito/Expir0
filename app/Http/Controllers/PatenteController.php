@@ -68,7 +68,15 @@ class PatenteController extends Controller
         }
 
         if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
-            $validated['data_scadenza'] = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+            $esito = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+
+            if ($esito['status'] !== 'ok_auto') {
+                return back()->withErrors([
+                    'data_scadenza' => $esito['messaggio']
+                ])->withInput();
+            }
+
+            $validated['data_scadenza'] = $esito['data_scadenza'];
         }
 
         Patente::create($validated);
@@ -104,7 +112,15 @@ class PatenteController extends Controller
         }
 
         if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
-            $validated['data_scadenza'] = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+            $esito = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+
+            if ($esito['status'] !== 'ok_auto') {
+                return back()->withErrors([
+                    'data_scadenza' => $esito['messaggio']
+                ])->withInput();
+            }
+
+            $validated['data_scadenza'] = $esito['data_scadenza'];
         }
 
         $patente->update($validated);
@@ -127,29 +143,88 @@ class PatenteController extends Controller
         return redirect()->route('patenti.index')->with('success', 'Patente eliminata!');
     }
 
-    private function calcolaScadenzaPatente($userId, $dataRilascioStr, $tipo)
+    private function calcolaScadenzaPatente($userId, $dataRinnovoStr, $tipo = null)
     {
         $user = User::find($userId);
-        $dataRilascio = Carbon::parse($dataRilascioStr);
-        $categorie = explode(',', strtoupper(str_replace(' ', '', $tipo ?? '')));
-        $haPatentePesante = in_array('C', $categorie) || in_array('CE', $categorie);
+        $dataRinnovo = Carbon::parse($dataRinnovoStr);
+        $tipo = strtoupper(trim($tipo ?? ''));
 
-        if ($user && $user->data_nascita) {
-            $dataNascita = Carbon::parse($user->data_nascita);
-            $eta = $dataNascita->diffInYears($dataRilascio);
-
-            if ($haPatentePesante) {
-                $anni = 3;
-            } else {
-                if ($eta < 50) $anni = 10;
-                elseif ($eta < 70) $anni = 5;
-                elseif ($eta < 80) $anni = 3;
-                else $anni = 2;
-            }
-
-            return Carbon::create($dataRilascio->year + $anni, $dataNascita->month, $dataNascita->day)->format('Y-m-d');
+        if (!$user || !$user->data_nascita) {
+            return [
+                'status' => 'ok_auto',
+                'data_scadenza' => $dataRinnovo->copy()->addYears(10)->format('Y-m-d'),
+                'messaggio' => null,
+            ];
         }
 
-        return $dataRilascio->copy()->addYears($haPatentePesante ? 3 : 10)->format('Y-m-d');
+        $dataNascita = Carbon::parse($user->data_nascita);
+        $eta = $dataNascita->diffInYears($dataRinnovo);
+
+        $categorieLeggere = ['AM', 'A1', 'A2', 'A', 'B1', 'B', 'BE'];
+        $categorieC = ['C1', 'C1E', 'C', 'CE'];
+        $categorieD = ['D1', 'D1E', 'D', 'DE'];
+
+        if (in_array($tipo, $categorieD, true)) {
+            if ($eta < 60) {
+                return [
+                    'status' => 'ok_auto',
+                    'data_scadenza' => $dataRinnovo->copy()->addYears(5)->format('Y-m-d'),
+                    'messaggio' => null,
+                ];
+            }
+
+            return [
+                'status' => 'manuale_richiesto',
+                'data_scadenza' => null,
+                'messaggio' => 'Per le categorie D/D1/DE/D1E da 60 anni in poi il rinnovo va gestito manualmente con verifica Commissione Medica Locale.',
+            ];
+        }
+
+        if (in_array($tipo, $categorieC, true)) {
+            if ($eta < 65) {
+                return [
+                    'status' => 'ok_auto',
+                    'data_scadenza' => $dataRinnovo->copy()->addYears(5)->format('Y-m-d'),
+                    'messaggio' => null,
+                ];
+            }
+
+            return [
+                'status' => 'manuale_richiesto',
+                'data_scadenza' => null,
+                'messaggio' => 'Per le categorie C/CE da 65 anni in poi è consigliata gestione manuale in base al caso d’uso e agli eventuali limiti.',
+            ];
+        }
+
+        if (in_array($tipo, $categorieLeggere, true) || $tipo === '') {
+            if ($eta < 50) {
+                $anniBase = 10;
+            } elseif ($eta < 70) {
+                $anniBase = 5;
+            } elseif ($eta < 80) {
+                $anniBase = 3;
+            } else {
+                $anniBase = 2;
+            }
+
+            $base = $dataRinnovo->copy()->addYears($anniBase - 1);
+            $scadenza = $dataNascita->copy()->year($base->year);
+
+            if ($scadenza->lt($base)) {
+                $scadenza->addYear();
+            }
+
+            return [
+                'status' => 'ok_auto',
+                'data_scadenza' => $scadenza->format('Y-m-d'),
+                'messaggio' => null,
+            ];
+        }
+
+        return [
+            'status' => 'manuale_richiesto',
+            'data_scadenza' => null,
+            'messaggio' => 'Categoria patente non riconosciuta automaticamente.',
+        ];
     }
 }

@@ -324,10 +324,12 @@
                         <div class="modal-header">
                             <h3 class="modal-title">Nuova Carta d'Identità</h3>
                             <button @click="closeCreateModal()" class="modal-close">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
                             </button>
                         </div>
-                        
+
                         <form @submit.prevent="submitForm($event, '{{ route('carte-identita.store') }}', 'POST')" class="modal-body">
                             @csrf
                             <div class="space-y-5">
@@ -335,17 +337,43 @@
                                     <label class="form-label">Membro Famiglia *</label>
                                     <select name="user_id" required class="form-input">
                                         <option value="">Seleziona membro...</option>
-                                        @foreach($users as $user) <option value="{{ $user->id }}">{{ $user->name }}</option> @endforeach
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
-                                <div><label class="form-label">Numero Documento *</label><input type="text" name="numero" required class="form-input uppercase" placeholder="CA12345AA"></div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="form-label">Data Rilascio</label><input type="date" name="data_rilascio" class="form-input"></div>
-                                    <div><label class="form-label">Data Scadenza *</label><input type="date" name="data_scadenza" required class="form-input"></div>
+
+                                <div>
+                                    <label class="form-label">Numero Documento *</label>
+                                    <input type="text" name="numero" required class="form-input uppercase" placeholder="CA12345AA">
                                 </div>
-                                <div><label class="form-label">Comune Rilascio</label><input type="text" name="comune_rilascio" class="form-input" placeholder="Es. Roma"></div>
-                                <div><label class="form-label">Note</label><textarea name="note" rows="3" class="form-input"></textarea></div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                                    <div>
+                                        <label class="form-label">Data Rilascio *</label>
+                                        <input type="date" name="data_rilascio" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="form-label">Data Scadenza</label>
+                                        <input type="date" name="data_scadenza" class="form-input">
+                                        <p class="mt-2 max-w-xs text-xs text-slate-500 leading-relaxed">
+                                            Facoltativa. Se la lasci vuota, la scadenza viene calcolata automaticamente.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label class="form-label">Comune Rilascio</label>
+                                        <input type="text" name="comune_rilascio" class="form-input" placeholder="Es. Roma">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">Note</label>
+                                    <textarea name="note" rows="3" class="form-input"></textarea>
+                                </div>
                             </div>
+
                             <div class="mt-5 pt-4 border-t border-violet-200">
                                 <div class="flex items-center justify-between mb-3">
                                     <div>
@@ -357,7 +385,7 @@
                                         <div class="w-9 h-5 bg-violet-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
                                     </label>
                                 </div>
-                                
+
                                 <input type="hidden" name="notification_override" :value="JSON.stringify(createNotifCustom ? createNotifRules : null)">
 
                                 <div x-show="!createNotifCustom" class="text-xs text-violet-800 bg-white p-2.5 rounded-lg border border-violet-200 font-medium flex items-center gap-2">
@@ -373,14 +401,18 @@
                                                 <option value="email">Email</option>
                                                 <option value="push">Push (App)</option>
                                             </select>
-                                            <button type="button" @click="removeCreateRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                            <button type="button" @click="removeCreateRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
                                         </div>
                                     </template>
+
                                     <button type="button" @click="addCreateRule()" class="text-xs font-bold text-violet-700 hover:text-violet-900 mt-2 flex items-center gap-1.5 px-1">
                                         <i class="fa-solid fa-circle-plus"></i> Aggiungi un'altra regola
                                     </button>
                                 </div>
                             </div>
+
                             <div class="modal-footer">
                                 <button type="button" @click="closeCreateModal()" class="btn-secondary">Annulla</button>
                                 <button type="submit" class="btn-primary" :disabled="isSubmitting" x-text="isSubmitting ? 'Salvataggio...' : 'Salva'"></button>
@@ -396,9 +428,13 @@
                     <div @click.stop class="modal-content-wrapper">
                         <div class="modal-header">
                             <h3 class="modal-title">Modifica Documento</h3>
-                            <button @click="closeEditModal()" class="modal-close"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                            <button @click="closeEditModal()" class="modal-close">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
                         </div>
-                        
+
                         <form @submit.prevent="submitForm($event, `/carte-identita/${editDoc.id}`, 'PUT')" class="modal-body">
                             @csrf
                             <div class="space-y-5">
@@ -406,17 +442,43 @@
                                     <label class="form-label">Membro Famiglia *</label>
                                     <select name="user_id" x-model="editDoc.user_id" required class="form-input">
                                         <option value="">Seleziona membro...</option>
-                                        @foreach($users as $user) <option value="{{ $user->id }}">{{ $user->name }}</option> @endforeach
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
-                                <div><label class="form-label">Numero Documento *</label><input type="text" name="numero" x-model="editDoc.numero" required class="form-input uppercase"></div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="form-label">Data Rilascio</label><input type="date" name="data_rilascio" x-model="editDoc.data_rilascio" class="form-input"></div>
-                                    <div><label class="form-label">Data Scadenza *</label><input type="date" name="data_scadenza" x-model="editDoc.data_scadenza" required class="form-input"></div>
+
+                                <div>
+                                    <label class="form-label">Numero Documento *</label>
+                                    <input type="text" name="numero" x-model="editDoc.numero" required class="form-input uppercase">
                                 </div>
-                                <div><label class="form-label">Comune Rilascio</label><input type="text" name="comune_rilascio" x-model="editDoc.comune_rilascio" class="form-input"></div>
-                                <div><label class="form-label">Note</label><textarea name="note" x-model="editDoc.note" rows="3" class="form-input"></textarea></div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                                    <div>
+                                        <label class="form-label">Data Rilascio *</label>
+                                        <input type="date" name="data_rilascio" x-model="editDoc.data_rilascio" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="form-label">Data Scadenza</label>
+                                        <input type="date" name="data_scadenza" x-model="editDoc.data_scadenza" class="form-input">
+                                        <p class="mt-2 max-w-xs text-xs text-slate-500 leading-relaxed">
+                                            Facoltativa. Se la lasci vuota, la scadenza viene calcolata automaticamente.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label class="form-label">Comune Rilascio</label>
+                                        <input type="text" name="comune_rilascio" x-model="editDoc.comune_rilascio" class="form-input">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">Note</label>
+                                    <textarea name="note" x-model="editDoc.note" rows="3" class="form-input"></textarea>
+                                </div>
                             </div>
+
                             <div class="mt-5 pt-4 border-t border-violet-200">
                                 <div class="flex items-center justify-between mb-3">
                                     <div>
@@ -428,7 +490,7 @@
                                         <div class="w-9 h-5 bg-violet-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
                                     </label>
                                 </div>
-                                
+
                                 <input type="hidden" name="notification_override" :value="JSON.stringify(editNotifCustom ? editNotifRules : null)">
 
                                 <div x-show="!editNotifCustom" class="text-xs text-violet-800 bg-white p-2.5 rounded-lg border border-violet-200 font-medium flex items-center gap-2">
@@ -444,14 +506,18 @@
                                                 <option value="email">Email</option>
                                                 <option value="push">Push (App)</option>
                                             </select>
-                                            <button type="button" @click="removeEditRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                            <button type="button" @click="removeEditRule(rule.id)" class="text-red-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
                                         </div>
                                     </template>
+
                                     <button type="button" @click="addEditRule()" class="text-xs font-bold text-violet-700 hover:text-violet-900 mt-2 flex items-center gap-1.5 px-1">
                                         <i class="fa-solid fa-circle-plus"></i> Aggiungi un'altra regola
                                     </button>
                                 </div>
                             </div>
+
                             <div class="modal-footer">
                                 <button type="button" @click="closeEditModal()" class="btn-secondary">Annulla</button>
                                 <button type="submit" class="btn-primary" :disabled="isSubmitting" x-text="isSubmitting ? 'Salvataggio...' : 'Salva'"></button>
