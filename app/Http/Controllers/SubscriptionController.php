@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Deadline;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class SubscriptionController extends Controller
@@ -61,7 +62,7 @@ class SubscriptionController extends Controller
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'categoria' => 'required|string|max:255',
-            'data_scadenza' => 'required|date',
+            'data_scadenza' => ['nullable','date', Rule::requiredIf(!$request->boolean('rinnovo_automatico')),],
             'importo' => 'nullable|numeric|min:0',
             'giorni_preavviso' => 'nullable|integer|min:0',
             'url_gestione' => 'nullable|url',
@@ -76,14 +77,21 @@ class SubscriptionController extends Controller
         // Cattura sicura del booleano da AJAX FormData
         $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
 
+        // Se il rinnovo automatico è attivo e la data è vuota,
+        // usiamo la data odierna come prima scadenza/base di rinnovo.
+        if ($validated['rinnovo_automatico'] && empty($validated['data_scadenza'])) {
+            $validated['data_scadenza'] = now()->toDateString();
+        }
+
+        // Intervallo rinnovo: valido solo se il rinnovo automatico è attivo
         $validated['renewal_interval_months'] = $validated['rinnovo_automatico']
             ? (int) $request->input('renewal_interval_months', 1)
             : null;
 
-        $validated['renewal_notification_channels'] =
-            $request->filled('renewal_notification_channels')
-                ? json_decode($request->input('renewal_notification_channels'), true)
-                : [];
+        // Canali notifica rinnovo
+        $validated['renewal_notification_channels'] = $request->filled('renewal_notification_channels')
+            ? json_decode($request->input('renewal_notification_channels'), true)
+            : [];
 
         // GESTIONE JSON NOTIFICHE
         // Se Alpine invia la stringa "null" (Impostazioni Globali), salviamo null vero nel DB.
@@ -107,7 +115,7 @@ class SubscriptionController extends Controller
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'categoria' => 'required|string|max:255',
-            'data_scadenza' => 'nullable|date',
+            'data_scadenza' => ['nullable','date', Rule::requiredIf(!$request->boolean('rinnovo_automatico')),],
             'importo' => 'nullable|numeric|min:0',
             'giorni_preavviso' => 'nullable|integer|min:0',
             'url_gestione' => 'nullable|url',
@@ -122,20 +130,21 @@ class SubscriptionController extends Controller
         // Cattura sicura del booleano da AJAX FormData
         $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
 
+        // Se il rinnovo automatico è attivo e la data è vuota,
+        // usiamo la data odierna come prima scadenza/base di rinnovo.
+        if ($validated['rinnovo_automatico'] && empty($validated['data_scadenza'])) {
+            $validated['data_scadenza'] = now()->toDateString();
+        }
+
+        // Intervallo rinnovo: valido solo se il rinnovo automatico è attivo
         $validated['renewal_interval_months'] = $validated['rinnovo_automatico']
             ? (int) $request->input('renewal_interval_months', 1)
             : null;
 
-        if ($validated['rinnovo_automatico']) {
-            $validated['data_scadenza'] = now()->addMonthsNoOverflow($validated['renewal_interval_months'])->startOfDay();
-        } else {
-            $validated['data_scadenza'] = $request->input('data_scadenza');
-        }
-
-        $validated['renewal_notification_channels'] =
-            $request->filled('renewal_notification_channels')
-                ? json_decode($request->input('renewal_notification_channels'), true)
-                : [];
+        // Canali notifica rinnovo
+        $validated['renewal_notification_channels'] = $request->filled('renewal_notification_channels')
+            ? json_decode($request->input('renewal_notification_channels'), true)
+            : [];
 
 
         // GESTIONE JSON NOTIFICHE

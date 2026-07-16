@@ -314,9 +314,16 @@
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div x-show="!createForm.rinnovo_automatico" x-cloak>
+                                    <div>
                                         <label class="form-label">Prossima Scadenza</label>
-                                        <input type="date" name="data_scadenza" :required="!createForm.rinnovo_automatico" class="form-input">
+                                        <input
+                                            type="date"
+                                            name="data_scadenza"
+                                            x-model="createForm.data_scadenza"
+                                            class="form-input">
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Se il rinnovo automatico è attivo e lasci il campo vuoto, verrà usata la data di oggi.
+                                        </p>
                                     </div>
 
                                     <div :class="createForm.rinnovo_automatico ? 'col-span-2' : ''">
@@ -500,9 +507,16 @@
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div x-show="!editSub.rinnovo_automatico" x-cloak>
+                                    <div>
                                         <label class="form-label">Prossima Scadenza</label>
-                                        <input type="date" name="data_scadenza" x-model="editSub.data_scadenza" :required="!editSub.rinnovo_automatico" class="form-input">
+                                        <input
+                                            type="date"
+                                            name="data_scadenza"
+                                            x-model="editSub.data_scadenza"
+                                            class="form-input">
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Se il rinnovo automatico è attivo e lasci il campo vuoto, verrà usata la data di oggi.
+                                        </p>
                                     </div>
                                     <div><label class="form-label">Importo (€)</label><input type="number" name="importo" x-model="editSub.importo" step="0.01" min="0" class="form-input"></div>
                                 </div>
@@ -512,10 +526,10 @@
                                         <div>
                                             <p class="font-bold text-violet-900 text-sm">Rinnovo Automatico?</p>
                                         </div>
-                                        <label class="switch">
+                                        <!-- <label class="switch">
                                             <input type="checkbox" name="rinnovo_automatico" x-model="editSub.rinnovo_automatico" value="1">
-                                            <!-- span class="slider"></span> -->
-                                        </label>
+                                            span class="slider"></span>
+                                        </label> -->
                                         <div class="space-y-3 rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
                                             <label class="flex items-center justify-between gap-4 cursor-pointer">
                                                 <div>
@@ -524,10 +538,11 @@
                                                 </div>
 
                                                 <div>
-                                                    <input type="checkbox"
+                                                    <input type="hidden"
                                                         name="rinnovo_automatico"
+                                                        :value="editSub.rinnovo_automatico ? 1 : 0">
+                                                    <input type="checkbox"
                                                         x-model="editSub.rinnovo_automatico"
-                                                        value="1"
                                                         class="sr-only peer">
                                                     <div class="relative h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-violet-600">
                                                         <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5"></span>
@@ -554,16 +569,19 @@
                                                     <label class="form-label">Canali notifica rinnovo</label>
                                                     <div class="flex flex-wrap gap-2">
                                                         <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-white">
-                                                            <input type="checkbox" value="mail" x-model="editSub.renewal_notification_channels">
+                                                            <input type="checkbox"
+                                                                :checked="(editSub.renewal_notification_channels || []).includes('mail')"
+                                                                @change="toggleRenewalChannel('mail', $event.target.checked)">
                                                             <span class="text-sm font-medium">Mail</span>
                                                         </label>
 
                                                         <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-white">
-                                                            <input type="checkbox" value="push" x-model="editSub.renewal_notification_channels">
+                                                            <input type="checkbox"
+                                                                :checked="(editSub.renewal_notification_channels || []).includes('push')"
+                                                                @change="toggleRenewalChannel('push', $event.target.checked)">
                                                             <span class="text-sm font-medium">Push</span>
                                                         </label>
                                                     </div>
-
                                                     <input type="hidden"
                                                         name="renewal_notification_channels"
                                                         :value="JSON.stringify(editSub.renewal_notification_channels)">
@@ -858,8 +876,22 @@
                     // PER IL RINNOVO AUTOMATICO
                     this.editSub.rinnovo_automatico = !!this.editSub.rinnovo_automatico;
                     this.editSub.renewal_interval_months = this.editSub.renewal_interval_months || 1;
-                    this.editSub.renewal_notification_channels = Array.isArray(this.editSub.renewal_notification_channels)
-                        ? this.editSub.renewal_notification_channels
+                    
+                    //I checkbox multipli con x-model non sono due boolean distinti: sono una vista su un unico array condiviso. 
+                    // Se quell’array è corrotto o contiene valori inattesi, 
+                    // i checkbox non sanno più rappresentare correttamente lo stato e sembrano attivarsi/disattivarsi insieme.
+                    let channels = this.editSub.renewal_notification_channels;
+                                    
+                    if (typeof channels === 'string') {
+                        try {
+                            channels = JSON.parse(channels);
+                        } catch (e) {
+                            channels = [];
+                        }
+                    }
+
+                    this.editSub.renewal_notification_channels = Array.isArray(channels)
+                        ? channels.filter(v => v === 'mail' || v === 'push')
                         : [];
 
                     // --- STAMPIAMO I DATI GREZZI NELLA CONSOLE PER SICUREZZA ---
@@ -925,6 +957,24 @@
 
                 closeBulkDeleteModal() { this.isClosingBulkDelete = true; setTimeout(() => { this.showBulkDeleteModal = false; this.isClosingBulkDelete = false; }, 500); },
                 
+                toggleRenewalChannel(channel, checked) {
+                    if (!Array.isArray(this.editSub.renewal_notification_channels)) {
+                        this.editSub.renewal_notification_channels = [];
+                    }
+
+                    this.editSub.renewal_notification_channels =
+                        this.editSub.renewal_notification_channels.filter(v => v === 'mail' || v === 'push');
+
+                    if (checked) {
+                        if (!this.editSub.renewal_notification_channels.includes(channel)) {
+                            this.editSub.renewal_notification_channels.push(channel);
+                        }
+                    } else {
+                        this.editSub.renewal_notification_channels =
+                            this.editSub.renewal_notification_channels.filter(v => v !== channel);
+                    }
+                },
+
                 async executeBulkDelete() {
                     if (this.selectedItems.length === 0) return;
                     this.isSubmitting = true;
