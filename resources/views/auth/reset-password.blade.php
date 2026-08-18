@@ -57,6 +57,17 @@
         .password-help-tooltip ul { margin: 0; padding-left: 16px; }
         .password-help-tooltip li { margin-bottom: 4px; }
         .password-help-tooltip li:last-child { margin-bottom: 0; }
+        .modal-overlay { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.modal-visible { display: flex; }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.60); backdrop-filter: blur(4px); }
+        .modal-container { position: relative; z-index: 1001; width: 100%; max-width: 28rem; margin-inline: auto; }
+        .modal-content-wrapper { position: relative; width: 100%; background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.28); }
+        .modal-active .modal-content-wrapper { animation: modalIn 0.3s ease-out forwards; }
+        .modal-out .modal-content-wrapper { animation: modalOut 0.3s ease-in forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes modalOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(12px) scale(0.96); } }
+        @media (max-width: 640px) { .modal-overlay { align-items: flex-end; padding: 0.75rem; } .modal-container { max-width: none; } .modal-content-wrapper { border-radius: 1rem 1rem 0 0; } }
+
     </style>
 </head>
 <body>
@@ -181,6 +192,7 @@
         <div
             id="weakPasswordModal"
             class="modal-overlay {{ $showWeakPasswordModal ? 'modal-visible modal-active' : '' }}"
+            aria-hidden="{{ $showWeakPasswordModal ? 'false' : 'true' }}"
         >
             <div onclick="closeWeakPasswordModal()" class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
 
@@ -209,9 +221,8 @@
                 </div>
             </div>
         </div>
-        <div id="successPasswordModal" class="modal-overlay">
+        <div id="successPasswordModal" class="modal-overlay" aria-hidden="true">
             <div onclick="closeSuccessPasswordModal()" class="modal-backdrop bg-slate-900/60 backdrop-blur-sm"></div>
-
             <div class="modal-container w-full max-w-md">
                 <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                     <div class="p-6 text-center pt-8 pb-6">
@@ -243,13 +254,9 @@
             const hasWeakPasswordModal = {{ $showWeakPasswordModal ? 'true' : 'false' }};
             const hasSuccessModal = @json((bool) session('status'));
 
-            if (!hasWeakPasswordModal && !hasSuccessModal) {
-                requestAnimationFrame(() => {
-                    document.body.classList.add('page-ready');
-                });
-            } else {
+            requestAnimationFrame(() => {
                 document.body.classList.add('page-ready');
-            }
+            });
 
             document.querySelectorAll('[data-transition-link]').forEach(link => {
                 link.addEventListener('click', function (e) {
@@ -350,8 +357,12 @@
 
         function closeWeakPasswordModal() {
             const modal = document.getElementById('weakPasswordModal');
+
+            if (!modal) return;
+
             modal.classList.remove('modal-active');
             modal.classList.add('modal-out');
+            modal.setAttribute('aria-hidden', 'true');
 
             setTimeout(() => {
                 modal.classList.remove('modal-visible', 'modal-out');
@@ -360,14 +371,22 @@
 
         function openSuccessPasswordModal() {
             const modal = document.getElementById('successPasswordModal');
+
+            if (!modal) return;
+
             modal.classList.remove('modal-out');
             modal.classList.add('modal-visible', 'modal-active');
+            modal.setAttribute('aria-hidden', 'false');
         }
 
         function closeSuccessPasswordModal() {
             const modal = document.getElementById('successPasswordModal');
+
+            if (!modal) return;
+
             modal.classList.remove('modal-active');
             modal.classList.add('modal-out');
+            modal.setAttribute('aria-hidden', 'true');
 
             setTimeout(() => {
                 modal.classList.remove('modal-visible', 'modal-out');

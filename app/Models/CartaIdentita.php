@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Deadline;
+use App\Services\Deadlines\DeadlineSyncService;
 
 class CartaIdentita extends Model
 {
@@ -20,27 +21,18 @@ class CartaIdentita extends Model
 
     public function deadlines()
     {
-        return $this->hasMany(Deadline::class);
+        return $this->hasMany(Deadline::class, 'carta_identita_id', 'id')
+            ->where('tipo', 'carta_identita');
     }
 
     protected static function booted()
     {
-        static::saved(function ($doc) {
-            Deadline::updateOrCreate(
-                ['carta_identita_id' => $doc->id],
-                [
-                    'user_id' => $doc->user_id,
-                    'tipo' => 'carta_identita',
-                    'data_scadenza' => $doc->data_scadenza,
-                    'importo' => 0,
-                    'note' => $doc->note ?? 'Scadenza Carta d\'Identità: ' . $doc->numero,
-                    'pagato' => false
-                ]
-            );
+        static::saved(function ($cartaIdentita) {
+            app(DeadlineSyncService::class)->syncFromSource($cartaIdentita);
         });
 
-        static::deleting(function ($doc) {
-            Deadline::where('carta_identita_id', $doc->id)->delete();
+        static::deleting(function ($cartaIdentita) {
+            app(DeadlineSyncService::class)->deleteFromSource($cartaIdentita);
         });
     }
 }

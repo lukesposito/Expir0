@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\DocumentExtraction;
 
 class Document extends Model
 {
@@ -20,8 +21,11 @@ class Document extends Model
         'path',             // Il percorso del file (es: documents/file.pdf)
         'nome_originale',   // Il nome vero del file (es: Assicurazione_Panda.pdf)
         'tipo_file',        // Il tipo MIME (es: application/pdf, image/jpeg)
-        'da_classificare',  // Booleano: true se caricato dalla dashboard rapida
         'categoria',        // Categoria del documento (es: 'bollo', 'assicurazione', 'patente')
+        'processing_status',
+        'review_status',
+        'extracted_data',
+        'confidence_score',
     ];
 
     /**
@@ -29,6 +33,8 @@ class Document extends Model
      */
     protected $casts = [
         'da_classificare' => 'boolean',
+        'extracted_data' => 'array',
+        'confidence_score' => 'decimal:2',
     ];
 
     /**
@@ -46,5 +52,20 @@ class Document extends Model
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function extractions()
+    {
+        return $this->hasMany(DocumentExtraction::class);
+    }
+
+    public function latestExtraction()
+    {
+        return $this->hasOne(DocumentExtraction::class)->latestOfMany();
+    }
+
+    public function actionProposals()
+    {
+        return $this->hasMany(ActionProposal::class);
     }
 }

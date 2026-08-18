@@ -5,8 +5,19 @@
                 <h2 class="font-black text-2xl text-slate-800 tracking-tight leading-tight">
                     Dashboard Amministrativa
                 </h2>
-                <p class="text-sm text-slate-500 mt-1">Monitoraggio veicoli e scadenze famiglia</p>
+                <p class="text-sm text-slate-500 mt-1">
+                    Monitoraggio veicoli e scadenze famiglia
+                </p>
             </div>
+
+            <button
+                type="button"
+                @click="$dispatch('open-action-launcher')"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2"
+            >
+                <i class="fa-solid fa-plus"></i>
+                <span>Cosa vuoi fare?</span>
+            </button>
 
             <button 
                 x-data
@@ -104,7 +115,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-50 min-h-screen w-full relative" x-data="dashboardManager()" @change-dashboard-year.window="changeYear($event.detail)">
+    <div
+        class="py-8 bg-slate-50 min-h-screen w-full relative"
+        x-data="dashboardManager()"
+        @change-dashboard-year.window="changeYear($event.detail)"
+        @open-action-launcher.window="openActionLauncher()"
+    >
         
         <div x-show="isLoading" x-transition.opacity.duration.300ms class="absolute inset-0 bg-slate-50/60 backdrop-blur-[2px] z-50 flex items-start justify-center pt-20 rounded-2xl" x-cloak>
             <div class="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-3">
@@ -114,7 +130,7 @@
          
         <div class="w-full px-4 sm:px-6 lg:px-8 space-y-8" :class="{ 'opacity-50 pointer-events-none': isLoading }">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
                 <div @click="setTopFilter('urgente')" class="bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden group hover:shadow-md transition-all cursor-pointer transform hover:-translate-y-1" :class="activeFilter === 'urgente' ? 'ring-4 ring-red-100 border-2 border-red-400' : 'border border-slate-200'">
                     <div class="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
                     <div class="flex justify-between items-start">
@@ -147,6 +163,65 @@
                         <div class="p-3 rounded-xl transition-colors" :class="activeFilter === 'all' && chartFilterType === null ? 'bg-blue-500 text-white' : 'bg-blue-50 text-blue-500'"><i class="fa-solid fa-euro-sign text-xl"></i></div>
                     </div>
                 </div>
+
+                <a
+                    href="{{ route('action-proposals.index') }}"
+                    class="bg-white rounded-2xl shadow-sm border border-indigo-100 p-6 relative overflow-hidden group hover:shadow-md transition-all cursor-pointer transform hover:-translate-y-1 block"
+                    :class="Number(stats.azioniDaVerificare || 0) > 0
+                        ? 'ring-2 ring-indigo-100'
+                        : ''"
+                >
+                    <div
+                        class="absolute right-0 top-0 h-full w-1"
+                        :class="Number(stats.azioniDaVerificare || 0) > 0
+                            ? 'bg-indigo-500'
+                            : 'bg-slate-300'"
+                    ></div>
+
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                Azioni da verificare
+                            </p>
+
+                            <h3
+                                class="text-3xl font-black mt-2"
+                                :class="Number(stats.azioniDaVerificare || 0) > 0
+                                    ? 'text-indigo-600'
+                                    : 'text-slate-800'"
+                                x-text="stats.azioniDaVerificare || 0"
+                            ></h3>
+
+                            <p
+                                class="mt-2 text-xs font-semibold"
+                                :class="Number(stats.azioniDaVerificare || 0) > 0
+                                    ? 'text-indigo-600'
+                                    : 'text-slate-400'"
+                                x-text="Number(stats.azioniDaVerificare || 0) > 0
+                                    ? 'Controlla le proposte del sistema'
+                                    : 'Tutto sotto controllo'"
+                            ></p>
+                        </div>
+
+                        <div
+                            class="p-3 rounded-xl transition-colors"
+                            :class="Number(stats.azioniDaVerificare || 0) > 0
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-slate-100 text-slate-400'"
+                        >
+                            <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                        </div>
+                    </div>
+
+                    <div
+                        x-show="Number(stats.azioniDaVerificare || 0) > 0"
+                        x-cloak
+                        class="absolute bottom-4 right-5 flex items-center gap-1.5 text-xs font-black text-indigo-600"
+                    >
+                        Apri
+                        <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </a>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden group hover:shadow-md transition-all">
                     <div class="absolute right-0 top-0 h-full w-1 bg-emerald-500"></div>
@@ -224,6 +299,100 @@
                     </h3>
                     <div class="h-[300px]"><canvas id="spesePerTipoChart"></canvas></div>
                  </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-amber-500 rounded-full"></span>
+                            Review Inbox
+                        </h3>
+                        <span class="inline-flex items-center px-3 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-black border border-amber-200">
+                            <span x-text="reviewInboxCount"></span>&nbsp;da verificare
+                        </span>
+                    </div>
+
+                    <div class="space-y-3 flex-1">
+                        <template x-for="item in reviewInbox" :key="item.id">
+                            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 hover:bg-white transition-all">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-bold text-slate-800 truncate" x-text="item.document?.nome_originale || 'Documento senza nome'"></p>
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Categoria: <span class="font-semibold" x-text="item.document_category"></span>
+                                        </p>
+                                        <p class="text-xs text-slate-500">
+                                            Motore: <span class="font-semibold" x-text="item.extraction_engine || 'N/D'"></span>
+                                        </p>
+                                    </div>
+
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-black border"
+                                        :bg-class="{
+                                            'bg-amber-100 text-amber-700 border-amber-200': item.status === 'needs_review',
+                                            'bg-blue-100 text-blue-700 border-blue-200': item.status === 'processing',
+                                            'bg-slate-100 text-slate-700 border-slate-200': item.status === 'pending',
+                                            'bg-red-100 text-red-700 border-red-200': item.status === 'failed',
+                                            'bg-emerald-100 text-emerald-700 border-emerald-200': item.status === 'reviewed'
+                                        }"
+                                        x-text="item.status">
+                                    </span>
+                                </div>
+
+                                <div class="mt-3">
+                                    <textarea
+                                        x-model="reviewActionNotes[item.id]"
+                                        rows="2"
+                                        class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        placeholder="Nota review opzionale..."
+                                    ></textarea>
+                                </div>
+
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    <button
+                                        @click="handleReviewAction(item, 'approve')"
+                                        type="button"
+                                        class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
+                                    >
+                                        Approva
+                                    </button>
+
+                                    <button
+                                        @click="handleReviewAction(item, 'defer')"
+                                        type="button"
+                                        class="px-3 py-2 rounded-lg bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors"
+                                    >
+                                        Rimanda
+                                    </button>
+
+                                    <button
+                                        @click="handleReviewAction(item, 'fail')"
+                                        type="button"
+                                        class="px-3 py-2 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-colors"
+                                    >
+                                        Fallito
+                                    </button>
+                                </div>
+
+                                <div class="mt-3 flex items-center justify-between gap-3">
+                                    <div class="text-xs text-slate-500">
+                                        Confidence:
+                                        <span class="font-bold text-slate-700" x-text="item.confidence_score ?? 'N/D'"></span>
+                                    </div>
+
+                                    <a :href="item.document?.path"
+                                    target="_blank"
+                                    class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                                        Apri documento
+                                    </a>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div x-show="reviewInbox.length === 0" class="flex flex-col items-center justify-center py-8 text-slate-400">
+                            <i class="fa-solid fa-inbox text-3xl mb-2 text-emerald-200"></i>
+                            <p class="text-sm font-semibold">Nessun documento da verificare.</p>
+                        </div>
+                    </div>
+                </div>
 
                  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                     <div class="flex justify-between items-center mb-6">
@@ -539,6 +708,174 @@
         </div>
     </div>
 
+    {{-- LAUNCHER OPERATIVO --}}
+    <div
+        x-show="showActionLauncher"
+        x-cloak
+        @keydown.escape.window="closeActionLauncher()"
+        class="modal-overlay"
+        :class="{
+            'modal-active': showActionLauncher && !isClosingActionLauncher,
+            'modal-out': isClosingActionLauncher
+        }"
+    >
+        <div
+            class="modal-backdrop"
+            @click="closeActionLauncher()"
+        ></div>
+
+        <div class="modal-container modal-container-launcher">
+            <div
+                class="modal-content-wrapper bg-white"
+                @click.stop
+            >
+                <div class="border-b border-slate-100 px-6 py-5">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-[0.18em] text-indigo-500">
+                                Azione rapida
+                            </p>
+                            <h3 class="mt-1 text-xl font-black text-slate-900">
+                                Cosa vuoi fare?
+                            </h3>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Parti da ciò che è appena successo: ti guidiamo noi.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            @click="closeActionLauncher()"
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                            aria-label="Chiudi"
+                        >
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 p-5">
+                    <button
+                        type="button"
+                        @click="goToDeadlines()"
+                        class="group flex w-full items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-100/70 hover:shadow-md"
+                    >
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-xl text-white shadow-sm">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-black text-slate-900">
+                                Ho pagato o rinnovato qualcosa
+                            </span>
+                            <span class="mt-1 block text-xs leading-relaxed text-slate-600">
+                                Trova la scadenza, conferma il pagamento e crea il prossimo rinnovo.
+                            </span>
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right text-sm text-emerald-600 transition group-hover:translate-x-1"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="openDocumentFromLauncher()"
+                        class="group flex w-full items-center gap-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-100/70 hover:shadow-md"
+                    >
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-xl text-white shadow-sm">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                        </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-black text-slate-900">
+                                Ho un documento o una ricevuta
+                            </span>
+                            <span class="mt-1 block text-xs leading-relaxed text-slate-600">
+                                Carica una foto o un PDF: lo archivierai ora e presto il sistema ti proporrà il collegamento.
+                            </span>
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right text-sm text-blue-600 transition group-hover:translate-x-1"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="showCreateChoices = !showCreateChoices"
+                        class="group flex w-full items-center gap-4 rounded-2xl border border-violet-100 bg-violet-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-100/70 hover:shadow-md"
+                    >
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-xl text-white shadow-sm">
+                            <i class="fa-solid fa-plus"></i>
+                        </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-black text-slate-900">
+                                Voglio aggiungere qualcosa
+                            </span>
+                            <span class="mt-1 block text-xs leading-relaxed text-slate-600">
+                                Scegli cosa vuoi registrare: non devi cercare la sezione giusta.
+                            </span>
+                        </span>
+
+                        <i
+                            class="fa-solid fa-chevron-down text-sm text-violet-600 transition"
+                            :class="showCreateChoices ? 'rotate-180' : ''"
+                        ></i>
+                    </button>
+
+                    <div
+                        x-show="showCreateChoices"
+                        x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 -translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-2"
+                        class="grid grid-cols-1 gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-2"
+                    >
+                        <a
+                            href="{{ route('vehicles.index') }}"
+                            class="flex min-h-12 items-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-700"
+                        >
+                            <i class="fa-solid fa-car text-emerald-600"></i>
+                            Veicolo
+                        </a>
+
+                        <a
+                            href="{{ route('subscriptions.index') }}"
+                            class="flex min-h-12 items-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-violet-50 hover:text-violet-700"
+                        >
+                            <i class="fa-solid fa-receipt text-violet-600"></i>
+                            Spesa o abbonamento
+                        </a>
+
+                        <a
+                            href="{{ route('patenti.index') }}"
+                            class="flex min-h-12 items-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-amber-50 hover:text-amber-700"
+                        >
+                            <i class="fa-solid fa-id-card text-amber-600"></i>
+                            Documento personale
+                        </a>
+
+                        <button
+                            type="button"
+                            @click="openDocumentFromLauncher()"
+                            class="flex min-h-12 items-center gap-2 rounded-xl bg-white px-3 py-3 text-left text-sm font-bold text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-700"
+                        >
+                            <i class="fa-solid fa-folder-plus text-blue-600"></i>
+                            Documento o prova
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 bg-slate-50 px-6 py-4">
+                    <p class="text-center text-xs font-medium text-slate-500">
+                        Inserisci meno dati possibile: il sistema completerà e proporrà i passaggi successivi.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let chartMensileInstance = null;
         let chartTipoInstance = null;
@@ -549,6 +886,13 @@
                 selectedYear: {{ $selectedYear }},
                 currentYear: {{ now()->year }},
                 isLoading: false,
+                reviewInbox: [],
+                reviewInboxCount: 0,
+                isUpdatingReview: false,
+                reviewActionNotes: {},
+                showActionLauncher: false,
+                isClosingActionLauncher: false,
+                showCreateChoices: false,
 
                 // Dati passati dal server
                 stats: @json($stats),
@@ -817,47 +1161,240 @@
                 },
 
                 // METODI ARCHIVIO
-                openFolder(folderId) { this.currentFolder = folderId; },
-                closeFolder() { this.currentFolder = null; },
-                getDocsInFolder(folderId) { return this.documents.filter(d => d.categoria === folderId); },
-                get currentFolderDocs() { if (!this.currentFolder) return []; return this.documents.filter(d => d.categoria === this.currentFolder); },
-                get currentFolderInfo() { return this.folders.find(f => f.id === this.currentFolder) || {}; },
+                openFolder(folderId) { 
+                    this.currentFolder = folderId; 
+                },
+                closeFolder() { 
+                    this.currentFolder = null; 
+                },
+                getDocsInFolder(folderId) { 
+                    return this.documents.filter(d => d.categoria === folderId); 
+                },
+                get currentFolderDocs() { 
+                    if (!this.currentFolder) return []; 
+                    return this.documents.filter(d => d.categoria === this.currentFolder); 
+                },
+                get currentFolderInfo() { 
+                    return this.folders.find(f => f.id === this.currentFolder) || {}; 
+                },
                 async refreshData() {
                     try {
                         let resStats = await fetch('{{ route("dashboard.stats") }}');
                         if (resStats.ok) this.archStats = await resStats.json();
+
                         let resDocs = await fetch('{{ route("dashboard.documents") }}');
-                        if (resDocs.ok) { let dataDocs = await resDocs.json(); this.documents = dataDocs.documents; }
-                    } catch (e) { console.error('Errore fetch dati:', e); }
+                        if (resDocs.ok) {
+                            let dataDocs = await resDocs.json();
+                            this.documents = dataDocs.documents;
+                        }
+
+                        let resInbox = await fetch('{{ route("dashboard.review-inbox") }}');
+                        if (resInbox.ok) {
+                            let dataInbox = await resInbox.json();
+                            this.reviewInbox = dataInbox.items || [];
+                            this.reviewInboxCount = this.reviewInbox.length;
+                        }
+                    } catch (e) {
+                        console.error('Errore fetch dati:', e);
+                    }
                 },
-                openUploadModal() { this.showUploadModal = true; },
-                closeUploadModal() { this.isClosingUpload = true; setTimeout(() => { this.showUploadModal = false; this.isClosingUpload = false; this.selectedCategory = 'bollo'; }, 500); },
-                openViewModal() { this.showViewModal = true; },
-                closeViewModal() { this.isClosingView = true; setTimeout(() => { this.showViewModal = false; this.isClosingView = false; this.currentFolder = null; }, 500); },
-                openPreview(url, type, name) { this.currentDocUrl = url; this.currentDocType = type; this.currentDocName = name; this.showPreviewModal = true; },
-                closePreview() { this.isPreviewClosing = true; setTimeout(() => { this.showPreviewModal = false; this.isPreviewClosing = false; this.currentDocUrl = ''; }, 500); },
-                openDeleteDoc(id, name) { this.docToDeleteId = id; this.docToDeleteName = name; this.showDeleteDocModal = true; },
-                closeDeleteDoc() { this.isClosingDeleteDoc = true; setTimeout(() => { this.showDeleteDocModal = false; this.isClosingDeleteDoc = false; this.docToDeleteId = null; }, 500); },
-                openEventModal(data) { this.eventData = data; this.showEventModal = true; },
-                closeEventModal() { this.isClosingEvent = true; setTimeout(() => { this.showEventModal = false; this.isClosingEvent = false; }, 500); },
+                async handleReviewAction(item, action) {
+                    if (this.isUpdatingReview) return;
+
+                    this.isUpdatingReview = true;
+
+                    try {
+                        const response = await fetch(`/dashboard/review-inbox/${item.id}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                action: action,
+                                review_notes: this.reviewActionNotes[item.id] || null
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Errore durante l’aggiornamento.');
+                        }
+
+                        this.successMessage = data.message || 'Aggiornamento completato.';
+                        this.showSuccessModal = true;
+
+                        await this.refreshData();
+                    } catch (error) {
+                        this.errorMessage = error.message || 'Errore durante l’operazione.';
+                        this.showErrorModal = true;
+                    } finally {
+                        this.isUpdatingReview = false;
+                    }
+                },
+                openUploadModal() { 
+                    this.showUploadModal = true; 
+                },
+                closeUploadModal() { 
+                    this.isClosingUpload = true; 
+                    setTimeout(() => { 
+                        this.showUploadModal = false; 
+                        this.isClosingUpload = false; 
+                        this.selectedCategory = 'bollo'; 
+                    }, 500); 
+                },
+                openActionLauncher() {
+                    this.showCreateChoices = false;
+                    this.showActionLauncher = true;
+                },
+
+                closeActionLauncher() {
+                    this.isClosingActionLauncher = true;
+
+                    setTimeout(() => {
+                        this.showActionLauncher = false;
+                        this.isClosingActionLauncher = false;
+                        this.showCreateChoices = false;
+                    }, 500);
+                },
+
+                goToDeadlines() {
+                    window.location.href = "{{ route('deadlines.index') }}";
+                },
+
+                openDocumentFromLauncher() {
+                    this.closeActionLauncher();
+
+                    setTimeout(() => {
+                        this.openUploadModal();
+                    }, 300);
+                },
+                openViewModal() { 
+                    this.showViewModal = true; 
+                },
+                closeViewModal() { 
+                    this.isClosingView = true; 
+                    setTimeout(() => { 
+                        this.showViewModal = false; 
+                        this.isClosingView = false; 
+                        this.currentFolder = null; 
+                    }, 500); 
+                },
+                openPreview(url, type, name) { 
+                    this.currentDocUrl = url; 
+                    this.currentDocType = type; 
+                    this.currentDocName = name; 
+                    this.showPreviewModal = true; 
+                },
+                closePreview() { 
+                    this.isPreviewClosing = true; 
+                    setTimeout(() => { 
+                        this.showPreviewModal = false; 
+                        this.isPreviewClosing = false; 
+                        this.currentDocUrl = ''; 
+                    }, 500); 
+                },
+                openDeleteDoc(id, name) { 
+                    this.docToDeleteId = id; 
+                    this.docToDeleteName = name; 
+                    this.showDeleteDocModal = true; 
+                },
+                closeDeleteDoc() { 
+                    this.isClosingDeleteDoc = true; 
+                    setTimeout(() => { 
+                        this.showDeleteDocModal = false; 
+                        this.isClosingDeleteDoc = false; 
+                        this.docToDeleteId = null; 
+                    }, 500); 
+                },
+                openEventModal(data) { 
+                    this.eventData = data; 
+                    this.showEventModal = true; 
+                },
+                closeEventModal() { 
+                    this.isClosingEvent = true; 
+                    setTimeout(() => { 
+                        this.showEventModal = false; 
+                        this.isClosingEvent = false; 
+                    }, 500); 
+                },
                 async handleDocumentSubmit(event) {
-                    event.preventDefault(); const formData = new FormData(event.target);
+                    event.preventDefault(); 
+                    const formData = new FormData(event.target);
                     try {
                         const response = await fetch('{{ route("documents.store") }}', { method: 'POST', body: formData });
                         const data = await response.json();
-                        if (response.ok) { event.target.reset(); this.selectedCategory = 'bollo'; this.closeUploadModal(); await this.refreshData(); this.successMessage = data.message || 'Documento caricato con successo!'; this.showSuccessModal = true; setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 2000); } else { this.showError(data.message || 'Errore nel caricamento del documento'); }
-                    } catch (error) { this.showError('Errore nella comunicazione con il server.'); }
+                        if (response.ok) { 
+                            event.target.reset(); 
+                            this.selectedCategory = 'bollo'; 
+                            this.closeUploadModal(); 
+                            await this.refreshData(); 
+                            this.successMessage = data.message || 'Documento caricato con successo!'; 
+                            this.showSuccessModal = true; 
+                            setTimeout(() => { 
+                                if (this.showSuccessModal) this.closeSuccessModal(); 
+                            }, 2000); 
+                        } else { 
+                            this.showError(data.message || 'Errore nel caricamento del documento'); 
+                        }
+                    } catch (error) { 
+                        this.showError('Errore nella comunicazione con il server.'); 
+                    }
                 },
                 async handleDocumentDelete(event) {
                     try {
-                        const response = await fetch(`/documents/${this.docToDeleteId}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/json' } });
+                        const response = await fetch(`/documents/${this.docToDeleteId}`, { 
+                            method: 'DELETE', 
+                            headers: { 
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                                'Accept': 'application/json', 
+                                'Content-Type': 'application/json' 
+                            } 
+                        });
                         const data = await response.json();
-                        if (response.ok) { this.closeDeleteDoc(); await this.refreshData(); this.successMessage = data.message || 'Documento eliminato con successo!'; this.showSuccessModal = true; setTimeout(() => { if(this.showSuccessModal) this.closeSuccessModal(); }, 2000); } else { this.closeDeleteDoc(); this.showError(data.message || 'Errore durante l\'eliminazione del documento'); }
-                    } catch (error) { this.closeDeleteDoc(); this.showError('Errore nella comunicazione con il server.'); }
+                        if (response.ok) { 
+                            this.closeDeleteDoc(); 
+                            await this.refreshData(); 
+                            this.successMessage = data.message || 'Documento eliminato con successo!'; 
+                            this.showSuccessModal = true; 
+                            setTimeout(() => { 
+                                if (this.showSuccessModal) this.closeSuccessModal(); 
+                            }, 2000); 
+                        } else { 
+                            this.closeDeleteDoc(); 
+                            this.showError(data.message || 'Errore durante l\'eliminazione del documento'); 
+                        }
+                    } catch (error) { 
+                        this.closeDeleteDoc(); 
+                        this.showError('Errore nella comunicazione con il server.'); 
+                    }
                 },
-                closeSuccessModal() { this.isClosingSuccess = true; setTimeout(() => { this.showSuccessModal = false; this.isClosingSuccess = false; this.successMessage = ''; }, 300); },
-                closeErrorModal() { this.isClosingError = true; setTimeout(() => { this.showErrorModal = false; this.isClosingError = false; this.errorMessage = ''; }, 300); },
-                showError(message) { this.errorMessage = message; this.showErrorModal = true; setTimeout(() => { if(this.showErrorModal) this.closeErrorModal(); }, 4000); }
+                closeSuccessModal() { 
+                    this.isClosingSuccess = true; 
+                    setTimeout(() => { 
+                        this.showSuccessModal = false; 
+                        this.isClosingSuccess = false; 
+                        this.successMessage = ''; 
+                    }, 300); 
+                },
+                closeErrorModal() { 
+                    this.isClosingError = true; 
+                    setTimeout(() => { 
+                        this.showErrorModal = false; 
+                        this.isClosingError = false; 
+                        this.errorMessage = ''; 
+                    }, 300); 
+                },
+                showError(message) { 
+                    this.errorMessage = message; 
+                    this.showErrorModal = true; 
+                    setTimeout(() => { 
+                        if (this.showErrorModal) this.closeErrorModal(); 
+                    }, 4000); 
+                }
+
             }
         }
     </script>
@@ -873,6 +1410,7 @@
         .modal-active .modal-backdrop { animation: fadeIn 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         .modal-out .modal-backdrop { animation: fadeOut 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         .modal-container { position: relative; width: 100%; max-width: 28rem; z-index: 1001; }
+        .modal-container-launcher { max-width: 34rem; }
         .modal-content-wrapper { background: white; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; transform: scale(0); }
         .modal-active .modal-content-wrapper { animation: blowUpModal 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }
         .modal-out .modal-content-wrapper { animation: blowUpModalTwo 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards; }

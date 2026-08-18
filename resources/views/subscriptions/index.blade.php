@@ -361,7 +361,7 @@
                                                 </div>
                                             </label>
 
-                                            <div x-show="createForm.rinnovo_automatico" x-cloak x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="form-label">Frequenza rinnovo</label>
                                                     <select name="renewal_interval_months"
@@ -550,7 +550,7 @@
                                                 </div>
                                             </label>
 
-                                            <div x-show="editSub.rinnovo_automatico" x-cloak x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="form-label">Frequenza rinnovo</label>
                                                     <select name="renewal_interval_months"

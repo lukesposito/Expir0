@@ -13,6 +13,8 @@ use Laragear\WebAuthn\WebAuthnAuthentication;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use App\Notifications\ResetPasswordNotification; 
 
+use App\Models\ActionProposal;
+
 class User extends Authenticatable implements WebAuthnAuthenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -65,5 +67,10 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function actionProposals()
+    {
+        return $this->hasMany(ActionProposal::class);
     }
 }

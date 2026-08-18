@@ -28,6 +28,12 @@ class Deadline extends Model
         'notifica_inviata',
         'pagato',
         'data_pagamento',
+        'source_type',
+        'source_id',
+        'source_key',
+        'generated_by',
+        'generated_from_deadline_id',
+        'renewal_parent_deadline_id',
     ];
 
     protected $casts = [
@@ -35,6 +41,8 @@ class Deadline extends Model
         'data_pagamento' => 'date',
         'notifica_inviata' => 'boolean',
         'pagato' => 'boolean',
+        'renewal_interval_months' => 'integer',
+        'rinnovo_automatico' => 'boolean',
     ];
 
     // Accessors - logica di calcolo spostata dal controller
@@ -209,6 +217,15 @@ class Deadline extends Model
     public function getSubscriptionCategoriaAttribute()
     {
         return $this->subscription ? $this->subscription->categoria : null;
+    }
+
+    public function getSourceReferenceAttribute(): ?string
+    {
+        if (!$this->source_type || !$this->source_id) {
+            return null;
+        }
+
+        return $this->source_type . ':' . $this->source_id;
     }
 
     protected static function booted()

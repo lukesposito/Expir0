@@ -18,6 +18,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\PushController;
 use App\Http\Controllers\AiAgentController;
+use App\Http\Controllers\ActionProposalController;
 use App\Http\Middleware\Check2FA;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
     Route::get('/dashboard/documents', [DashboardController::class, 'documents'])->name('dashboard.documents');
+    Route::get('/dashboard/review-inbox', [DashboardController::class, 'reviewInbox'])->name('dashboard.review-inbox');
+    Route::patch('/dashboard/review-inbox/{extraction}/status', [DashboardController::class, 'updateReviewStatus'])->name('dashboard.review-inbox.update');
     Route::get('/vehicles/{vehicle}/detail', [VehicleDetailController::class, 'show'])->name('vehicles.detail');
     
     // Pluralizzazione in Inglese
@@ -121,6 +124,13 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
 
     // Nuova rotta per l'analisi avanzata (con prompt più complesso e dati reali)
     Route::post('/ai-assistant/analyze', [AiAgentController::class, 'analyze'])->name('ai.analyze');
+
+    Route::get('/azioni', [ActionProposalController::class, 'index'])
+    ->name('action-proposals.index');
+    Route::patch('/azioni/{actionProposal}/rifiuta', [ActionProposalController::class, 'reject'])
+        ->name('action-proposals.reject');
+    Route::post('/azioni/{actionProposal}/conferma', [ActionProposalController::class, 'confirm'])
+    ->name('action-proposals.confirm');
 });
 
 

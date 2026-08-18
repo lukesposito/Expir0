@@ -83,10 +83,12 @@ class SubscriptionController extends Controller
             $validated['data_scadenza'] = now()->toDateString();
         }
 
-        // Intervallo rinnovo: valido solo se il rinnovo automatico è attivo
-        $validated['renewal_interval_months'] = $validated['rinnovo_automatico']
-            ? (int) $request->input('renewal_interval_months', 1)
-            : null;
+        // Intervallo rinnovo: valido sia che il rinnovo automatico è attivo sia che non lo è
+        $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+        $validated['renewal_interval_months'] = max(
+            1,
+            (int) ($validated['renewal_interval_months'] ?? 1)
+        );
 
         // Canali notifica rinnovo
         $validated['renewal_notification_channels'] = $request->filled('renewal_notification_channels')
@@ -136,10 +138,12 @@ class SubscriptionController extends Controller
             $validated['data_scadenza'] = now()->toDateString();
         }
 
-        // Intervallo rinnovo: valido solo se il rinnovo automatico è attivo
-        $validated['renewal_interval_months'] = $validated['rinnovo_automatico']
-            ? (int) $request->input('renewal_interval_months', 1)
-            : null;
+        // Intervallo rinnovo: valido sia che il rinnovo automatico è attivo sia che non lo è
+        $validated['rinnovo_automatico'] = $request->boolean('rinnovo_automatico');
+        $validated['renewal_interval_months'] = max(
+            1,
+            (int) ($validated['renewal_interval_months'] ?? 1)
+        );
 
         // Canali notifica rinnovo
         $validated['renewal_notification_channels'] = $request->filled('renewal_notification_channels')

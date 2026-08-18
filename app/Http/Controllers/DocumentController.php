@@ -7,11 +7,12 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\Documents\DocumentIngestionService;
 
 class DocumentController extends Controller
 {
     // Caricamento con associazione
-    public function store(Request $request)
+    public function store(Request $request, DocumentIngestionService $ingestionService)
     {
         try {
             $validated = $request->validate([
@@ -23,31 +24,19 @@ class DocumentController extends Controller
 
             if ($request->hasFile('documento')) {
                 $file = $request->file('documento');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                
-                // Salva nel disco public
-                $path = $file->storeAs('documents', $filename, 'public');
-
-                Document::create([
-                    'user_id' => Auth::id(),
-                    'vehicle_id' => $request->vehicle_id, // Per bollo, assicurazione, revisione
-                    'associated_user_id' => $request->user_id, // Per patente, carta_identita, tesserino_sanitario
-                    'categoria' => $request->categoria,
-                    'path' => $path,
-                    'nome_originale' => $file->getClientOriginalName(),
-                    'tipo_file' => $file->getClientMimeType(),
-                ]);
+                $ingestionService->ingest($validated, $file);
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Documento archiviato correttamente.'
+                    'message' => 'Documento archiviato correttamente.',
                 ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errore nel caricamento del file.',
+                ], 422);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Errore nel caricamento del file.'
-            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Patente;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Services\Patenti\PatenteExpiryCalculator;
 
 class PatenteController extends Controller
 {
@@ -67,12 +68,16 @@ class PatenteController extends Controller
             $validated['tipo'] = strtoupper($validated['tipo']);
         }
 
-        if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
-            $esito = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+        if (!empty($validated['data_rilascio'])) {
+            $esito = app(PatenteExpiryCalculator::class)->calculate(
+                $validated['user_id'],
+                $validated['data_rilascio'],
+                $validated['tipo'] ?? null
+            );
 
             if ($esito['status'] !== 'ok_auto') {
                 return back()->withErrors([
-                    'data_scadenza' => $esito['messaggio']
+                    'data_scadenza' => $esito['messaggio'] ?? 'Scadenza patente non calcolabile automaticamente.',
                 ])->withInput();
             }
 
@@ -111,12 +116,25 @@ class PatenteController extends Controller
             $validated['tipo'] = strtoupper($validated['tipo']);
         }
 
-        if (empty($validated['data_scadenza']) && !empty($validated['data_rilascio'])) {
-            $esito = $this->calcolaScadenzaPatente($validated['user_id'], $validated['data_rilascio'], $validated['tipo'] ?? 'B');
+        $deveRicalcolare =
+        !$patente->data_scadenza ||
+        $patente->user_id != $validated['user_id'] ||
+        ($patente->tipo ?? null) !== ($validated['tipo'] ?? null) ||
+        optional($patente->data_rilascio)->format('Y-m-d') !== ($validated['data_rilascio'] ?? null);
+
+        $patente->fill($validated);
+        $patente->setRelation('user', User::find($validated['user_id']));
+
+        if ($deveRicalcolare && !empty($validated['data_rilascio'])) {
+            $esito = app(PatenteExpiryCalculator::class)->calculate(
+                $validated['user_id'],
+                $validated['data_rilascio'],
+                $validated['tipo'] ?? null
+            );
 
             if ($esito['status'] !== 'ok_auto') {
                 return back()->withErrors([
-                    'data_scadenza' => $esito['messaggio']
+                    'data_scadenza' => $esito['messaggio'] ?? 'Scadenza patente non calcolabile automaticamente.',
                 ])->withInput();
             }
 
@@ -126,7 +144,11 @@ class PatenteController extends Controller
         $patente->update($validated);
 
         if ($request->wantsJson() || $request->ajax()) {
-            return response()->json(['message' => 'Patente aggiornata con successo!']);
+            return response()->json([
+                'message' => 'Patente aggiornata con successo!',
+                'data_scadenza' => $patente->fresh()->data_scadenza?->format('Y-m-d'),
+                'data_scadenza_formatted' => $patente->fresh()->data_scadenza?->format('d/m/Y'),
+            ]);
         }
 
         return redirect()->route('patenti.index')->with('success', 'Patente aggiornata!');
@@ -143,7 +165,7 @@ class PatenteController extends Controller
         return redirect()->route('patenti.index')->with('success', 'Patente eliminata!');
     }
 
-    private function calcolaScadenzaPatente($userId, $dataRinnovoStr, $tipo = null)
+    /* private function calcolaScadenzaPatente($userId, $dataRinnovoStr, $tipo = null)
     {
         $user = User::find($userId);
         $dataRinnovo = Carbon::parse($dataRinnovoStr);
@@ -226,5 +248,5 @@ class PatenteController extends Controller
             'data_scadenza' => null,
             'messaggio' => 'Categoria patente non riconosciuta automaticamente.',
         ];
-    }
+    } */
 }

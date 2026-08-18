@@ -16,6 +16,8 @@ use App\Models\Assicurazione;
 use App\Models\CartaIdentita;
 use App\Models\TesserinoSanitario;
 use App\Models\Subscription;
+use App\Models\DocumentExtraction;
+use App\Models\ActionProposal;
 
 class DashboardController extends Controller
 {
@@ -58,6 +60,7 @@ class DashboardController extends Controller
         $scadenzeUrgenti = Deadline::whereYear('data_scadenza', $selectedYear)->urgenti()->count();
         $scadenzeImminenti = Deadline::whereYear('data_scadenza', $selectedYear)->imminenti()->count();
         $daPagareQuestAnno = Deadline::whereYear('data_scadenza', $selectedYear)->where('pagato', false)->sum('importo');
+        $azioniDaVerificare = ActionProposal::pending()->count();
 
         // Preleviamo le scadenze dell'anno
         $deadlines = Deadline::with(['vehicle', 'user', 'subscription'])
@@ -91,7 +94,7 @@ class DashboardController extends Controller
                 'mese' => $data->month - 1, // 0 = Gennaio, 11 = Dicembre
                 'giorni' => $giorniDiff,
                 'is_scaduto' => $giorniDiff < 0,
-                'data_formattata' => $data->format('d/m/Y')
+                'data_formattata' => $data->format('d/m/Y'),
             ];
         })->values()->toArray();
 
@@ -100,7 +103,8 @@ class DashboardController extends Controller
                 'scadenzeUrgenti' => $scadenzeUrgenti,
                 'scadenzeImminenti' => $scadenzeImminenti,
                 'daPagareQuestAnno' => (float) $daPagareQuestAnno,
-                'totaleVeicoli' => $totaleVeicoli
+                'totaleVeicoli' => $totaleVeicoli,
+                'azioniDaVerificare' => $azioniDaVerificare,
             ],
             'jsExpenses' => $jsExpenses
         ];
@@ -142,6 +146,80 @@ class DashboardController extends Controller
         }
 
         return $categorieStats;
+    }
+
+    public function reviewInbox()
+    {
+        $items = DocumentExtraction::with('document')
+            ->whereIn('status', ['pending', 'processing', 'needs_review', 'failed'])
+            ->latest()
+            ->take(12)
+            ->get();
+
+        return response()->json([
+            'items' => $items->map(function ($item) {
+                $document = $item->document;
+
+                return [
+                    'id' => $item->id,
+                    'document_id' => $item->document_id,
+                    'status' => $item->status,
+                    'document_category' => $item->document_category,
+                    'extraction_engine' => $item->extraction_engine,
+                    'confidence_score' => $item->confidence_score,
+                    'review_notes' => $item->review_notes,
+                    'failure_reason' => $item->failure_reason,
+                    'created_at' => optional($item->created_at)->format('d/m/Y H:i'),
+                    'processed_at' => optional($item->processed_at)?->format('d/m/Y H:i'),
+                    'document' => $document ? [
+                        'id' => $document->id,
+                        'nome_originale' => $document->nomeoriginale ?? $document->nome_originale,
+                        'categoria' => $document->categoria,
+                        'path' => Storage::url($document->path),
+                    ] : null,
+                    'normalized_payload' => $item->normalized_payload,
+                ];
+            }),
+        ]);
+    }
+
+    public function updateReviewStatus(Request $request, DocumentExtraction $extraction)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:approve,defer,fail'],
+            'review_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $statusMap = [
+            'approve' => 'reviewed',
+            'defer' => 'needs_review',
+            'fail' => 'failed',
+        ];
+
+        $extraction->update([
+            'status' => $statusMap[$data['action']],
+            'review_notes' => $data['review_notes'] ?? null,
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'failure_reason' => $data['action'] === 'fail'
+                ? ($data['review_notes'] ?? 'Marcato come fallito manualmente')
+                : null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => match ($data['action']) {
+                'approve' => 'Documento approvato con successo.',
+                'defer' => 'Documento rimandato alla review.',
+                'fail' => 'Documento marcato come fallito.',
+            },
+            'item' => [
+                'id' => $extraction->id,
+                'status' => $extraction->status,
+                'review_notes' => $extraction->review_notes,
+                'reviewed_at' => optional($extraction->reviewed_at)->format('d/m/Y H:i'),
+            ],
+        ]);
     }
 
     public function documents()

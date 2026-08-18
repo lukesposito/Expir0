@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Vehicle;
 use App\Models\Deadline;
+use App\Services\Deadlines\DeadlineSyncService;
 use Illuminate\Database\Eloquent\Model;
 
 class Revisione extends Model
@@ -40,24 +41,24 @@ class Revisione extends Model
     // Relazione con Deadline
     public function deadlines()
     {
-        return $this->hasMany(Deadline::class);
+        return $this->hasMany(Deadline::class, 'revisione_id', 'id')
+            ->where('tipo', 'revisione');
     }
 
     // Event: quando salvi una revisione, sincronizza deadline
     protected static function booted()
     {
         static::saved(function ($revisione) {
-            $revisione->syncDeadline();
+            app(DeadlineSyncService::class)->syncFromSource($revisione);
         });
 
         static::deleting(function ($revisione) {
-            // Elimina anche la deadline collegata
-            $revisione->deadline?->delete();
+            app(DeadlineSyncService::class)->deleteFromSource($revisione);
         });
     }
 
     // Metodo per sincronizzare deadline
-    public function syncDeadline()
+    /* public function syncDeadline()
     {
         // Usiamo ->first() per prendere la scadenza collegata (se esiste)
         $scadenza = $this->deadlines()->first();
@@ -80,5 +81,5 @@ class Revisione extends Model
                 'revisione_id' => $this->id,
             ]);
         }
-    }
+    } */
 }
