@@ -142,9 +142,19 @@
                                             x-text="proposal.title"
                                         ></h3>
 
-                                        <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-black text-amber-700">
-                                            Da verificare
-                                        </span>
+                                        <span
+                                            class="rounded-full px-2.5 py-1 text-xs font-black"
+                                            :class="proposal.action_type === 'high_value_upcoming'
+                                                ? 'bg-rose-100 text-rose-700'
+                                                : (proposal.action_type === 'upcoming_deadline'
+                                                    ? 'bg-blue-100 text-blue-700'
+                                                    : 'bg-amber-100 text-amber-700')"
+                                            x-text="proposal.action_type === 'high_value_upcoming'
+                                                ? 'Spesa importante'
+                                                : (proposal.action_type === 'upcoming_deadline'
+                                                    ? 'In arrivo'
+                                                    : 'Da verificare')"
+                                        ></span>
                                     </div>
 
                                     <p
@@ -161,6 +171,15 @@
                                         <span class="rounded-lg bg-slate-100 px-2.5 py-1">
                                             Importo:
                                             <span x-text="proposal.amount"></span>
+                                        </span>
+
+                                        <span
+                                            x-show="proposal.is_upcoming"
+                                            x-cloak
+                                            class="rounded-lg bg-blue-100 px-2.5 py-1 text-blue-700"
+                                        >
+                                            Tra <span x-text="proposal.days_remaining"></span>
+                                            <span x-text="proposal.days_remaining == 1 ? 'giorno' : 'giorni'"></span>
                                         </span>
 
                                         <span
@@ -186,12 +205,28 @@
 
                                 <button
                                     type="button"
-                                    @click="openConfirmModal(proposal)"
-                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-indigo-700"
+                                    @click="handleProposalAction(proposal)"
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black text-white shadow-sm transition"
+                                    :class="proposal.action_type === 'high_value_upcoming'
+                                        ? 'bg-rose-600 hover:bg-rose-700'
+                                        : (proposal.action_type === 'upcoming_deadline'
+                                            ? 'bg-amber-500 hover:bg-amber-600'
+                                            : 'bg-indigo-600 hover:bg-indigo-700')"
                                     :disabled="proposal.processing"
                                 >
-                                    <i class="fa-solid fa-check"></i>
-                                    Verifica
+                                    <i
+                                        :class="proposal.action_type === 'mark_paid'
+                                            ? 'fa-solid fa-check'
+                                            : 'fa-solid fa-arrow-up-right-from-square'"
+                                    ></i>
+
+                                    <span
+                                        x-text="proposal.action_type === 'high_value_upcoming'
+                                            ? 'Pianifica spesa'
+                                            : (proposal.action_type === 'upcoming_deadline'
+                                                ? 'Apri scadenza'
+                                                : 'Verifica')"
+                                    ></span>
                                 </button>
                             </div>
                         </div>
@@ -212,13 +247,26 @@
             >
                 <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-wider text-indigo-500">
-                            Verifica pagamento
-                        </p>
+                        <p
+                            class="text-xs font-black uppercase tracking-wider"
+                            :class="selectedProposal?.action_type === 'upcoming_deadline'
+                                ? 'text-amber-600'
+                                : 'text-indigo-500'"
+                            x-text="selectedProposal?.action_type === 'high_value_upcoming'
+                            ? 'Spesa importante in arrivo'
+                            : (selectedProposal?.action_type === 'upcoming_deadline'
+                                ? 'Scadenza in arrivo'
+                                : 'Verifica pagamento')"
+                        ></p>
 
-                        <h3 class="mt-1 text-xl font-black text-slate-900">
-                            Come vuoi procedere?
-                        </h3>
+                        <h3
+                            class="mt-1 text-xl font-black text-slate-900"
+                            x-text="selectedProposal?.action_type === 'high_value_upcoming'
+                            ? 'Pianifica questa spesa'
+                            : (selectedProposal?.action_type === 'upcoming_deadline'
+                                ? 'Controlla la scadenza'
+                                : 'Come vuoi procedere?')"
+                        ></h3>
                     </div>
 
                     <button
@@ -249,11 +297,25 @@
                                 <span x-text="selectedProposal?.amount"></span>
                             </span>
                         </div>
+                        <p
+                            x-show="['upcoming_deadline', 'high_value_upcoming'].includes(selectedProposal?.action_type)"
+                            x-cloak
+                            class="mt-4 rounded-xl px-4 py-3 text-sm font-semibold leading-relaxed"
+                            :class="selectedProposal?.action_type === 'high_value_upcoming'
+                                ? 'bg-rose-50 text-rose-800'
+                                : 'bg-amber-50 text-amber-800'"
+                        >
+                            <i class="fa-solid fa-clock mr-1.5"></i>
+                            <span x-text="selectedProposal?.reason"></span>
+                        </p>
                     </div>
 
-                    <p class="mt-5 text-sm font-semibold text-slate-700">
-                        Hai pagato questa scadenza?
-                    </p>
+                    <p
+                        class="mt-5 text-sm font-semibold text-slate-700"
+                        x-text="['upcoming_deadline', 'high_value_upcoming'].includes(selectedProposal?.action_type)
+                            ? 'Hai già gestito questa scadenza?'
+                            : 'Hai pagato questa scadenza?'"
+                    ></p>
 
                     <div class="mt-3 space-y-3">
                         <label
@@ -308,7 +370,7 @@
                     </div>
 
                     <p class="mt-5 text-xs leading-relaxed text-slate-500">
-                        Se non hai ancora pagato, chiudi questa finestra: la proposta resterà disponibile.
+                        Se non hai ancora gestito questa scadenza, chiudi questa finestra: la proposta resterà disponibile come promemoria.
                     </p>
                 </div>
 
@@ -318,9 +380,10 @@
                         @click="closeConfirmModal()"
                         class="min-h-11 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-100"
                         :disabled="confirming"
-                    >
-                        Non ancora
-                    </button>
+                        x-text="selectedProposal?.action_type === 'upcoming_deadline'
+                            ? 'Ricordamelo dopo'
+                            : 'Non ancora'"
+                    ></button>
 
                     <button
                         type="button"
@@ -371,6 +434,10 @@
                         ...proposal,
                         processing: false
                     }));
+                },
+
+                handleProposalAction(proposal) {
+                    this.openConfirmModal(proposal);
                 },
 
                 openConfirmModal(proposal) {

@@ -67,8 +67,9 @@ class DeadlineController extends Controller
 
         $vehicles = Vehicle::all();
         $users = User::all();
+        $focusDeadlineId = $request->integer('focus');
         
-        return view('deadlines.index', compact('deadlines', 'vehicles', 'users'));
+        return view('deadlines.index', compact('deadlines', 'vehicles', 'users', 'focusDeadlineId'));
     }
 
     public function store(Request $request)

@@ -19,6 +19,7 @@ use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\PushController;
 use App\Http\Controllers\AiAgentController;
 use App\Http\Controllers\ActionProposalController;
+use App\Http\Controllers\SavingsPlanController;
 use App\Http\Middleware\Check2FA;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +132,12 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
         ->name('action-proposals.reject');
     Route::post('/azioni/{actionProposal}/conferma', [ActionProposalController::class, 'confirm'])
     ->name('action-proposals.confirm');
+
+    Route::post('/piani-accantonamento', [SavingsPlanController::class, 'store'])
+    ->name('savings-plans.store');
+
+    Route::delete('/piani-accantonamento/{savingsPlan}', [SavingsPlanController::class, 'destroy'])
+        ->name('savings-plans.destroy');
 });
 
 

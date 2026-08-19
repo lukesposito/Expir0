@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Deadline;
+use App\Models\ActionProposal;
 use App\Services\Deadlines\DeadlineRenewalService;
 use Illuminate\Support\Facades\DB;
-use App\Models\ActionProposal;
 use Illuminate\Http\Request;
 use DomainException;
 
@@ -24,11 +24,40 @@ class ActionProposalController extends Controller
                     $proposal->source_type === 'deadline' &&
                     $proposal->source_id
                 ) {
-                    $deadline = \App\Models\Deadline::find($proposal->source_id);
+                    $deadline = Deadline::with([
+                        'subscription',
+                        'vehicle',
+                        'user',
+                    ])->find($proposal->source_id);
                 }
 
                 $tipo = $deadline?->tipo ?? 'scadenza';
+                
                 $tipoLabel = ucfirst(str_replace('_', ' ', $tipo));
+                $titolo = match ($tipo) {
+                    'spesa_abbonamento' => $deadline?->subscription?->nome
+                        ?? 'Spesa / Abbonamento',
+
+                    'revisione' => $deadline?->vehicle
+                        ? 'Revisione ' . strtoupper(
+                            $deadline->vehicle->marca . ' ' . $deadline->vehicle->modello
+                        )
+                        : 'Revisione',
+
+                    'bollo' => $deadline?->vehicle
+                        ? 'Bollo ' . strtoupper(
+                            $deadline->vehicle->marca . ' ' . $deadline->vehicle->modello
+                        )
+                        : 'Bollo',
+
+                    'assicurazione' => $deadline?->vehicle
+                        ? 'Assicurazione ' . strtoupper(
+                            $deadline->vehicle->marca . ' ' . $deadline->vehicle->modello
+                        )
+                        : 'Assicurazione',
+
+                    default => $tipoLabel,
+                };
 
                 return [
                     'id' => $proposal->id,
@@ -36,7 +65,11 @@ class ActionProposalController extends Controller
                     'reason' => $proposal->reason
                         ?? 'Il sistema ha rilevato una possibile azione da verificare.',
                     'title' => $deadline
-                        ? $tipoLabel . ' da verificare'
+                        ? (
+                            $proposal->action_type === 'upcoming_deadline'
+                                ? $tipoLabel . ' in arrivo'
+                                : $tipoLabel . ' da verificare'
+                        )
                         : 'Proposta da verificare',
                     'deadline_id' => $deadline?->id,
                     'deadline_date' => $deadline?->data_scadenza
@@ -52,11 +85,26 @@ class ActionProposalController extends Controller
                     'is_expired' => $deadline
                         ? $deadline->data_scadenza->isPast()
                         : false,
+                    'is_upcoming' => in_array($proposal->action_type, [
+                        'upcoming_deadline',
+                        'high_value_upcoming',
+                    ], true),
+
+                    'is_high_value' => $proposal->action_type === 'high_value_upcoming',
+
+                    'days_remaining' => data_get($proposal->payload, 'days_remaining'),
                     'suggest_renewal' => (bool) data_get(
                         $proposal->payload,
                         'suggest_renewal',
                         false
                     ),
+                    'title' => $deadline
+                    ? match ($proposal->action_type) {
+                        'upcoming_deadline' => $titolo . ' in arrivo',
+                        'high_value_upcoming' => $titolo . ' da pianificare',
+                        default => $titolo . ' da verificare',
+                    }
+                    : 'Proposta da verificare',
                 ];
             })
             ->filter(fn (array $proposal) => $proposal['deadline_id'] !== null)
@@ -85,10 +133,6 @@ class ActionProposalController extends Controller
 
     public function confirm(Request $request, ActionProposal $actionProposal)
     {
-        $validated = $request->validate([
-            'rinnova' => ['required', 'boolean'],
-        ]);
-
         if ($actionProposal->status !== 'pending') {
             return response()->json([
                 'success' => false,
@@ -97,7 +141,11 @@ class ActionProposalController extends Controller
         }
 
         if (
-            $actionProposal->action_type !== 'mark_paid' ||
+            !in_array($actionProposal->action_type, [
+                'mark_paid',
+                'upcoming_deadline',
+                'high_value_upcoming',
+            ], true) ||
             $actionProposal->source_type !== 'deadline' ||
             !$actionProposal->source_id
         ) {
@@ -107,9 +155,12 @@ class ActionProposalController extends Controller
             ], 422);
         }
 
+        $rinnova = $request->boolean('rinnova');
+
         try {
-            return DB::transaction(function () use ($actionProposal, $validated) {
-                $deadline = Deadline::lockForUpdate()->find($actionProposal->source_id);
+            return DB::transaction(function () use ($actionProposal, $rinnova) {
+                $deadline = Deadline::lockForUpdate()
+                    ->find($actionProposal->source_id);
 
                 if (!$deadline) {
                     $actionProposal->update([
@@ -137,7 +188,7 @@ class ActionProposalController extends Controller
 
                 $result = app(DeadlineRenewalService::class)->toggle(
                     $deadline,
-                    (bool) $validated['rinnova'],
+                    $rinnova,
                     auth()->id()
                 );
 

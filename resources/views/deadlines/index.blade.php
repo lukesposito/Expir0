@@ -652,6 +652,7 @@
                 searchQuery: '',
                 
                 deadlines: @json($deadlines),
+                focusDeadlineId: @json($focusDeadlineId ?? null),
 
                 sortCol: 'scadenza',
                 sortAsc: true,
@@ -865,6 +866,15 @@
                 init() {
                     @if(session('success')) this.showSuccess("{{ session('success') }}", 'success'); @endif
                     @if(session('error')) this.showSuccess("{{ session('error') }}", 'error'); @endif
+                    if (this.focusDeadlineId) {
+                        const deadline = this.deadlines.find(
+                            item => Number(item.id) === Number(this.focusDeadlineId)
+                        );
+
+                        if (deadline) {
+                            this.openEventModal(deadline);
+                        }
+                    }
                 },
 
                 openDeleteModal(d) { this.deleteDeadline = d; this.showDeleteModal = true; },

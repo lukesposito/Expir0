@@ -198,7 +198,7 @@
                                     ? 'text-indigo-600'
                                     : 'text-slate-400'"
                                 x-text="Number(stats.azioniDaVerificare || 0) > 0
-                                    ? 'Controlla le proposte del sistema'
+                                    ? 'Azioni già preparate per te'
                                     : 'Tutto sotto controllo'"
                             ></p>
                         </div>
@@ -235,6 +235,197 @@
                 </div>
             </div>
 
+            <div
+                x-show="expenseForecast.peak_month"
+                x-cloak
+                class="relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-6 shadow-sm"
+            >
+                <div class="absolute inset-y-0 left-0 w-1 bg-rose-500"></div>
+
+                <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex min-w-0 items-start gap-4">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                            <i class="fa-solid fa-piggy-bank text-xl"></i>
+                        </div>
+
+                        <div class="min-w-0">
+                            <div
+                                class="flex items-center gap-2"
+                                x-data="{ showForecastInfo: false }"
+                                @click.outside="showForecastInfo = false"
+                            >
+                                <p class="text-xs font-black uppercase tracking-[0.18em] text-rose-500">
+                                    Mese con più uscite previste
+                                </p>
+
+                                <button
+                                    type="button"
+                                    @click.stop="showForecastInfo = !showForecastInfo"
+                                    class="relative flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-[11px] font-black text-rose-600 transition hover:bg-rose-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                                    aria-label="Spiegazione della previsione spese"
+                                    :aria-expanded="showForecastInfo.toString()"
+                                >
+                                    <i class="fa-solid fa-info text-[10px]"></i>
+                                </button>
+
+                                <div
+                                    x-show="showForecastInfo"
+                                    x-cloak
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                    x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                                    class="absolute left-0 top-7 z-50 w-[min(20rem,calc(100vw-3rem))] rounded-2xl border border-rose-100 bg-white p-4 text-left shadow-xl"
+                                >
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+                                            <i class="fa-solid fa-piggy-bank text-sm"></i>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-sm font-black text-slate-900">
+                                                Come viene calcolata
+                                            </p>
+
+                                            <p class="mt-1 text-xs leading-relaxed text-slate-600">
+                                                Il sistema somma le scadenze non pagate e i rinnovi futuri stimati dei prossimi 12 mesi.
+                                            </p>
+
+                                            <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                                                I rinnovi futuri sono una previsione: vengono calcolati dalla frequenza impostata per ogni abbonamento e non rappresentano pagamenti già effettuati.
+                                            </p>
+
+                                            <p class="mt-2 text-xs font-semibold leading-relaxed text-rose-700">
+                                                L’accantonamento è un suggerimento, non un importo obbligatorio.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3
+                                class="mt-1 text-xl font-black text-slate-900"
+                                x-text="expenseForecast.peak_month?.label"
+                            ></h3>
+
+                            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                                Il mese con più uscite previste:
+                                <span
+                                    class="font-black text-slate-900"
+                                    x-text="expenseForecast.peak_month?.count || 0"
+                                ></span>
+                                scadenze per
+                                <span
+                                    class="font-black text-rose-600"
+                                    x-text="Number(expenseForecast.peak_month?.total || 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })"
+                                ></span>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl bg-rose-50 px-5 py-4 lg:max-w-sm">
+                        <template x-if="!activeSavingsPlan">
+                            <div>
+                                <p class="text-xs font-black uppercase tracking-wider text-rose-500">
+                                    Suggerimento mensile
+                                </p>
+
+                                <p
+                                    class="mt-1 text-2xl font-black text-rose-700"
+                                    x-text="Number(expenseForecast.suggested_monthly_reserve || 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })"
+                                ></p>
+
+                                <p class="mt-1 text-xs leading-relaxed text-rose-700">
+                                    Per coprire in media le uscite previste nei prossimi 12 mesi.
+                                </p>
+
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        @click="openForecastDetail()"
+                                        class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-rose-700 shadow-sm transition hover:bg-rose-100"
+                                    >
+                                        <i class="fa-solid fa-list-check"></i>
+                                        Vedi dettaglio
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click="createSavingsPlan()"
+                                        :disabled="isCreatingSavingsPlan"
+                                        class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-rose-600 px-3 py-2 text-xs font-black text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <i class="fa-solid fa-piggy-bank"></i>
+
+                                        <span
+                                            x-text="isCreatingSavingsPlan
+                                                ? 'Creazione...'
+                                                : 'Crea piano'"
+                                        ></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="activeSavingsPlan">
+                            <div>
+                                <p class="text-xs font-black uppercase tracking-wider text-rose-500">
+                                    Piano attivo
+                                </p>
+
+                                <p
+                                    class="mt-1 text-lg font-black text-rose-700"
+                                    x-text="monthName(activeSavingsPlan.target_month) + ' ' + activeSavingsPlan.target_year"
+                                ></p>
+
+                                <p class="mt-2 text-xs font-semibold text-rose-700">
+                                    Obiettivo:
+                                    <span
+                                        class="font-black"
+                                        x-text="formatCurrency(activeSavingsPlan.target_amount)"
+                                    ></span>
+                                </p>
+
+                                <p class="mt-1 text-xs leading-relaxed text-rose-700">
+                                    Suggerimento mensile:
+                                    <span
+                                        class="font-black"
+                                        x-text="formatCurrency(activeSavingsPlan.monthly_suggestion)"
+                                    ></span>
+                                </p>
+
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        @click="openForecastDetail()"
+                                        class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-rose-700 shadow-sm transition hover:bg-rose-100"
+                                    >
+                                        <i class="fa-solid fa-list-check"></i>
+                                        Vedi dettaglio
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click="disableSavingsPlan()"
+                                        :disabled="isDisablingSavingsPlan"
+                                        class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <i class="fa-solid fa-xmark"></i>
+
+                                        <span
+                                            x-text="isDisablingSavingsPlan
+                                                ? 'Disattivazione...'
+                                                : 'Disattiva piano'"
+                                        ></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center">
@@ -460,6 +651,166 @@
             </div>
         </div>
 
+        {{-- MODALE DETTAGLIO FORECAST --}}
+        <div
+            x-show="showForecastDetail"
+            x-cloak
+            @keydown.escape.window="closeForecastDetail()"
+            class="modal-overlay"
+            :class="{
+                'modal-active': showForecastDetail && !isClosingForecastDetail,
+                'modal-out': isClosingForecastDetail
+            }"
+        >
+            <div
+                @click="closeForecastDetail()"
+                class="modal-backdrop"
+            ></div>
+
+            <div class="modal-container w-full" style="max-width: 44rem;">
+                <div
+                    @click.stop
+                    class="modal-content-wrapper bg-white rounded-2xl shadow-2xl overflow-hidden"
+                >
+                    <div class="bg-gradient-to-r from-rose-600 to-pink-600 px-6 py-5 text-white">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-xs font-black uppercase tracking-[0.18em] text-rose-100">
+                                    Previsione spese
+                                </p>
+
+                                <h3
+                                    class="mt-1 text-xl font-black"
+                                    x-text="expenseForecast.peak_month?.label || 'Dettaglio mese'"
+                                ></h3>
+
+                                <p class="mt-1 text-sm text-rose-100">
+                                    Scadenze e ricorrenze che compongono il mese più impegnativo.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                @click="closeForecastDetail()"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/20"
+                                aria-label="Chiudi dettaglio"
+                            >
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="max-h-[60vh] overflow-y-auto bg-slate-50 p-5 custom-scrollbar">
+                        <div class="mb-4 rounded-2xl border border-rose-100 bg-rose-50 p-4">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-xs font-black uppercase tracking-wider text-rose-500">
+                                        Totale previsto
+                                    </p>
+
+                                    <p
+                                        class="mt-1 text-2xl font-black text-rose-700"
+                                        x-text="formatCurrency(expenseForecast.peak_month?.total || 0)"
+                                    ></p>
+                                </div>
+
+                                <div class="text-left sm:text-right">
+                                    <p class="text-xs font-black uppercase tracking-wider text-slate-400">
+                                        Voci previste
+                                    </p>
+
+                                    <p
+                                        class="mt-1 text-xl font-black text-slate-800"
+                                        x-text="expenseForecast.peak_month?.count || 0"
+                                    ></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <template
+                                x-for="item in (expenseForecast.peak_month?.items || [])"
+                                :key="`${item.source}-${item.deadline_id || item.subscription_id || item.date}`"
+                            >
+                                <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div
+                                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                                        :class="item.source === 'subscription_forecast'
+                                            ? 'bg-violet-100 text-violet-600'
+                                            : 'bg-rose-100 text-rose-600'"
+                                    >
+                                        <i
+                                            :class="item.source === 'subscription_forecast'
+                                                ? 'fa-solid fa-rotate'
+                                                : 'fa-solid fa-calendar-check'"
+                                        ></i>
+                                    </div>
+
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <p
+                                                class="truncate text-sm font-black text-slate-900"
+                                                x-text="item.title"
+                                            ></p>
+
+                                            <span
+                                                class="rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
+                                                :class="item.source === 'subscription_forecast'
+                                                    ? 'bg-violet-100 text-violet-700'
+                                                    : 'bg-slate-100 text-slate-600'"
+                                                x-text="item.source === 'subscription_forecast'
+                                                    ? 'Rinnovo futuro stimato'
+                                                    : 'Scadenza registrata'"
+                                            ></span>
+                                        </div>
+
+                                        <p
+                                            class="mt-1 text-xs font-semibold text-slate-500"
+                                            x-show="item.source !== 'subscription_forecast'"
+                                        >
+                                            Prevista il
+                                            <span x-text="formatDate(item.date)"></span>
+                                        </p>
+
+                                        <p
+                                            class="mt-1 text-xs font-semibold text-violet-700"
+                                            x-show="item.source === 'subscription_forecast'"
+                                        >
+                                            Successivo al rinnovo previsto del
+                                            <span x-text="formatDate(item.previous_date)"></span>
+                                            · stimato per il
+                                            <span x-text="formatDate(item.date)"></span>
+                                        </p>
+                                    </div>
+
+                                    <p
+                                        class="shrink-0 text-sm font-black text-slate-900"
+                                        x-text="formatCurrency(item.amount)"
+                                    ></p>
+                                </div>
+                            </template>
+
+                            <div
+                                x-show="(expenseForecast.peak_month?.items || []).length === 0"
+                                class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-500"
+                            >
+                                Nessun dettaglio disponibile per questo mese.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end border-t border-slate-100 bg-white px-6 py-4">
+                        <button
+                            type="button"
+                            @click="closeForecastDetail()"
+                            class="min-h-11 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-200"
+                        >
+                            Chiudi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div x-show="showUploadModal" x-cloak class="modal-overlay" :class="{ 'modal-active': showUploadModal && !isClosingUpload, 'modal-out': isClosingUpload }">
             <div @click="closeUploadModal()" class="modal-backdrop"></div>
             <div class="modal-container">
@@ -893,10 +1244,16 @@
                 showActionLauncher: false,
                 isClosingActionLauncher: false,
                 showCreateChoices: false,
+                showForecastDetail: false,
+                isClosingForecastDetail: false,
+                isCreatingSavingsPlan: false,
+                isDisablingSavingsPlan: false,
 
                 // Dati passati dal server
                 stats: @json($stats),
                 allExpenses: @json($jsExpenses),
+                expenseForecast: @json($expenseForecast ?? []),
+                activeSavingsPlan: @json($activeSavingsPlan ?? null),
                 
                 // Variabili Modali...
                 showUploadModal: false, showViewModal: false, showPreviewModal: false, showSuccessModal: false, showErrorModal: false,
@@ -940,9 +1297,11 @@
                         if (response.ok) {
                             const data = await response.json();
                             // console.log("✅ Dati ricevuti dal server:", data); // <-- LOG
+                            this.expenseForecast = data.expenseForecast || {};
                             
                             this.stats = data.stats;
                             this.allExpenses = data.jsExpenses;
+                            this.activeSavingsPlan = data.activeSavingsPlan || null;
                             this.selectedYear = year; 
                             
                             this.activeFilter = 'all';
@@ -1245,6 +1604,43 @@
                         this.selectedCategory = 'bollo'; 
                     }, 500); 
                 },
+                openForecastDetail() {
+                    if (!this.expenseForecast?.peak_month) {
+                        return;
+                    }
+
+                    this.showForecastDetail = true;
+                },
+
+                closeForecastDetail() {
+                    this.isClosingForecastDetail = true;
+
+                    setTimeout(() => {
+                        this.showForecastDetail = false;
+                        this.isClosingForecastDetail = false;
+                    }, 500);
+                },
+
+                formatCurrency(value) {
+                    return Number(value || 0).toLocaleString('it-IT', {
+                        style: 'currency',
+                        currency: 'EUR',
+                    });
+                },
+
+                formatDate(value) {
+                    if (!value) {
+                        return 'N/D';
+                    }
+
+                    const [year, month, day] = value.split('-');
+
+                    if (!year || !month || !day) {
+                        return value;
+                    }
+
+                    return `${day}/${month}/${year}`;
+                },
                 openActionLauncher() {
                     this.showCreateChoices = false;
                     this.showActionLauncher = true;
@@ -1393,8 +1789,117 @@
                     setTimeout(() => { 
                         if (this.showErrorModal) this.closeErrorModal(); 
                     }, 4000); 
-                }
+                },
+                async createSavingsPlan() {
+                    this.isCreatingSavingsPlan = true;
 
+                    try {
+                        const response = await fetch(
+                            '{{ route('savings-plans.store') }}',
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                },
+                            }
+                        );
+
+                        const data = await response.json();
+
+                        if (!response.ok || !data.success) {
+                            throw new Error(
+                                data.message || 'Impossibile creare il piano.'
+                            );
+                        }
+
+                        this.activeSavingsPlan = data.plan;
+
+                        this.successMessage = data.message || 'Piano creato.';
+                        this.showSuccessModal = true;
+
+                        setTimeout(() => {
+                            if (this.showSuccessModal) {
+                                this.closeSuccessModal();
+                            }
+                        }, 2500);
+                    } catch (error) {
+                        this.showError(
+                            error.message || 'Errore durante la creazione del piano.'
+                        );
+                    } finally {
+                        this.isCreatingSavingsPlan = false;
+                    }
+                },
+
+                async disableSavingsPlan() {
+                    if (!this.activeSavingsPlan?.id) {
+                        return;
+                    }
+
+                    this.isDisablingSavingsPlan = true;
+
+                    try {
+                        const response = await fetch(
+                            `/piani-accantonamento/${this.activeSavingsPlan.id}`,
+                            {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                },
+                            }
+                        );
+
+                        const data = await response.json();
+
+                        if (!response.ok || !data.success) {
+                            throw new Error(
+                                data.message || 'Impossibile disattivare il piano.'
+                            );
+                        }
+
+                        this.activeSavingsPlan = null;
+
+                        this.successMessage = data.message || 'Piano disattivato.';
+                        this.showSuccessModal = true;
+
+                        setTimeout(() => {
+                            if (this.showSuccessModal) {
+                                this.closeSuccessModal();
+                            }
+                        }, 2500);
+                    } catch (error) {
+                        this.showError(
+                            error.message || 'Errore durante la disattivazione del piano.'
+                        );
+                    } finally {
+                        this.isDisablingSavingsPlan = false;
+                    }
+                },
+
+                monthName(month) {
+                    const names = [
+                        'Gennaio',
+                        'Febbraio',
+                        'Marzo',
+                        'Aprile',
+                        'Maggio',
+                        'Giugno',
+                        'Luglio',
+                        'Agosto',
+                        'Settembre',
+                        'Ottobre',
+                        'Novembre',
+                        'Dicembre',
+                    ];
+
+                    return names[Number(month) - 1] || '';
+                },
             }
         }
     </script>

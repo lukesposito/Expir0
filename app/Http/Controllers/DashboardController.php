@@ -18,9 +18,15 @@ use App\Models\TesserinoSanitario;
 use App\Models\Subscription;
 use App\Models\DocumentExtraction;
 use App\Models\ActionProposal;
+use App\Models\SavingsPlan;
+use App\Services\Forecasting\ExpenseForecastService;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        protected ExpenseForecastService $expenseForecastService
+    ) {}
+
     public function index(Request $request)
     {
         $oggi = Carbon::now();
@@ -98,6 +104,18 @@ class DashboardController extends Controller
             ];
         })->values()->toArray();
 
+        $expenseForecast = $this->expenseForecastService->build(12);
+
+        $activeSavingsPlan = SavingsPlan::query()
+            ->where(function ($query) {
+                $query->whereNull('user_id')
+                    ->orWhere('user_id', auth()->id());
+            })
+            ->where('status', 'active')
+            ->orderBy('target_year')
+            ->orderBy('target_month')
+            ->first();
+
         return [
             'stats' => [
                 'scadenzeUrgenti' => $scadenzeUrgenti,
@@ -106,7 +124,9 @@ class DashboardController extends Controller
                 'totaleVeicoli' => $totaleVeicoli,
                 'azioniDaVerificare' => $azioniDaVerificare,
             ],
-            'jsExpenses' => $jsExpenses
+            'jsExpenses' => $jsExpenses,
+            'expenseForecast' => $expenseForecast,
+            'activeSavingsPlan' => $activeSavingsPlan,
         ];
     }
 
