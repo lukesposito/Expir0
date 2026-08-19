@@ -126,18 +126,14 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     // Nuova rotta per l'analisi avanzata (con prompt più complesso e dati reali)
     Route::post('/ai-assistant/analyze', [AiAgentController::class, 'analyze'])->name('ai.analyze');
 
-    Route::get('/azioni', [ActionProposalController::class, 'index'])
-    ->name('action-proposals.index');
-    Route::patch('/azioni/{actionProposal}/rifiuta', [ActionProposalController::class, 'reject'])
-        ->name('action-proposals.reject');
-    Route::post('/azioni/{actionProposal}/conferma', [ActionProposalController::class, 'confirm'])
-    ->name('action-proposals.confirm');
+    Route::get('/azioni', [ActionProposalController::class, 'index'])->name('action-proposals.index');
+    Route::patch('/azioni/{actionProposal}/rifiuta', [ActionProposalController::class, 'reject'])->name('action-proposals.reject');
+    Route::post('/azioni/{actionProposal}/conferma', [ActionProposalController::class, 'confirm'])->name('action-proposals.confirm');
 
-    Route::post('/piani-accantonamento', [SavingsPlanController::class, 'store'])
-    ->name('savings-plans.store');
+    Route::post('/piani-accantonamento', [SavingsPlanController::class, 'store'])->name('savings-plans.store');
+    Route::delete('/piani-accantonamento/{savingsPlan}', [SavingsPlanController::class, 'destroy'])->name('savings-plans.destroy');
 
-    Route::delete('/piani-accantonamento/{savingsPlan}', [SavingsPlanController::class, 'destroy'])
-        ->name('savings-plans.destroy');
+    Route::post('/piani-accantonamento/{savingsPlan}/contributo', [SavingsPlanController::class, 'addContribution'])->name('savings-plans.contribution');
 });
 
 

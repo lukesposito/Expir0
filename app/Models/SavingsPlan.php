@@ -14,6 +14,7 @@ class SavingsPlan extends Model
         'target_month',
         'target_year',
         'target_amount',
+        'saved_amount',
         'monthly_suggestion',
         'status',
     ];
@@ -22,6 +23,7 @@ class SavingsPlan extends Model
         'target_month' => 'integer',
         'target_year' => 'integer',
         'target_amount' => 'decimal:2',
+        'saved_amount' => 'decimal:2',
         'monthly_suggestion' => 'decimal:2',
     ];
 
@@ -33,5 +35,28 @@ class SavingsPlan extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function remainingAmount(): float
+    {
+        return max(
+            0,
+            (float) $this->target_amount - (float) $this->saved_amount
+        );
+    }
+
+    public function progressPercentage(): float
+    {
+        if ((float) $this->target_amount <= 0) {
+            return 0;
+        }
+
+        return min(
+            100,
+            round(
+                ((float) $this->saved_amount / (float) $this->target_amount) * 100,
+                2
+            )
+        );
     }
 }
