@@ -19,6 +19,7 @@ use App\Models\Subscription;
 use App\Models\DocumentExtraction;
 use App\Models\ActionProposal;
 use App\Models\SavingsPlan;
+use App\Models\User;
 use App\Services\Forecasting\ExpenseForecastService;
 
 class DashboardController extends Controller
@@ -52,7 +53,7 @@ class DashboardController extends Controller
         return view('dashboard', array_merge($data, [
             'availableYears' => $availableYears,
             'selectedYear' => $selectedYear,
-            'categorieStats' => $categorieStats
+            'categorieStats' => $categorieStats,
         ]));
     }
 
@@ -66,7 +67,15 @@ class DashboardController extends Controller
         $scadenzeUrgenti = Deadline::whereYear('data_scadenza', $selectedYear)->urgenti()->count();
         $scadenzeImminenti = Deadline::whereYear('data_scadenza', $selectedYear)->imminenti()->count();
         $daPagareQuestAnno = Deadline::whereYear('data_scadenza', $selectedYear)->where('pagato', false)->sum('importo');
-        $azioniDaVerificare = ActionProposal::pending()->count();
+        
+        /* archive_document	        È una proposta documentale veicolo	                La mantiene
+        archive_personal_document	È una proposta documentale personale	            La mantiene
+        Proposta deadline	        Verifica che la deadline sorgente esista ancora	    La mantiene solo se esiste
+        Qualsiasi altro caso	    Non è gestibile/visualizzabile con logica nota	    La esclude
+        */
+        $azioniDaVerificare = ActionProposal::query()
+            ->visibleToUser()
+            ->count();
 
         // Preleviamo le scadenze dell'anno
         $deadlines = Deadline::with(['vehicle', 'user', 'subscription'])
@@ -137,31 +146,79 @@ class DashboardController extends Controller
 
     private function calcolaStatisticheArchivio()
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Statistiche archivio: copertura reale
+        |--------------------------------------------------------------------------
+        |
+        | Veicoli:
+        | - un veicolo è coperto una sola volta per ogni categoria.
+        |
+        | Documenti personali:
+        | - ogni utente del sistema è atteso per ogni categoria;
+        | - più file della stessa categoria per la stessa persona valgono 1;
+        | - il legame corretto è documents.associated_user_id.
+        |
+        */
+
         $categorieStats = [];
-        $totaleVeicoli = Vehicle::count();
 
-        $totaliAttesi = [
-            'bollo' => $totaleVeicoli,               
-            'assicurazione' => $totaleVeicoli,       
-            'revisione' => $totaleVeicoli,           
-            'patente' => Patente::count(),           
-            'carta_identita' => CartaIdentita::count(),       
-            'tesserino_sanitario' => TesserinoSanitario::count() 
-        ];
+        /*
+        |--------------------------------------------------------------------------
+        | Copertura documenti veicolo
+        |--------------------------------------------------------------------------
+        */
 
-        foreach ($totaliAttesi as $catForm => $totaleAtteso) {
-            $documentiCaricati = Document::where('categoria', $catForm)->count();
-            $percentuale = 0;
-            if ($totaleAtteso > 0) {
-                $percentuale = min(100, round(($documentiCaricati / $totaleAtteso) * 100));
-            } elseif ($documentiCaricati > 0) {
-                $percentuale = 100;
-            }
-            
-            $categorieStats[$catForm] = [
+        $vehicleIds = Vehicle::query()
+            ->pluck('id');
+
+        foreach (['bollo', 'assicurazione', 'revisione'] as $categoria) {
+            $totaleAtteso = $vehicleIds->count();
+
+            $coperti = Document::query()
+                ->where('categoria', $categoria)
+                ->whereNotNull('vehicle_id')
+                ->whereIn('vehicle_id', $vehicleIds)
+                ->distinct()
+                ->count('vehicle_id');
+
+            $categorieStats[$categoria] = [
                 'totale_atteso' => $totaleAtteso,
-                'documenti_caricati' => $documentiCaricati,
-                'percentuale' => $percentuale
+                'documenti_caricati' => $coperti,
+                'percentuale' => $totaleAtteso > 0
+                    ? min(100, round(($coperti / $totaleAtteso) * 100))
+                    : 0,
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Copertura documenti personali
+        |--------------------------------------------------------------------------
+        |
+        | Usiamo tutti gli utenti esistenti, non il numero di record
+        | Patente/CartaIdentita/TesserinoSanitario.
+        |
+        */
+
+        $userIds = User::query()->pluck('id');
+
+        foreach (['patente', 'carta_identita', 'tesserino_sanitario'] as $categoria) {
+            $totaleAtteso = $userIds->count();
+
+            $coperti = Document::query()
+                ->where('categoria', $categoria)
+                ->whereNotNull('associated_user_id')
+                ->whereIn('associated_user_id', $userIds)
+                ->distinct()
+                ->count('associated_user_id');
+
+            $categorieStats[$categoria] = [
+                'totale_atteso' => $totaleAtteso,
+                'documenti_caricati' => $coperti,
+                'percentuale' => $totaleAtteso > 0
+                    ? min(100, round(($coperti / $totaleAtteso) * 100))
+                    : 0,
             ];
         }
 

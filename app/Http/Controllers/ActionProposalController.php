@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Deadline;
 use App\Models\ActionProposal;
+use App\Models\Vehicle;
+use App\Models\User;
 use App\Services\Deadlines\DeadlineRenewalService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -14,21 +16,32 @@ class ActionProposalController extends Controller
     public function index(Request $request)
     {
         $proposals = ActionProposal::query()
-            ->pending()
+            ->visibleToUser()
             ->latest()
             ->get()
             ->map(function (ActionProposal $proposal) {
                 $deadline = null;
+                $vehicle = null;
+                $person = null;
 
-                if (
-                    $proposal->source_type === 'deadline' &&
-                    $proposal->source_id
-                ) {
+                if ($proposal->source_type === 'deadline' && $proposal->source_id) {
                     $deadline = Deadline::with([
                         'subscription',
                         'vehicle',
                         'user',
                     ])->find($proposal->source_id);
+                }
+
+                if ($proposal->action_type === 'archive_document' && $proposal->source_type === 'vehicle' && $proposal->source_id) {
+                    $vehicle = Vehicle::find($proposal->source_id);
+                }
+
+                if ($proposal->action_type === 'archive_personal_document') {
+                    $personId = data_get($proposal->payload, 'user_id');
+
+                    if ($personId) {
+                        $person = User::find($personId);
+                    }
                 }
 
                 $tipo = $deadline?->tipo ?? 'scadenza';
@@ -60,17 +73,64 @@ class ActionProposalController extends Controller
                 };
 
                 return [
+                    $isDocumentProposal = in_array($proposal->action_type, [
+                        'archive_document',
+                        'archive_personal_document',
+                    ], true),
+                    $isPersonalDocumentProposal = $proposal->action_type === 'archive_personal_document',
+                    $vehicleName = $vehicle
+                        ? trim(($vehicle->marca ?? '') . ' ' . ($vehicle->modello ?? ''))
+                        : data_get($proposal->payload, 'vehicle_label'),
+
+                    $vehicleTitle = trim(
+                        ($vehicleName ?: 'Veicolo')
+                        . ' '
+                        . (data_get($proposal->payload, 'vehicle_targa') ?: '')
+                    ),
+                    $personTitle = $person?->name
+                        ?? data_get($proposal->payload, 'user_name')
+                        ?? 'Persona associata',
                     'id' => $proposal->id,
                     'action_type' => $proposal->action_type,
                     'reason' => $proposal->reason
                         ?? 'Il sistema ha rilevato una possibile azione da verificare.',
-                    'title' => $deadline
+                    'title' => $isDocumentProposal
+                        ? (data_get($proposal->payload, 'document_label') . ' consigliato')
+                        : (
+                            $deadline
+                                ? match ($proposal->action_type) {
+                                    'upcoming_deadline' => $titolo . ' in arrivo',
+                                    'high_value_upcoming' => $titolo . ' da pianificare',
+                                    default => $titolo . ' da verificare',
+                                }
+                                : 'Proposta da verificare'
+                        ),
+                    'subtitle' => $isDocumentProposal
                         ? (
-                            $proposal->action_type === 'upcoming_deadline'
-                                ? $tipoLabel . ' in arrivo'
-                                : $tipoLabel . ' da verificare'
+                            $isPersonalDocumentProposal
+                                ? $personTitle
+                                : $vehicleTitle
                         )
-                        : 'Proposta da verificare',
+                        : null,
+
+                    'is_document_proposal' => $isDocumentProposal,
+                    'is_personal_document_proposal' => $isPersonalDocumentProposal,
+
+                    'document_category' => data_get($proposal->payload, 'categoria'),
+
+                    'document_user_id' => $isPersonalDocumentProposal
+                        ? (
+                            $person?->id
+                            ?? data_get($proposal->payload, 'user_id')
+                        )
+                        : null,
+                    'document_label' => data_get($proposal->payload, 'document_label'),
+                    'vehicle_id' => !$isPersonalDocumentProposal
+                    ? (
+                        $vehicle?->id
+                        ?? data_get($proposal->payload, 'vehicle_id')
+                    )
+                    : null,
                     'deadline_id' => $deadline?->id,
                     'deadline_date' => $deadline?->data_scadenza
                         ? $deadline->data_scadenza->format('d/m/Y')
@@ -91,7 +151,6 @@ class ActionProposalController extends Controller
                     ], true),
 
                     'is_high_value' => $proposal->action_type === 'high_value_upcoming',
-
                     'days_remaining' => data_get($proposal->payload, 'days_remaining'),
                     'suggest_renewal' => (bool) data_get(
                         $proposal->payload,
@@ -107,7 +166,10 @@ class ActionProposalController extends Controller
                     : 'Proposta da verificare',
                 ];
             })
-            ->filter(fn (array $proposal) => $proposal['deadline_id'] !== null)
+            ->filter(fn (array $proposal) =>
+                $proposal['deadline_id'] !== null
+                || $proposal['is_document_proposal'] === true
+            )
             ->values();
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -215,5 +277,41 @@ class ActionProposalController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    public function snooze(Request $request, ActionProposal $actionProposal)
+    {
+        /*
+        * Non si può rimandare una proposta già applicata, rifiutata o fallita.
+        */
+        if ($actionProposal->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Questa proposta non è più disponibile.',
+            ], 422);
+        }
+
+        /*
+        * Per ora accettiamo soltanto 7 giorni.
+        * In futuro potremo introdurre 1 giorno, fine settimana,
+        * data personalizzata e così via.
+        */
+        $validated = $request->validate([
+            'days' => 'nullable|integer|in:7',
+        ]);
+
+        $days = $validated['days'] ?? 7;
+
+        $actionProposal->update([
+            'snoozed_until' => now()->addDays($days),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Te lo ricorderò tra {$days} giorni.",
+            'snoozed_until' => $actionProposal->fresh()
+                ->snoozed_until
+                ?->toIso8601String(),
+        ]);
     }
 }

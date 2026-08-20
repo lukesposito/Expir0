@@ -134,6 +134,9 @@ Route::middleware(['auth', 'verified', Check2FA::class])->group(function () {
     Route::delete('/piani-accantonamento/{savingsPlan}', [SavingsPlanController::class, 'destroy'])->name('savings-plans.destroy');
 
     Route::post('/piani-accantonamento/{savingsPlan}/contributo', [SavingsPlanController::class, 'addContribution'])->name('savings-plans.contribution');
+
+    Route::post('/azioni/{actionProposal}/snooze', [ActionProposalController::class, 'snooze'])
+        ->name('action-proposals.snooze');
 });
 
 

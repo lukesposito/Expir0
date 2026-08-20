@@ -987,14 +987,14 @@
                         </div>
                         <div x-show="!['patente', 'carta_identita', 'tesserino_sanitario'].includes(selectedCategory)" x-transition>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Associa al Veicolo</label>
-                            <select name="vehicle_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            <select name="vehicle_id" x-model="selectedVehicleId" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                                 <option value="">-- Seleziona Veicolo --</option>
                                 @foreach(\App\Models\Vehicle::all() as $v) <option value="{{ $v->id }}">{{ $v->marca }} {{ $v->modello }} - {{ $v->targa }}</option> @endforeach
                             </select>
                         </div>
                         <div x-show="['patente', 'carta_identita', 'tesserino_sanitario'].includes(selectedCategory)" x-transition>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Associa all'Utente</label>
-                            <select name="user_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            <select name="user_id" x-model="selectedUserId" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                                 <option value="">-- Seleziona Persona --</option>
                                 @foreach(\App\Models\User::orderBy('name')->get() as $u) <option value="{{ $u->id }}">{{ $u->name }}</option> @endforeach
                             </select>
@@ -1399,6 +1399,9 @@
                 reviewInboxCount: 0,
                 isUpdatingReview: false,
                 reviewActionNotes: {},
+                selectedVehicleId: '',
+                selectedUserId: '',
+                uploadProposalId: null,
 
                 // Dati passati dal server
                 stats: @json($stats),
@@ -1406,11 +1409,12 @@
                 expenseForecast: @json($expenseForecast ?? []),
                 activeSavingsPlan: @json($activeSavingsPlan ?? null),
                 
+                
                 // Variabili Modali...
-                showUploadModal: false, showViewModal: false, showPreviewModal: false, showSuccessModal: false, showErrorModal: false, showActionLauncher: false,                 showCreateChoices: false,
+                showUploadModal: false, showViewModal: false, showPreviewModal: false, showSuccessModal: false, showErrorModal: false, showActionLauncher: false, showCreateChoices: false,
                 showForecastDetail: false, showCustomSavingsModal: false,
                 successMessage: '', errorMessage: '',
-                isClosingUpload: false, isClosingView: false, isPreviewClosing: false, isClosingSuccess: false, isClosingError: false,                 isClosingActionLauncher: false,
+                isClosingUpload: false, isClosingView: false, isPreviewClosing: false, isClosingSuccess: false, isClosingError: false, isClosingActionLauncher: false,
                 isClosingForecastDetail: false, isClosingCustomSavingsModal: false,
                 isCreatingSavingsPlan: false, isDisablingSavingsPlan: false, isAddingSavingsContribution: false,
                 selectedCategory: 'bollo', currentDocUrl: '', currentDocType: '', currentDocName: '', currentFolder: null, customSavingsAmount: null,
@@ -1747,8 +1751,35 @@
                         this.isUpdatingReview = false;
                     }
                 },
-                openUploadModal() { 
-                    this.showUploadModal = true; 
+                openUploadModal(context = {}) {
+                    const personalCategories = [
+                        'patente',
+                        'carta_identita',
+                        'tesserino_sanitario',
+                    ];
+
+                    this.selectedCategory = context.categoria || 'bollo';
+                    this.selectedVehicleId = context.vehicle_id
+                        ? String(context.vehicle_id)
+                        : '';
+
+                    this.selectedUserId = context.user_id
+                        ? String(context.user_id)
+                        : '';
+
+                    this.uploadProposalId = context.proposal_id || null;
+
+                    /*
+                    * Evita dati residui: un documento personale non conserva il veicolo,
+                    * un documento veicolo non conserva la persona.
+                    */
+                    if (personalCategories.includes(this.selectedCategory)) {
+                        this.selectedVehicleId = '';
+                    } else {
+                        this.selectedUserId = '';
+                    }
+
+                    this.showUploadModal = true;
                 },
                 closeUploadModal() { 
                     this.isClosingUpload = true; 
@@ -1873,20 +1904,58 @@
                 async handleDocumentSubmit(event) {
                     event.preventDefault(); 
                     const formData = new FormData(event.target);
+                    formData.set('categoria', this.selectedCategory);
+                    if (this.selectedVehicleId) {
+                        formData.set('vehicle_id', this.selectedVehicleId);
+                    } else {
+                        formData.delete('vehicle_id');
+                    }
+
+                    if (this.selectedUserId) {
+                        formData.set('user_id', this.selectedUserId);
+                    } else {
+                        formData.delete('user_id');
+                    }
+
+                    if (this.uploadProposalId) {
+                        formData.set('proposal_id', this.uploadProposalId);
+                    } else {
+                        formData.delete('proposal_id');
+                    }
                     try {
                         const response = await fetch('{{ route("documents.store") }}', { method: 'POST', body: formData });
                         const data = await response.json();
-                        if (response.ok) { 
-                            event.target.reset(); 
-                            this.selectedCategory = 'bollo'; 
-                            this.closeUploadModal(); 
-                            await this.refreshData(); 
-                            this.successMessage = data.message || 'Documento caricato con successo!'; 
-                            this.showSuccessModal = true; 
-                            setTimeout(() => { 
-                                if (this.showSuccessModal) this.closeSuccessModal(); 
-                            }, 2000); 
-                        } else { 
+                        if (response.ok) {
+                        /*
+                        * Il backend ha già:
+                        * 1. salvato fisicamente il file;
+                        * 2. creato il record Document;
+                        * 3. chiuso la ActionProposal, se proposal_id era presente.
+                        *
+                        * Ora aggiorniamo i dati locali della dashboard.
+                        */
+                        await this.refreshData();
+
+                        event.target.reset();
+
+                        this.selectedCategory = 'bollo';
+                        this.selectedVehicleId = '';
+                        this.selectedUserId = '';
+                        this.uploadProposalId = null;
+
+                        this.closeUploadModal();
+
+                        this.successMessage =
+                            data.message || 'Documento caricato con successo!';
+
+                        this.showSuccessModal = true;
+
+                        setTimeout(() => {
+                            if (this.showSuccessModal) {
+                                this.closeSuccessModal();
+                            }
+                        }, 3000);
+                    } else { 
                             this.showError(data.message || 'Errore nel caricamento del documento'); 
                         }
                     } catch (error) { 

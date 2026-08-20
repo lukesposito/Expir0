@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,12 +23,14 @@ class ActionProposal extends Model
         'confidence',
         'reason',
         'resolved_at',
+        'snoozed_until',
     ];
 
     protected $casts = [
         'payload' => 'array',
         'confidence' => 'decimal:2',
         'resolved_at' => 'datetime',
+        'snoozed_until' => 'datetime',
     ];
 
     public function user()
@@ -59,5 +62,36 @@ class ActionProposal extends Model
             'status' => 'applied',
             'resolved_at' => now(),
         ]);
+    }
+
+    public function scopeVisibleToUser(Builder $query): Builder
+    {
+        return $query
+            ->pending()
+            ->where(function (Builder $query) {
+                $query->whereNull('snoozed_until')
+                    ->orWhere('snoozed_until', '<=', now());
+            })
+            ->where(function (Builder $query) {
+                $query
+                    ->whereIn('action_type', [
+                        'archive_document',
+                        'archive_personal_document',
+                    ])
+                    ->orWhere(function (Builder $query) {
+                        $query
+                            ->where('source_type', 'deadline')
+                            ->whereNotNull('source_id')
+                            ->whereExists(function ($exists) {
+                                $exists
+                                    ->selectRaw('1')
+                                    ->from('deadlines')
+                                    ->whereColumn(
+                                        'deadlines.id',
+                                        'action_proposals.source_id'
+                                    );
+                            });
+                    });
+            });
     }
 }

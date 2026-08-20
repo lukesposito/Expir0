@@ -143,23 +143,26 @@
                                         ></h3>
 
                                         <span
-                                            class="rounded-full px-2.5 py-1 text-xs font-black"
-                                            :class="proposal.action_type === 'high_value_upcoming'
-                                                ? 'bg-rose-100 text-rose-700'
-                                                : (proposal.action_type === 'upcoming_deadline'
-                                                    ? 'bg-blue-100 text-blue-700'
-                                                    : 'bg-amber-100 text-amber-700')"
-                                            x-text="proposal.action_type === 'high_value_upcoming'
-                                                ? 'Spesa importante'
-                                                : (proposal.action_type === 'upcoming_deadline'
-                                                    ? 'In arrivo'
-                                                    : 'Da verificare')"
+                                            x-text="proposal.is_document_proposal
+                                                ? 'Carica documento'
+                                                : (proposal.action_type === 'high_value_upcoming'
+                                                    ? 'Pianifica spesa'
+                                                    : (proposal.action_type === 'upcoming_deadline'
+                                                        ? 'Apri scadenza'
+                                                        : 'Verifica'))"
                                         ></span>
                                     </div>
 
                                     <p
                                         class="mt-1 text-sm text-slate-500"
                                         x-text="proposal.reason"
+                                    ></p>
+
+                                    <p
+                                        x-show="proposal.is_document_proposal"
+                                        x-cloak
+                                        class="mt-1 text-xs font-black uppercase tracking-wider text-cyan-700"
+                                        x-text="proposal.subtitle"
                                     ></p>
 
                                     <div class="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-600">
@@ -195,6 +198,25 @@
                             <div class="flex shrink-0 flex-col gap-2 sm:flex-row">
                                 <button
                                     type="button"
+                                    @click="snoozeProposal(proposal)"
+                                    :disabled="isSnoozingProposalId === proposal.id"
+                                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    <i
+                                        class="fa-solid"
+                                        :class="isSnoozingProposalId === proposal.id
+                                            ? 'fa-spinner fa-spin'
+                                            : 'fa-clock'"
+                                    ></i>
+
+                                    <span
+                                        x-text="isSnoozingProposalId === proposal.id
+                                            ? 'Attendi...'
+                                            : 'Tra 7 giorni'"
+                                    ></span>
+                                </button>
+                                <button
+                                    type="button"
                                     @click="rejectProposal(proposal)"
                                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-200"
                                     :disabled="proposal.processing"
@@ -215,9 +237,11 @@
                                     :disabled="proposal.processing"
                                 >
                                     <i
-                                        :class="proposal.action_type === 'mark_paid'
-                                            ? 'fa-solid fa-check'
-                                            : 'fa-solid fa-arrow-up-right-from-square'"
+                                        :class="proposal.is_document_proposal
+                                            ? 'fa-solid fa-cloud-arrow-up'
+                                            : (proposal.action_type === 'mark_paid'
+                                                ? 'fa-solid fa-check'
+                                                : 'fa-solid fa-arrow-up-right-from-square')"
                                     ></i>
 
                                     <span
@@ -402,6 +426,189 @@
                 </div>
             </div>
         </div>
+        <div
+            x-show="showDocumentUploadModal"
+            x-cloak
+            @keydown.escape.window="closeDocumentUploadModal()"
+            class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        >
+            <div
+                @click="closeDocumentUploadModal()"
+                class="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
+            ></div>
+
+            <div
+                @click.stop
+                class="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl"
+            >
+                <div class="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-4">
+                    <div>
+                        <h3 class="text-lg font-black text-white">
+                            Archivia documento
+                        </h3>
+                        <p class="mt-0.5 text-sm text-indigo-100">
+                            Completa la proposta selezionata.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="closeDocumentUploadModal()"
+                        :disabled="isUploadingDocument"
+                        class="rounded-lg p-2 text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Chiudi"
+                    >
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <form
+                    @submit="submitDocumentUpload"
+                    enctype="multipart/form-data"
+                    class="space-y-5 p-6"
+                >
+                    @csrf
+
+                    <input
+                        type="hidden"
+                        name="proposal_id"
+                        :value="uploadProposal?.id || ''"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="categoria"
+                        :value="uploadCategory"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="user_id"
+                        :value="uploadUserId"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="vehicle_id"
+                        :value="uploadVehicleId"
+                    >
+
+                    <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
+                        <p class="text-xs font-bold uppercase tracking-wide text-indigo-500">
+                            Documento richiesto
+                        </p>
+
+                        <p
+                            class="mt-1 text-base font-black text-slate-800"
+                            x-text="uploadProposal?.document_label || 'Documento'"
+                        ></p>
+
+                        <p
+                            class="mt-1 text-sm font-medium text-slate-600"
+                            x-text="uploadProposal?.subtitle || ''"
+                        ></p>
+                    </div>
+
+                    <template x-if="uploadProposal?.is_personal_document_proposal">
+                        <div>
+                            <label class="mb-2 block text-sm font-bold text-slate-700">
+                                Persona associata
+                            </label>
+
+                            <select
+                                x-model="uploadUserId"
+                                disabled
+                                class="w-full cursor-not-allowed rounded-xl border-slate-200 bg-slate-100 text-slate-600"
+                            >
+                                @foreach(\App\Models\User::orderBy('name')->get() as $user)
+                                    <option value="{{ $user->id }}">
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <p class="mt-1 text-xs text-slate-500">
+                                La persona è impostata dalla proposta e non può essere modificata.
+                            </p>
+                        </div>
+                    </template>
+
+                    <template x-if="uploadProposal && !uploadProposal.is_personal_document_proposal">
+                        <div>
+                            <label class="mb-2 block text-sm font-bold text-slate-700">
+                                Veicolo associato
+                            </label>
+
+                            <select
+                                x-model="uploadVehicleId"
+                                disabled
+                                class="w-full cursor-not-allowed rounded-xl border-slate-200 bg-slate-100 text-slate-600"
+                            >
+                                @foreach(\App\Models\Vehicle::orderBy('marca')->get() as $vehicle)
+                                    <option value="{{ $vehicle->id }}">
+                                        {{ $vehicle->marca }} {{ $vehicle->modello }} — {{ $vehicle->targa }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <p class="mt-1 text-xs text-slate-500">
+                                Il veicolo è impostato dalla proposta e non può essere modificato.
+                            </p>
+                        </div>
+                    </template>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-bold text-slate-700">
+                            File
+                        </label>
+
+                        <input
+                            type="file"
+                            name="documento"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            required
+                            :disabled="isUploadingDocument"
+                            class="block w-full rounded-xl border border-slate-200 bg-white text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2.5 file:font-bold file:text-indigo-700 hover:file:bg-indigo-100"
+                        >
+
+                        <p class="mt-2 text-xs text-slate-500">
+                            Formati supportati: PDF, JPG, JPEG e PNG. Dimensione massima: 10 MB.
+                        </p>
+                    </div>
+
+                    <div
+                        x-show="uploadError"
+                        x-cloak
+                        class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                        x-text="uploadError"
+                    ></div>
+
+                    <div class="flex justify-end gap-3 border-t border-slate-100 pt-5">
+                        <button
+                            type="button"
+                            @click="closeDocumentUploadModal()"
+                            :disabled="isUploadingDocument"
+                            class="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            Annulla
+                        </button>
+
+                        <button
+                            type="submit"
+                            :disabled="isUploadingDocument"
+                            class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            <i
+                                class="fa-solid"
+                                :class="isUploadingDocument ? 'fa-spinner fa-spin' : 'fa-cloud-arrow-up'"
+                            ></i>
+
+                            <span x-text="isUploadingDocument ? 'Caricamento...' : 'Archivia documento'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -413,6 +620,15 @@
                 showConfirmModal: false,
                 selectedProposal: null,
                 confirmWithRenewal: true,
+                showDocumentUploadModal: false,
+                isUploadingDocument: false,
+                isSnoozingProposalId: null,
+
+                uploadProposal: null,
+                uploadCategory: '',
+                uploadUserId: '',
+                uploadVehicleId: '',
+                uploadError: '',
 
                 get expiredCount() {
                     return this.proposals.filter(proposal => proposal.is_expired).length;
@@ -436,10 +652,110 @@
                     }));
                 },
 
-                handleProposalAction(proposal) {
-                    this.openConfirmModal(proposal);
+                openDocumentUploadModal(proposal) {
+                    this.uploadProposal = proposal;
+                    this.uploadCategory = proposal.document_category || '';
+                    this.uploadError = '';
+
+                    if (proposal.is_personal_document_proposal) {
+                        this.uploadUserId = String(proposal.document_user_id || '');
+                        this.uploadVehicleId = '';
+                    } else {
+                        this.uploadVehicleId = String(proposal.vehicle_id || '');
+                        this.uploadUserId = '';
+                    }
+
+                    this.showDocumentUploadModal = true;
                 },
 
+                closeDocumentUploadModal() {
+                    if (this.isUploadingDocument) {
+                        return;
+                    }
+
+                    this.showDocumentUploadModal = false;
+                    this.uploadProposal = null;
+                    this.uploadCategory = '';
+                    this.uploadUserId = '';
+                    this.uploadVehicleId = '';
+                    this.uploadError = '';
+                },
+
+                async submitDocumentUpload(event) {
+                    event.preventDefault();
+
+                    if (!this.uploadProposal) {
+                        return;
+                    }
+
+                    this.isUploadingDocument = true;
+                    this.uploadError = '';
+
+                    const formData = new FormData(event.target);
+
+                    formData.set('proposal_id', this.uploadProposal.id);
+                    formData.set('categoria', this.uploadCategory);
+
+                    if (this.uploadUserId) {
+                        formData.set('user_id', this.uploadUserId);
+                    } else {
+                        formData.delete('user_id');
+                    }
+
+                    if (this.uploadVehicleId) {
+                        formData.set('vehicle_id', this.uploadVehicleId);
+                    } else {
+                        formData.delete('vehicle_id');
+                    }
+
+                    try {
+                        const response = await fetch(
+                            '{{ route('documents.store') }}',
+                            {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                            }
+                        );
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            this.uploadError =
+                                data.message || 'Errore durante il caricamento del documento.';
+                            return;
+                        }
+
+                        /*
+                        * Il controller ha già impostato la proposta su applied.
+                        * La togliamo dall’interfaccia senza ricaricare la pagina.
+                        */
+                        this.proposals = this.proposals.filter(
+                            proposal => proposal.id !== this.uploadProposal.id
+                        );
+
+                        this.closeDocumentUploadModal();
+
+                        alert(data.message || 'Documento archiviato correttamente.');
+                    } catch (error) {
+                        this.uploadError =
+                            'Errore di comunicazione con il server. Riprova.';
+                    } finally {
+                        this.isUploadingDocument = false;
+                    }
+                },
+
+                handleProposalAction(proposal) {
+                    if (proposal.is_document_proposal) {
+                        this.openDocumentUploadModal(proposal);
+                        return;
+                    }
+
+                    this.openConfirmModal(proposal);
+                },
                 openConfirmModal(proposal) {
                     this.selectedProposal = proposal;
                     this.confirmWithRenewal = Boolean(proposal.suggest_renewal);
@@ -527,7 +843,63 @@
                     } finally {
                         this.confirming = false;
                     }
-                }
+                }, 
+                
+                async snoozeProposal(proposal) {
+                    if (!proposal?.id || this.isSnoozingProposalId) {
+                        return;
+                    }
+
+                    this.isSnoozingProposalId = proposal.id;
+
+                    try {
+                        const response = await fetch(
+                            `/azioni/${proposal.id}/snooze`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: JSON.stringify({
+                                    days: 7,
+                                }),
+                            }
+                        );
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(
+                                data.message || 'Non è stato possibile rimandare la proposta.'
+                            );
+                        }
+
+                        /*
+                        * La proposta è ancora pending nel database,
+                        * ma non deve più essere visibile fino alla data di snooze.
+                        */
+                        this.proposals = this.proposals.filter(
+                            item => item.id !== proposal.id
+                        );
+
+                        if (typeof this.showSuccess === 'function') {
+                            this.showSuccess(data.message);
+                        } else {
+                            alert(data.message);
+                        }
+                    } catch (error) {
+                        if (typeof this.showError === 'function') {
+                            this.showError(error.message);
+                        } else {
+                            alert(error.message || 'Errore durante il rinvio della proposta.');
+                        }
+                    } finally {
+                        this.isSnoozingProposalId = null;
+                    }
+                },
             };
         }
     </script>
